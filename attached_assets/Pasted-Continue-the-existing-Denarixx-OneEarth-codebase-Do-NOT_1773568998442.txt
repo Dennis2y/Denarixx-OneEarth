@@ -1,0 +1,226 @@
+Continue the existing Denarixx OneEarth codebase. Do NOT rewrite the project, do NOT change the stack, and do NOT regenerate from scratch. Keep the current monorepo/workspace structure, React frontend, Express API, and existing database approach. Improve and complete the platform as a serious infrastructure-grade MVP.
+
+Project goal:
+Denarixx OneEarth is a unified resilience infrastructure platform with 3 integrated modules:
+- Denarixx Energy
+- Denarixx LifeMesh
+- Denarixx EarthShield
+
+Your task is to FINISH the current project by adding missing core features, cleaning architecture, and polishing the product so it feels like a premium government/enterprise-ready control platform.
+
+HIGH PRIORITY TASKS
+
+1) ADD A NEW PAGE: COMMAND CENTER
+Create a new page/route:
+- /command-center
+
+Purpose:
+This is the unified system brain where all 3 modules work together through scenario simulation and operational response.
+
+Features required:
+- Scenario selector:
+  - Flood event
+  - Severe storm
+  - Wildfire risk
+  - Clinic power outage
+  - Multi-site outage
+  - Child emergency / SOS escalation
+- Affected sites panel
+- Impacted people / protected persons count
+- Energy reserve / backup power panel
+- Recommended actions panel
+- Readiness score / resilience score
+- Timeline of alert escalation
+- Premium map / geo panel placeholder or structured risk map section
+- Export report button
+- Reusable cards and clean layout
+- Use realistic mock data connected to existing sites/alerts/persons where possible
+
+The Command Center must visually unify Energy + LifeMesh + EarthShield and make the platform feel like one real system.
+
+2) ADD REAL AUTH + ROLE-BASED PROTECTED ROUTES
+Do not leave login as only visual.
+
+Implement:
+- session/auth state
+- protected routes
+- redirect unauthenticated users to login
+- logout
+- basic role-aware route handling
+
+Roles:
+- admin
+- operator
+- government
+- community
+
+Requirements:
+- users page should reflect roles
+- route protection can be simple MVP auth, but must work cleanly
+- avoid fake auth-only UI with no enforcement
+
+3) IMPROVE TYPE SAFETY
+Remove important any usage in pages, components, and API handlers.
+
+Create/strengthen shared types for:
+- DashboardStats
+- Site
+- EnergyMetric
+- UnifiedAlert
+- ProtectedPerson
+- SafetyIncident
+- DisasterAlert
+- RiskZone
+- CommandCenterScenario
+- CommandCenterResult
+
+Use proper TypeScript interfaces/types across frontend and backend.
+
+4) STRENGTHEN DATABASE/SCHEMA RELATIONS
+Keep the current DB approach, but improve structure and relations.
+
+Ensure clear relations between:
+- site -> energy metrics
+- site -> alerts
+- site -> protected persons
+- site -> incidents
+- protected person -> incidents
+- disaster alert -> site or region
+- unified alert -> source module and source entity
+
+Also support better historical querying for energy metrics and alert feeds.
+
+5) FIX ALERT ORDERING AND FEED QUALITY
+Ensure dashboard alerts and alerts page show newest first.
+
+Requirements:
+- order alerts by newest timestamp descending
+- add module filter: Energy / LifeMesh / EarthShield
+- add severity filter: critical / warning / info
+- add status filter: active / resolved
+- improve alert cards with better labels, timestamps, and source metadata
+
+6) ADD DETAIL VIEWS / DRILL-DOWNS
+The app needs more depth, not just overview pages.
+
+Add:
+- site detail page or modal/drawer
+- alert detail page or modal/drawer
+- protected person detail drawer/modal
+- risk zone / regional detail drawer for EarthShield
+- command center scenario result detail panels
+
+These should feel premium and operational, not generic.
+
+7) CLEAN FILE STRUCTURE AND REMOVE DUPLICATES
+Do not change stack, but clean the codebase.
+
+Tasks:
+- remove duplicate or conflicting files such as duplicate mobile hook files if present
+- remove obviously unused components where safe
+- keep folder naming clean and consistent
+- make imports cleaner
+- do not leave backup/demo duplicate files
+
+8) ADD BACKEND VALIDATION
+Improve request validation in the API.
+
+At minimum validate:
+- SOS payloads
+- alert query params
+- site ids and route params
+- create/update payloads
+- command center scenario request payloads
+
+Return clean JSON error responses.
+
+9) IMPROVE EARTHSHIELD MAP / GEO LAYER
+Make EarthShield feel more serious.
+
+Add:
+- structured risk zones
+- site markers or zone cards
+- map placeholder panel with meaningful overlay data
+- flood/fire/storm/infrastructure zone groupings
+- preparedness score and affected population estimate
+
+If a real map library is too much right now, create a polished geospatial intelligence panel with realistic regional data and clear layout.
+
+10) STRENGTHEN DEMO DATA / SEED CONTENT
+Use realistic infrastructure and resilience demo data.
+
+Avoid:
+- lorem ipsum
+- test site names
+- fake admin placeholder content
+
+Use realistic locations and entities such as:
+- community clinic
+- school backup site
+- district shelter
+- village solar node
+- flood risk region
+- family protection profile
+- emergency response chain
+
+Use globally relevant and African-forward scenarios where appropriate.
+
+DESIGN / UX REQUIREMENTS
+
+- Keep and improve the premium dark luxury-tech style
+- Make the UI feel like a billion-dollar climate/resilience platform
+- Better spacing, card hierarchy, typography, and visual consistency
+- Make dashboards feel operational and high-trust
+- Do not use generic template feel
+- Keep responsive layout for desktop and tablet
+- Improve sidebar and top navigation if needed
+- Add polished empty states, loading states, and status badges
+
+PAGES THAT MUST EXIST AFTER THIS UPGRADE
+
+- /login
+- /dashboard
+- /command-center
+- /energy
+- /lifemesh
+- /earthshield
+- /alerts
+- /sites
+- /users
+- /settings
+
+COMMAND CENTER DATA MODEL
+Add whatever is needed to support scenario simulation.
+
+Minimum scenario output should include:
+- scenario id
+- scenario type
+- affected sites
+- affected people count
+- critical facilities impacted
+- backup energy available
+- risk severity
+- readiness score
+- recommended actions
+- escalation timeline
+
+FINAL EXPECTATION
+Do not restart from scratch.
+Do not replace the current stack.
+Build on top of the existing project and finish it properly.
+
+Deliver:
+- updated frontend pages
+- updated API routes
+- improved schema/models where needed
+- stronger typing
+- protected auth flow
+- working Command Center page
+- cleaner file structure
+- better seed/demo data
+- polished premium UI
+
+After making changes, summarize:
+1. what was added
+2. what files were changed
+3. any remaining gaps

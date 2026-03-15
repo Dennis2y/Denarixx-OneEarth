@@ -11,7 +11,11 @@ Premium MVP web platform serving as a unified AI infrastructure command center f
 - Gold circuit board tech-grid texture on sidebar; Africa ambient on all content pages
 - Real satellite image in dashboard operations map
 - Live UTC clock, animated alert feed, sparkline stat cards
-- 9 pages: Login, Dashboard, Energy Grid, LifeMesh, EarthShield Intel, Unified Alerts, Sites & Nodes, Personnel, Settings
+- **10 pages**: Login, Dashboard, Command Center, Energy Grid, LifeMesh, EarthShield Intel, Unified Alerts, Sites & Nodes, Personnel, Settings
+- **Auth system**: localStorage-based session auth with 4 demo roles (admin, operator, government, community); protected routes redirect unauthenticated users to /login; logout clears session
+- **Command Center** (`/command-center`): 6 scenario simulation engine (flood, storm, wildfire, clinic outage, multi-site outage, child SOS); live readiness score, affected sites/persons, energy status, 6 recommended actions, escalation timeline per scenario — all driven by real DB data
+- **Alert fixes**: ordered newest-first (DESC), status filter added (active/acknowledged/resolved), Acknowledge + Mark Resolved actions from the detail drawer, `PATCH /api/alerts/:id/status` endpoint
+- **File cleanup**: duplicate `use-mobile.tsx` removed (kept `use-mobile.ts`); `Activity` import fixed in settings.tsx
 
 ## Stack
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PageHeader, Card, Button, Label, Input, Badge, cn } from '@/components/ui-core';
-import { Shield, Key, Database, Monitor, CheckCircle2, XCircle, Zap, Globe, ShieldAlert } from 'lucide-react';
+import { Shield, Key, Database, Monitor, CheckCircle2, XCircle, Zap, Globe, ShieldAlert, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Settings() {
