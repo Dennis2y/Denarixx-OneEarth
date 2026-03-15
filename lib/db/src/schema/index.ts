@@ -5,3 +5,4 @@ export * from "./earthshield";
 export * from "./alerts";
 export * from "./users";
 export * from "./audit";
+export * from "./simulations";

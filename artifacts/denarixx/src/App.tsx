@@ -13,6 +13,7 @@ import LifeMesh from "./pages/lifemesh";
 import EarthShield from "./pages/earthshield";
 import Alerts from "./pages/alerts";
 import Sites from "./pages/sites";
+import SiteDetail from "./pages/site-detail";
 import Users from "./pages/users";
 import Settings from "./pages/settings";
 import NotFound from "./pages/not-found";
@@ -68,6 +69,7 @@ function RouteWrapper() {
         <Route path="/earthshield" component={() => <ProtectedRoute component={EarthShield} />} />
         <Route path="/alerts" component={() => <ProtectedRoute component={Alerts} />} />
         <Route path="/sites" component={() => <ProtectedRoute component={Sites} />} />
+        <Route path="/sites/:id" component={() => <ProtectedRoute component={SiteDetail} />} />
         <Route path="/users" component={() => <ProtectedRoute component={Users} />} />
         <Route path="/settings" component={() => <ProtectedRoute component={Settings} />} />
         <Route component={NotFound} />

@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, PageHeader, Badge, Button, cn } from '@/components/ui-core';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Cpu, Play, AlertTriangle, Zap, Shield, Globe, MapPin, Users,
   Battery, Activity, ChevronRight, Download, Clock, TrendingDown,
-  CheckCircle2, Radio, Siren, RefreshCw
+  CheckCircle2, Radio, Siren, RefreshCw, History, User, RotateCcw
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { format, formatDistanceToNow } from 'date-fns';
 
 type ScenarioType =
   | 'flood_event'
@@ -32,6 +33,7 @@ interface SimulationResult {
   triggerModule: string;
   riskSeverity: 'critical' | 'warning' | 'info';
   readinessScore: number;
+  operator?: { email: string; name: string; role: string };
   affectedSites: Array<{
     id: number; name: string; type: string; location: string;
     country: string; status: string; population: number;
@@ -138,12 +140,85 @@ function TimelineEvent({ event, index }: { event: SimulationResult['escalationTi
   );
 }
 
+interface SimulationHistoryItem {
+  id: number;
+  scenarioId: string;
+  scenarioType: string;
+  scenarioLabel: string;
+  operatorEmail: string;
+  operatorName: string;
+  operatorRole: string;
+  readinessScore: number;
+  riskSeverity: string;
+  affectedSitesCount: number;
+  affectedPersonsCount: number;
+  estimatedPopulationAtRisk: number;
+  simulatedAt: string;
+}
+
 export default function CommandCenter() {
   const { t } = useTranslation();
   const [selectedScenario, setSelectedScenario] = useState<ScenarioType | null>(null);
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [history, setHistory] = useState<SimulationHistoryItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+
+  const fetchHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const res = await fetch('/api/command-center/history', { credentials: 'include' });
+      if (res.ok) setHistory(await res.json());
+    } catch { /* non-blocking */ } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+
+  const loadHistoryItem = async (item: SimulationHistoryItem) => {
+    try {
+      const res = await fetch(`/api/command-center/history/${item.id}`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setResult(data.result as SimulationResult);
+        setSelectedScenario(item.scenarioType as ScenarioType);
+        setShowHistory(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } catch { /* ignore */ }
+  };
+
+  const downloadCurrentReport = async () => {
+    if (!result) return;
+    const latest = history.find(h => h.scenarioId === result.scenarioId);
+    if (latest) {
+      const res = await fetch(`/api/reports/scenario/${latest.id}`, {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (res.ok) {
+        const report = await res.json();
+        const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `denarixx-scenario-${result.scenarioType}-${format(new Date(), 'yyyy-MM-dd')}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } else {
+      const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `denarixx-scenario-${result.scenarioType}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  };
 
   const runSimulation = async () => {
     if (!selectedScenario) return;
@@ -155,12 +230,14 @@ export default function CommandCenter() {
       const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       const res = await fetch(`${base}/api/command-center/simulate`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ scenarioType: selectedScenario }),
       });
       if (!res.ok) throw new Error(`API error: ${res.status}`);
       const data: SimulationResult = await res.json();
       setResult(data);
+      fetchHistory();
     } catch (e) {
       setError(t('commandCenter.simulationFailed'));
     } finally {
@@ -176,11 +253,22 @@ export default function CommandCenter() {
         title={t('commandCenter.title')}
         description={t('commandCenter.description')}
         actions={
-          result && (
-            <Button variant="outline" size="sm" onClick={() => window.print()}>
-              <Download className="w-4 h-4 mr-2" /> {t('commandCenter.exportReport')}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => { setShowHistory(!showHistory); }}
+              className={cn(showHistory && 'border-primary/50 text-primary')}
+            >
+              <History className="w-4 h-4 mr-2" />
+              History {history.length > 0 && <span className="ml-1.5 bg-primary/20 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full">{history.length}</span>}
             </Button>
-          )
+            {result && (
+              <Button variant="outline" size="sm" onClick={downloadCurrentReport}>
+                <Download className="w-4 h-4 mr-2" /> {t('commandCenter.exportReport')}
+              </Button>
+            )}
+          </div>
         }
       />
 
@@ -239,6 +327,95 @@ export default function CommandCenter() {
         </div>
       </Card>
 
+      {/* Simulation History Panel */}
+      <AnimatePresence>
+        {showHistory && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -10, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mb-6 overflow-hidden"
+          >
+            <Card className="p-6 border-primary/20">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-display font-bold text-white flex items-center gap-2">
+                  <History className="w-5 h-5 text-primary" /> Simulation History
+                </h3>
+                <Button variant="ghost" size="sm" onClick={fetchHistory} disabled={historyLoading}>
+                  <RefreshCw className={cn("w-3.5 h-3.5 mr-1.5", historyLoading && 'animate-spin')} /> Refresh
+                </Button>
+              </div>
+
+              {history.length === 0 ? (
+                <div className="flex flex-col items-center py-10 text-center">
+                  <History className="w-8 h-8 text-muted-foreground/30 mb-2" />
+                  <p className="text-sm text-muted-foreground">No simulations run yet.</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">Completed simulations appear here with full operator attribution.</p>
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+                  {history.map((item) => {
+                    const riskColor = item.riskSeverity === 'critical' ? 'text-destructive border-destructive/30 bg-destructive/5'
+                      : item.riskSeverity === 'warning' ? 'text-amber-500 border-amber-500/30 bg-amber-500/5'
+                      : 'text-green-400 border-green-500/30 bg-green-500/5';
+                    return (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex items-center gap-4 p-4 bg-secondary/20 rounded-xl border border-border/50 hover:border-border/80 transition-colors group"
+                      >
+                        <div className={cn("w-2 h-2 rounded-full shrink-0", item.riskSeverity === 'critical' ? 'bg-destructive' : item.riskSeverity === 'warning' ? 'bg-amber-500' : 'bg-green-500')} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-sm text-white">{item.scenarioLabel}</span>
+                            <Badge variant="outline" className={cn("text-[9px] h-4 border", riskColor)}>
+                              {item.riskSeverity.toUpperCase()}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-3 mt-0.5 text-[10px] text-muted-foreground">
+                            <span className="flex items-center gap-1"><User className="w-2.5 h-2.5" /> {item.operatorName}</span>
+                            <span className="uppercase font-mono bg-primary/10 text-primary px-1.5 py-0.5 rounded border border-primary/20">{item.operatorRole}</span>
+                            <span className="font-mono">{item.operatorEmail}</span>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0 hidden sm:block">
+                          <div className={cn("text-lg font-display font-bold", item.readinessScore >= 70 ? 'text-green-400' : item.readinessScore >= 45 ? 'text-amber-400' : 'text-destructive')}>
+                            {item.readinessScore}
+                          </div>
+                          <div className="text-[9px] uppercase tracking-widest text-muted-foreground">Readiness</div>
+                        </div>
+                        <div className="text-right shrink-0 hidden md:block">
+                          <div className="text-xs font-mono text-white">{item.affectedSitesCount} sites</div>
+                          <div className="text-[9px] text-muted-foreground">{item.estimatedPopulationAtRisk.toLocaleString()} pop. at risk</div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <div className="text-[10px] text-muted-foreground font-mono">
+                            {formatDistanceToNow(new Date(item.simulatedAt))} ago
+                          </div>
+                          <div className="text-[9px] text-muted-foreground/60 font-mono">
+                            {format(new Date(item.simulatedAt), 'MMM d, HH:mm')}
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => loadHistoryItem(item)}
+                          className="shrink-0 h-8 text-xs border-border/50 hover:border-primary/50 hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <RotateCcw className="w-3 h-3 mr-1" /> Load
+                        </Button>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {result && (
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -259,8 +436,15 @@ export default function CommandCenter() {
               <Badge variant={result.riskSeverity === 'critical' ? 'critical' : 'warning'} className="uppercase">
                 {result.riskSeverity} {t('commandCenter.risk')}
               </Badge>
+              {result.operator && (
+                <div className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground bg-secondary/50 px-2.5 py-1 rounded-lg border border-border/50">
+                  <User className="w-3 h-3 text-primary" />
+                  <span className="text-white font-semibold">{result.operator.name}</span>
+                  <span className="uppercase text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">{result.operator.role}</span>
+                </div>
+              )}
               <span className="text-[10px] font-mono text-muted-foreground ml-auto">SIM ID: {result.scenarioId.slice(-8)}</span>
-              <span className="text-[10px] font-mono text-muted-foreground">{new Date(result.simulatedAt).toUTCString()}</span>
+              <span className="text-[10px] font-mono text-muted-foreground">{format(new Date(result.simulatedAt), 'MMM d, HH:mm:ss')} UTC</span>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
 import { useGetSites, useCreateSite } from '@workspace/api-client-react';
 import { PageHeader, LoadingScreen, Card, Badge, Table, Th, Td, Button, Modal, Input, Label, Select, Skeleton, EmptyState, cn } from '@/components/ui-core';
-import { MapPin, Plus, LayoutGrid, List, Users, Server, Zap, Activity, AlertTriangle, Shield, BarChart3, Clock, Radio } from 'lucide-react';
+import { MapPin, Plus, LayoutGrid, List, Users, Server, Zap, Activity, AlertTriangle, Shield, BarChart3, Clock, Radio, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 
 export default function Sites() {
   const { t } = useTranslation();
+  const [, setLocation] = useLocation();
   const { data: sites, isLoading, refetch } = useGetSites();
   const { mutate: createSite, isPending } = useCreateSite();
   const [modalOpen, setModalOpen] = useState(false);
@@ -146,9 +148,14 @@ export default function Sites() {
                     <p className={cn('font-bold text-sm mt-1 py-0.5 rounded border capitalize', getRiskColor(site.currentRiskLevel))}>{site.currentRiskLevel}</p>
                   </div>
                 </div>
-                <Button variant="secondary" className="w-full bg-secondary/50 hover:bg-primary hover:text-primary-foreground border border-border/50 group-hover:border-primary/50 transition-colors" onClick={() => loadSiteDetail(site)}>
-                  {t('sites.accessTelemetry')}
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="secondary" className="flex-1 bg-secondary/50 hover:bg-secondary border border-border/50 group-hover:border-border/80 transition-colors" onClick={() => loadSiteDetail(site)}>
+                    {t('sites.accessTelemetry')}
+                  </Button>
+                  <Button variant="outline" className="px-3 border-primary/30 hover:bg-primary/10 hover:border-primary/50" onClick={() => setLocation(`/sites/${site.id}`)} title="Full Site Profile">
+                    <ExternalLink className="w-4 h-4 text-primary" />
+                  </Button>
+                </div>
               </div>
             </Card>
           ))}
@@ -169,7 +176,12 @@ export default function Sites() {
                   <Td><div className="flex items-center text-xs font-bold uppercase tracking-wider"><div className={`w-1.5 h-1.5 rounded-full mr-2 ${site.status === 'online' ? 'bg-green-500 animate-pulse' : 'bg-destructive'}`} /><span className={site.status === 'online' ? 'text-green-500' : 'text-destructive'}>{site.status}</span></div></Td>
                   <Td className="font-mono">{site.uptime}%</Td>
                   <Td className="text-primary font-mono font-bold">{site.powerAvailability}%</Td>
-                  <Td><Button variant="ghost" size="sm" onClick={() => loadSiteDetail(site)}>{t('sites.view')}</Button></Td>
+                  <Td>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => loadSiteDetail(site)}>{t('sites.view')}</Button>
+                      <Button variant="ghost" size="sm" onClick={() => setLocation(`/sites/${site.id}`)} className="px-2 text-primary hover:text-primary"><ExternalLink className="w-3.5 h-3.5" /></Button>
+                    </div>
+                  </Td>
                 </tr>
               ))}
             </tbody>
@@ -294,7 +306,10 @@ export default function Sites() {
             )}
 
             <div className="flex gap-3 pt-2 border-t border-border/50">
-              <Button className="flex-1 bg-secondary/80 text-white hover:bg-secondary border border-border" onClick={() => { setSelectedSite(null); setSiteDetail(null); }}>{t('sites.close')}</Button>
+              <Button variant="ghost" onClick={() => { setSelectedSite(null); setSiteDetail(null); }} className="flex-1">{t('sites.close')}</Button>
+              <Button variant="outline" onClick={() => { setLocation(`/sites/${selectedSite.id}`); setSelectedSite(null); setSiteDetail(null); }} className="flex-1 border-primary/30 text-primary hover:bg-primary/10">
+                <ExternalLink className="w-4 h-4 mr-2" /> View Full Profile
+              </Button>
               <Button className="flex-1">{t('sites.runDiagnostics')}</Button>
             </div>
           </div>

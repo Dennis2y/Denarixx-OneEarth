@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { requireAuth } from "../middlewares/auth.js";
 import healthRouter from "./health.js";
 import authRouter from "./auth.js";
 import dashboardRouter from "./dashboard.js";
@@ -10,11 +11,15 @@ import alertsRouter from "./alerts.js";
 import usersRouter from "./users.js";
 import commandCenterRouter from "./command-center.js";
 import auditRouter from "./audit.js";
+import reportsRouter from "./reports.js";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(authRouter);
+
+router.use(requireAuth);
+
 router.use(dashboardRouter);
 router.use(sitesRouter);
 router.use(energyRouter);
@@ -24,5 +29,6 @@ router.use(alertsRouter);
 router.use(usersRouter);
 router.use(commandCenterRouter);
 router.use(auditRouter);
+router.use(reportsRouter);
 
 export default router;

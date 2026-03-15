@@ -6,22 +6,61 @@ Premium MVP web platform serving as a unified AI infrastructure command center f
 
 ## Key Features
 - Dark luxury gold/black command-center UI
-- Full multilingual support (EN, FR, SW, AR, PT) — auto-detects browser language via i18next
+- Full multilingual support (18 languages including EN, FR, AR, SW, PT, AM, ZH, HI, etc.) — auto-detects browser language via i18next
 - AI-generated cinematic background: Africa-from-space hero image + looping city-night video on login
 - Gold circuit board tech-grid texture on sidebar; Africa ambient on all content pages
 - Real satellite image in dashboard operations map
 - Live UTC clock, animated alert feed, sparkline stat cards
-- **10 pages**: Login, Dashboard, Command Center, Energy Grid, LifeMesh, EarthShield Intel, Unified Alerts, Sites & Nodes, Personnel, Settings
+- **11 pages**: Login, Dashboard, Command Center, Energy Grid, LifeMesh, EarthShield Intel, Unified Alerts, Sites & Nodes, Site Detail (/sites/:id), Personnel, Settings
+
+### Auth & Security
 - **Backend Auth** (`POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`): in-memory session store, signed cookie (`den_session`, 8h), SHA-256 password hashing, audit log on login/logout
+- **Global route protection**: `requireAuth` middleware applied to all routes in `routes/index.ts` — public only: health + auth endpoints. All others require a valid session.
 - **Auth Context** (`src/context/auth.tsx`): calls backend first, falls back to localStorage; exports `can(permission)` for role-gated UI; logout calls backend then clears storage
-- **RBAC Permissions**: `Permission` type with 8 actions mapped to roles. Admin gets all. Operator can run scenarios, drills, broadcast, deploy. Government can generate reports. Community has no actions.
-- **Audit Log**: `audit_log` DB table (actor, actorRole, action, target, details, createdAt). Entries written on login, logout, alert status change, broadcast alert. `GET /api/audit/log` endpoint with limit param.
-- **Dashboard Actions** (all functional): Emergency Drill modal → broadcasts drill alert to DB; Broadcast Alert modal → `POST /api/alerts/broadcast`; Generate Report → downloads JSON report; Deploy Node → routes to Sites page. All permission-gated (hidden/disabled for insufficient roles).
-- **Activity Feed** on dashboard right column: live-pulls from `GET /api/audit/log` with emoji-coded actions per type.
-- **EarthShield Geo Intelligence**: filter tabs by disaster type (All/Flood/Wildfire/Storm etc.), alerts grouped by severity (CRITICAL/WARNING/MONITORING bands), Spatial Risk Distribution panel with zone coordinates, Incident Timeline, Risk Legend.
-- **Site Detail Modal**: enriched with real energy telemetry (solar/battery/grid), protected persons list (status + contact), active alerts linked by location match.
-- **Command Center** (`/command-center`): 6 scenario simulation engine — readiness score, affected sites/persons, energy status, 6 recommended actions, escalation timeline per scenario.
-- **Alert Routes**: ordered DESC, status filter, `PATCH /api/alerts/:id/status` (writes audit), `POST /api/alerts/broadcast` (writes audit).
+- **RBAC**: `requireRole('admin','operator')` on sites POST/PATCH and users POST/PATCH; `requireRole('admin','operator','government')` on users GET. Community role blocked from admin functions with 403.
+- `Permission` type with 8 actions mapped to roles: admin gets all, operator can run scenarios/drills/broadcast/deploy, government can generate reports, community has no actions.
+
+### Audit Log & Activity Feed
+- **Audit Log**: `audit_log` DB table (actor, actorRole, action, target, details, createdAt). Entries written on: login, logout, alert status change, alert broadcast, scenario run, site create, site update, user status change, report generation.
+- **Activity Feed** on dashboard right column: live-pulls from `GET /api/audit/log` with emoji-coded action types.
+
+### Site Detail Pages (/sites/:id)
+- Full page with: energy history area chart (24 points, Battery/Solar/Load), real-time energy KPIs (battery/solar/load/grid), risk summary with computed score, protected persons list (status icons + emergency contacts), active alerts for the site, emergency contacts grid, site coordinates & metadata.
+- "View Full Profile" (ExternalLink icon) added to site cards and table rows to navigate to detail page.
+- Report download button calls `POST /api/reports/site/:id` and saves JSON to disk.
+
+### Command Center History
+- **Simulation History**: `simulation_history` DB table stores every run with: scenarioId, scenarioType, scenarioLabel, operator email/name/role, readinessScore, riskSeverity, affectedSitesCount, affectedPersonsCount, estimatedPopulationAtRisk, full resultJson.
+- **History Panel**: toggled with "History" button in page header. Shows past simulations with operator attribution (name + role badge + email), readiness score, affected counts, relative timestamp. "Load" button restores any past result instantly.
+- **Operator Attribution**: simulation result banner shows operator name + role badge for every run.
+- **Report Export**: downloads `POST /api/reports/scenario/:historyId` as structured JSON file.
+
+### Report Generation
+- `POST /api/reports/site/:id` — site resilience report (energy summary, persons by status/category, alert counts, metadata)
+- `POST /api/reports/scenario/:historyId` — scenario simulation report (full result + simulation metadata)
+- `POST /api/reports/alerts` — platform-wide alerts summary (counts by severity, status, module, type)
+- All reports include generatedBy operator attribution and are downloadable as JSON.
+
+### Dashboard Quick Actions (all functional)
+- Emergency Drill modal → broadcasts drill alert to DB
+- Broadcast Alert modal → `POST /api/alerts/broadcast`
+- Generate Report → downloads JSON report of current stats + recent alerts + audit log
+- Deploy Node → routes to Sites page
+- All permission-gated (disabled/hidden for insufficient roles)
+
+### EarthShield Geo Intelligence
+- Disaster alerts table with type, severity, affected population, region, country, coordinates
+- Risk zones table with preparedness scores and coordinates
+- Filter tabs by disaster type; severity band grouping (CRITICAL/WARNING/MONITORING)
+- Spatial Risk Distribution panel; Incident Timeline; Risk Legend
+
+### Alert Routes
+- ordered DESC, status filter, `PATCH /api/alerts/:id/status` (writes audit), `POST /api/alerts/broadcast` (writes audit)
+
+### Users Management (RBAC-gated)
+- `GET /api/users` — requires admin/operator/government
+- `PATCH /api/users/:id/status` — requires admin (activates/suspends, writes audit)
+- `POST /api/users` — requires admin (creates user, writes audit)
 
 ## Stack
 
