@@ -1,0 +1,310 @@
+Continue the existing Denarixx OneEarth project. Do NOT rewrite the project, do NOT change the stack, and do NOT regenerate from scratch. Build on top of the current codebase and finish the missing core systems so the platform is demo-deployable and much closer to a serious operational MVP.
+
+GOAL
+Denarixx OneEarth must feel like a polished global resilience infrastructure platform, ready for demo deployment and pilot discussions.
+
+It already has:
+- global positioning
+- landing page
+- dashboard
+- command center
+- energy
+- lifemesh
+- earthshield
+- alerts
+- sites
+- users
+- settings
+
+Now finish the remaining important gaps.
+
+====================================================
+PART 1 — REAL BACKEND AUTHENTICATION
+====================================================
+
+Implement real backend-supported authentication.
+
+Add routes:
+- POST /auth/login
+- GET /auth/me
+- POST /auth/logout
+
+Requirements:
+- backend must become the source of truth for auth
+- protect API routes server-side
+- keep demo-friendly usability
+- frontend should use backend auth state instead of relying mainly on localStorage
+- preserve support for demo roles:
+  - admin
+  - operator
+  - government
+  - community
+
+Add:
+- auth middleware
+- role-aware route protection
+- clean unauthorized / forbidden responses
+- logout flow that actually clears session/auth state
+
+Do not overcomplicate. MVP auth is fine, but it must be real and enforced.
+
+====================================================
+PART 2 — AUDIT LOG / ACTIVITY SYSTEM
+====================================================
+
+Add a real audit log system.
+
+Create schema/model/table for:
+- audit_logs
+
+Track actions such as:
+- login
+- logout
+- alert acknowledgement
+- alert resolution
+- scenario run
+- site update
+- user change
+- report generation
+- emergency drill
+- broadcast alert
+
+Each audit log should include:
+- id
+- actor user id
+- actor name if needed
+- action
+- target type
+- target id
+- metadata
+- timestamp
+
+Add:
+- backend write logic for important actions
+- dashboard activity feed component
+- latest system activity panel
+- optional audit log API endpoint if useful
+
+====================================================
+PART 3 — SITE DETAIL EXPERIENCE
+====================================================
+
+Implement a real site detail experience.
+
+Add route or detail view:
+- /sites/:id
+or an equivalent proper detail page/modal/drawer if that matches the current architecture better
+
+Each site detail should show:
+- site metadata
+- facility type
+- region
+- operational status
+- uptime metrics
+- current and historical energy metrics
+- active alerts
+- past alerts
+- linked protected persons
+- local risk summary
+- emergency contacts
+- recent scenario impacts
+- last activity timestamp
+
+Use realistic site types such as:
+- community clinic
+- school safety node
+- district shelter
+- village solar node
+- regional emergency coordination hub
+- monitoring site
+
+Make the site detail page feel like a real operational screen.
+
+====================================================
+PART 4 — REPORT GENERATION
+====================================================
+
+Add real working report-generation flows.
+
+Support reports for:
+- scenario report
+- alert report
+- site resilience report
+- daily operational summary
+
+MVP implementation is fine:
+- JSON export
+- CSV export
+- printable structured HTML
+- or PDF-ready HTML output
+
+Requirements:
+- report buttons must perform real actions
+- generated reports should use real current data where possible
+- report generation must be recorded in audit logs
+- add success/failure UI states
+- add report metadata/history if useful
+
+====================================================
+PART 5 — DASHBOARD QUICK ACTIONS MUST WORK
+====================================================
+
+Make dashboard actions functional, not decorative.
+
+Actions should include:
+- emergency drill
+- broadcast alert
+- deploy node
+- generate report
+- run simulation
+
+Each action should:
+- open modal, form, or flow
+- trigger a backend request or record creation
+- update dashboard or activity feed
+- create audit log entries where appropriate
+
+====================================================
+PART 6 — ROLE-BASED ACCESS ENFORCEMENT
+====================================================
+
+Strengthen permission enforcement on both frontend and backend.
+
+Roles:
+- admin
+- operator
+- government
+- community
+
+Examples:
+- admin: full access
+- operator: run simulations, manage alerts, operational workflows
+- government: read-only dashboards, reports, intelligence views
+- community: limited local access
+
+Requirements:
+- hide unauthorized buttons
+- block restricted backend actions
+- show role badges where appropriate
+- provide clean “insufficient permissions” handling
+
+====================================================
+PART 7 — STANDARDIZED VALIDATION
+====================================================
+
+Standardize API validation using the existing validation approach or zod if already appropriate.
+
+Validate:
+- auth payloads
+- alert filters
+- site IDs / route params
+- scenario run payloads
+- report generation inputs
+- dashboard action payloads
+- site update payloads
+
+Requirements:
+- reusable validation schemas
+- typed request parsing
+- clean JSON error responses
+- consistent validation pattern across backend
+
+====================================================
+PART 8 — DEMO DATA EXPANSION
+====================================================
+
+Improve demo/seed data so the system feels alive and realistic.
+
+Expand realistic data for:
+- sites
+- alerts
+- scenarios
+- protected persons
+- energy metrics
+- activity feed
+- reports
+- emergency contacts
+
+Use globally relevant examples such as:
+- Lagos Community Solar Hub
+- Nairobi School Safety Node
+- Buchholz Emergency Shelter
+- Juba District Health Clinic
+- Jakarta Flood Monitoring Zone
+- Rio Coastal Storm Watch Site
+- Regional Emergency Coordination Hub
+
+Add enough records so:
+- dashboard looks active
+- activity feed looks real
+- reports are meaningful
+- site detail pages feel populated
+- command center history feels real
+
+Avoid placeholder or weak demo text.
+
+====================================================
+PART 9 — UI / UX POLISH FOR FINAL MVP
+====================================================
+
+Keep the premium dark luxury-tech style and polish the platform.
+
+Improve:
+- loading states
+- empty states
+- success/error feedback
+- spacing consistency
+- card hierarchy
+- metric presentation
+- status badges
+- page-level headers and descriptions
+- overall institutional trust feel
+
+Make the platform feel:
+- global
+- operational
+- high-trust
+- investor-ready
+- pilot-ready
+
+====================================================
+PART 10 — FINAL QUALITY CHECK
+====================================================
+
+Ensure these routes/pages remain coherent and functional:
+- /
+- /login
+- /dashboard
+- /command-center
+- /energy
+- /lifemesh
+- /earthshield
+- /alerts
+- /sites
+- /users
+- /settings
+
+Ensure:
+- auth works
+- protected routes work
+- activity feed works
+- site details work
+- reports generate
+- dashboard actions work
+- permissions are enforced
+- no obvious broken imports or dead UI paths
+- no generic placeholder admin text
+
+IMPORTANT
+Do NOT rewrite from scratch.
+Do NOT switch stacks.
+Do NOT remove current modules.
+Finish the current product properly.
+
+At the end, provide a clear summary:
+1. what was added
+2. what files were changed
+3. what demo users and roles exist
+4. how auth now works
+5. what reports can be generated
+6. any remaining gaps

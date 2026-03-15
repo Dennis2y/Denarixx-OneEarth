@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useGetSites, useCreateSite } from '@workspace/api-client-react';
 import { PageHeader, LoadingScreen, Card, Badge, Table, Th, Td, Button, Modal, Input, Label, Select, Skeleton, EmptyState, cn } from '@/components/ui-core';
-import { MapPin, Plus, LayoutGrid, List, Users, Server, Zap, Activity, AlertTriangle, Shield, BarChart3, Clock, Radio, ExternalLink } from 'lucide-react';
+import { MapPin, Plus, LayoutGrid, List, Users, Server, Zap, Activity, AlertTriangle, Shield, BarChart3, Clock, Radio, ExternalLink, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +21,30 @@ export default function Sites() {
     persons: any[];
   } | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [reportDownloading, setReportDownloading] = useState(false);
+
+  const downloadSiteReport = async (site: any) => {
+    setReportDownloading(true);
+    try {
+      const resp = await fetch(`/api/reports/site/${site.id}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (resp.ok) {
+        const report = await resp.json();
+        const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `denarixx-site-${site.name.replace(/\s+/g, '-').toLowerCase()}-${format(new Date(), 'yyyy-MM-dd')}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch { /* ignore */ } finally {
+      setReportDownloading(false);
+    }
+  };
 
   const [formData, setFormData] = useState<any>({
     name: '', type: 'village', location: '', country: '', latitude: 0, longitude: 0, population: 0
@@ -305,12 +329,16 @@ export default function Sites() {
               </>
             )}
 
-            <div className="flex gap-3 pt-2 border-t border-border/50">
+            <div className="flex flex-wrap gap-2 pt-2 border-t border-border/50">
               <Button variant="ghost" onClick={() => { setSelectedSite(null); setSiteDetail(null); }} className="flex-1">{t('sites.close')}</Button>
-              <Button variant="outline" onClick={() => { setLocation(`/sites/${selectedSite.id}`); setSelectedSite(null); setSiteDetail(null); }} className="flex-1 border-primary/30 text-primary hover:bg-primary/10">
-                <ExternalLink className="w-4 h-4 mr-2" /> View Full Profile
+              <Button variant="outline" onClick={() => downloadSiteReport(selectedSite)} disabled={reportDownloading} className="flex-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10">
+                {reportDownloading
+                  ? <><div className="w-3.5 h-3.5 mr-2 border-2 border-current/30 border-t-current rounded-full animate-spin" />Downloading...</>
+                  : <><Download className="w-4 h-4 mr-2" /> Download Report</>}
               </Button>
-              <Button className="flex-1">{t('sites.runDiagnostics')}</Button>
+              <Button variant="outline" onClick={() => { setLocation(`/sites/${selectedSite.id}`); setSelectedSite(null); setSiteDetail(null); }} className="flex-1 border-primary/30 text-primary hover:bg-primary/10">
+                <ExternalLink className="w-4 h-4 mr-2" /> Full Profile
+              </Button>
             </div>
           </div>
         )}

@@ -45,6 +45,34 @@ Premium MVP web platform serving as a unified AI infrastructure command center w
 - **Module Health Summary**: Energy/LifeMesh/EarthShield mini health cards with status badge (operational/warning/critical), uptime progress bar, live metric detail
 - **Recent Simulations Panel**: last 4 command center scenario runs with operator attribution, readiness score bar, affected sites/persons, severity, relative timestamp — links to Command Center
 
+### Dashboard Quick Actions (All Wired to Real APIs)
+- **Emergency Drill** (`POST /api/dashboard/drill`): triggers real alert + audit log, displays success/failure with icon
+- **Deploy Node** (`POST /api/dashboard/deploy`): opens full form modal (name, type, location, country, lat/lng, population), creates real site in DB
+- **Broadcast Alert** (`POST /api/alerts/broadcast`): creates real unified alert with module/severity/location/description
+- **Generate Report** (`POST /api/reports/daily`): fetches live infrastructure, energy, LifeMesh, alerts, EarthShield, audit data — rich sectioned modal + JSON download
+- **Run Simulation**: navigates to Command Center
+
+### Reports System (4 Types, All Downloadable)
+- **Daily Operational Report** (`POST /api/reports/daily`): triggered from Dashboard — infrastructure, energy, LifeMesh, alerts, EarthShield summary
+- **Site Resilience Report** (`POST /api/reports/site/:id`): triggered from Sites telemetry modal "Download Report" button
+- **Alerts Report** (`POST /api/reports/alerts`): triggered from Alerts page "Export Report" button (respects active filters)
+- **Scenario Report** (`POST /api/reports/scenario/:historyId`): triggered from Command Center "Export Report" button
+
+### Activity Feed (Audit Log)
+- Pulls from `GET /api/audit/log?limit=30` with 30-entry pre-seeded data
+- Human-readable labels via `formatActionLabel()` helper
+- Emoji icons per action type (`ACTION_ICONS` map) 
+- Actor role badge, target detail, formatted timestamps
+
+### Seed Data (Global Demo Data)
+- 20 global sites: Africa (8), Asia-Pacific (4), Americas (4), Europe/Ukraine (4)
+- 960 energy readings (48 per site × 30-min intervals)
+- 30 protected persons across all sites
+- 12 disaster alerts (5 critical, 5 warning, 2 info) + 8 risk zones
+- 19 unified alerts across all modules
+- 5 simulation history runs with real operator attribution
+- 30 audit log entries with realistic timestamps
+
 ### Auth & Security
 - **Backend Auth** (`POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`): in-memory session store, signed cookie (`den_session`, 8h), SHA-256 password hashing, audit log on login/logout
 - **Global route protection**: `requireAuth` middleware applied to all routes in `routes/index.ts` — public only: health + auth endpoints. All others require a valid session.

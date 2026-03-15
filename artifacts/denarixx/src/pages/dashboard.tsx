@@ -72,7 +72,28 @@ const ACTION_ICONS: Record<string, string> = {
   'scenario.run': '⚙️',
   'drill.run': '🔔',
   'report.generate': '📄',
+  'node.deploy': '🛰',
+  'site.update': '🔧',
+  'site.create': '🏗',
 };
+
+function formatActionLabel(action: string): string {
+  const labels: Record<string, string> = {
+    'auth.login': 'User login',
+    'auth.logout': 'User logout',
+    'auth.login_failed': 'Login failed',
+    'alert.acknowledged': 'Alert acknowledged',
+    'alert.resolved': 'Alert resolved',
+    'alert.broadcast': 'Alert broadcast',
+    'scenario.run': 'Scenario simulation',
+    'drill.run': 'Emergency drill',
+    'report.generate': 'Report generated',
+    'node.deploy': 'Node deployed',
+    'site.update': 'Site updated',
+    'site.create': 'Site created',
+  };
+  return labels[action] ?? action;
+}
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -88,13 +109,18 @@ export default function Dashboard() {
   const [drillModal, setDrillModal] = useState(false);
   const [broadcastModal, setBroadcastModal] = useState(false);
   const [reportModal, setReportModal] = useState(false);
+  const [deployModal, setDeployModal] = useState(false);
   const [drillType, setDrillType] = useState('evacuation');
   const [drillRunning, setDrillRunning] = useState(false);
-  const [drillResult, setDrillResult] = useState<string | null>(null);
+  const [drillResult, setDrillResult] = useState<{ success: boolean; message: string } | null>(null);
   const [broadcastForm, setBroadcastForm] = useState({ title: '', module: 'energy', severity: 'warning', location: '', description: '' });
   const [broadcastSubmitting, setBroadcastSubmitting] = useState(false);
   const [broadcastSuccess, setBroadcastSuccess] = useState(false);
   const [reportData, setReportData] = useState<any>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [deployForm, setDeployForm] = useState({ name: '', type: 'village', location: '', country: '', latitude: '', longitude: '', population: '' });
+  const [deploySubmitting, setDeploySubmitting] = useState(false);
+  const [deployResult, setDeployResult] = useState<{ success: boolean; message: string } | null>(null);
 
   const fetchAuditLog = useCallback(async () => {
     try {
@@ -131,25 +157,58 @@ export default function Dashboard() {
     setDrillRunning(true);
     setDrillResult(null);
     try {
-      await fetch('/api/audit/log', { method: 'GET', credentials: 'include' });
-      await fetch('/api/alerts/broadcast', {
+      const resp = await fetch('/api/dashboard/drill', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ drillType, zones: 'All Zones' }),
+      });
+      const data = await resp.json();
+      if (resp.ok) {
+        setDrillResult({ success: true, message: data.message ?? 'Drill initiated successfully.' });
+        await fetchAuditLog();
+      } else {
+        setDrillResult({ success: false, message: data.error ?? 'Failed to initiate drill.' });
+      }
+    } catch {
+      setDrillResult({ success: false, message: 'Network error. Drill could not be dispatched.' });
+    } finally {
+      setDrillRunning(false);
+    }
+  };
+
+  const deployNode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDeploySubmitting(true);
+    setDeployResult(null);
+    try {
+      const resp = await fetch('/api/dashboard/deploy', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: `Emergency Drill — ${drillType.charAt(0).toUpperCase() + drillType.slice(1)}`,
-          module: 'earthshield',
-          severity: 'info',
-          location: 'All Zones',
-          description: `Scheduled ${drillType} drill initiated by ${user?.name ?? 'operator'}. All teams to standby positions.`,
+          ...deployForm,
+          latitude: parseFloat(deployForm.latitude) || 0,
+          longitude: parseFloat(deployForm.longitude) || 0,
+          population: parseInt(deployForm.population) || 0,
         }),
       });
-      await fetch('/api/audit/log?limit=30', { credentials: 'include' }).then(r => r.json()).then(setAuditLog).catch(() => {});
-      setDrillResult(`Drill "${drillType}" dispatched successfully. All zone coordinators notified.`);
+      const data = await resp.json();
+      if (resp.ok) {
+        setDeployResult({ success: true, message: data.message ?? 'Node deployed successfully.' });
+        await fetchAuditLog();
+        setTimeout(() => {
+          setDeployModal(false);
+          setDeployResult(null);
+          setDeployForm({ name: '', type: 'village', location: '', country: '', latitude: '', longitude: '', population: '' });
+        }, 2500);
+      } else {
+        setDeployResult({ success: false, message: data.error ?? 'Failed to deploy node.' });
+      }
     } catch {
-      setDrillResult('Drill dispatched (offline mode). Audit log unavailable.');
+      setDeployResult({ success: false, message: 'Network error. Node deployment failed.' });
     } finally {
-      setDrillRunning(false);
+      setDeploySubmitting(false);
     }
   };
 
@@ -175,19 +234,24 @@ export default function Dashboard() {
     }
   };
 
-  const generateReport = () => {
-    if (!stats) return;
-    const report = {
-      generated: new Date().toISOString(),
-      operator: user?.email ?? 'anonymous',
-      platform: 'Denarixx OneEarth',
-      summary: stats,
-      recentAlerts: liveAlerts.slice(0, 5),
-      auditLog: auditLog.slice(0, 10),
-    };
-    setReportData(report);
-    setReportModal(true);
-    fetch('/api/audit/log?limit=1', { credentials: 'include' }).catch(() => {});
+  const generateReport = async () => {
+    if (!can('reports.generate')) return;
+    setReportLoading(true);
+    try {
+      const resp = await fetch('/api/reports/daily', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        setReportData(data);
+        setReportModal(true);
+        await fetchAuditLog();
+      }
+    } catch { /* ignore */ } finally {
+      setReportLoading(false);
+    }
   };
 
   const downloadReport = () => {
@@ -196,7 +260,7 @@ export default function Dashboard() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `denarixx-report-${format(new Date(), 'yyyy-MM-dd-HHmm')}.json`;
+    a.download = `denarixx-daily-ops-${format(new Date(), 'yyyy-MM-dd-HHmm')}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -312,17 +376,23 @@ export default function Dashboard() {
           </button>
 
           <button
-            onClick={() => setLocation('/sites')}
-            className="flex-1 text-left bg-secondary hover:bg-secondary/80 border border-border hover:border-primary/50 p-5 rounded-2xl transition-all group"
+            disabled={!can('nodes.deploy')}
+            onClick={() => { setDeployResult(null); setDeployModal(true); }}
+            className={cn(
+              'flex-1 text-left p-5 rounded-2xl transition-all group border',
+              can('nodes.deploy')
+                ? 'bg-secondary hover:bg-secondary/80 border-border hover:border-primary/50 cursor-pointer'
+                : 'bg-secondary/30 border-border/30 opacity-50 cursor-not-allowed'
+            )}
           >
             <MapPin className="w-8 h-8 text-primary mb-3 group-hover:scale-110 transition-transform" />
             <h4 className="font-bold text-white text-lg">{t('dashboard.deployNode')}</h4>
-            <p className="text-xs text-muted-foreground mt-1">{t('dashboard.deployNodeDesc')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{can('nodes.deploy') ? t('dashboard.deployNodeDesc') : 'Insufficient clearance'}</p>
           </button>
 
           <div className="flex gap-4 flex-1">
             <button
-              disabled={!can('reports.generate')}
+              disabled={!can('reports.generate') || reportLoading}
               onClick={generateReport}
               className={cn(
                 'flex-1 text-left p-4 rounded-2xl transition-all group border',
@@ -331,8 +401,10 @@ export default function Dashboard() {
                   : 'bg-secondary/30 border-border/30 opacity-50 cursor-not-allowed'
               )}
             >
-              <FileText className="w-6 h-6 text-blue-400 mb-2 group-hover:scale-110 transition-transform" />
-              <h4 className="font-bold text-white text-sm">{t('dashboard.generateReport')}</h4>
+              {reportLoading
+                ? <div className="w-6 h-6 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin mb-2" />
+                : <FileText className="w-6 h-6 text-blue-400 mb-2 group-hover:scale-110 transition-transform" />}
+              <h4 className="font-bold text-white text-sm">{reportLoading ? 'Generating...' : t('dashboard.generateReport')}</h4>
             </button>
             <button
               disabled={!can('alerts.broadcast')}
@@ -421,7 +493,7 @@ export default function Dashboard() {
                           <div>
                             <h4 className="font-bold text-sm text-white">{sim.scenarioLabel}</h4>
                             <p className="text-[10px] text-muted-foreground font-mono">
-                              {sim.operatorName} · {sim.operatorRole.toUpperCase()} · {sim.createdAt ? formatDistanceToNow(new Date(sim.createdAt), { addSuffix: true }) : 'recently'}
+                              {sim.operatorName} · {sim.operatorRole.toUpperCase()} · {sim.simulatedAt ? formatDistanceToNow(new Date(sim.simulatedAt), { addSuffix: true }) : 'recently'}
                             </p>
                           </div>
                           <span className={cn('font-display font-bold text-xl shrink-0', scoreColor)}>{sim.readinessScore}%</span>
@@ -516,8 +588,8 @@ export default function Dashboard() {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-muted-foreground font-mono">{entry.action}</p>
-                        {entry.target && <p className="text-[10px] text-muted-foreground/60 mt-0.5 truncate">{entry.target}</p>}
+                        <p className="text-xs text-muted-foreground">{formatActionLabel(entry.action)}</p>
+                        {entry.target && <p className="text-[10px] text-muted-foreground/60 font-mono mt-0.5 truncate">{entry.target}</p>}
                       </div>
                       <span className="text-[10px] text-muted-foreground/60 font-mono shrink-0 mt-0.5">
                         {entry.createdAt ? format(new Date(entry.createdAt), 'HH:mm') : '--:--'}
@@ -554,15 +626,27 @@ export default function Dashboard() {
             />
           </div>
           {drillResult && (
-            <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-sm text-green-400 font-medium">
-              {drillResult}
+            <div className={cn(
+              'p-4 rounded-xl text-sm font-medium flex items-start gap-3',
+              drillResult.success
+                ? 'bg-green-500/10 border border-green-500/30 text-green-400'
+                : 'bg-destructive/10 border border-destructive/30 text-destructive'
+            )}>
+              {drillResult.success
+                ? <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                : <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />}
+              {drillResult.message}
             </div>
           )}
           <div className="flex gap-3 pt-2">
-            <Button variant="ghost" onClick={() => setDrillModal(false)} className="flex-1">Cancel</Button>
-            <Button onClick={runDrill} isLoading={drillRunning} className="flex-1 bg-destructive hover:bg-destructive/90 text-white shadow-[0_0_15px_rgba(220,38,38,0.3)]">
-              <Play className="w-4 h-4 mr-2" /> Initiate Drill
+            <Button variant="ghost" onClick={() => setDrillModal(false)} className="flex-1">
+              {drillResult?.success ? 'Close' : 'Cancel'}
             </Button>
+            {!drillResult?.success && (
+              <Button onClick={runDrill} isLoading={drillRunning} className="flex-1 bg-destructive hover:bg-destructive/90 text-white shadow-[0_0_15px_rgba(220,38,38,0.3)]">
+                <Play className="w-4 h-4 mr-2" /> Initiate Drill
+              </Button>
+            )}
           </div>
         </div>
       </Modal>
@@ -616,29 +700,73 @@ export default function Dashboard() {
       </Modal>
 
       {/* Report Modal */}
-      <Modal isOpen={reportModal} onClose={() => setReportModal(false)} title="Operations Report">
-        <div className="space-y-5">
+      <Modal isOpen={reportModal} onClose={() => setReportModal(false)} title="Daily Operations Report">
+        <div className="space-y-5 max-h-[75vh] overflow-y-auto pr-1">
           <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
-            <p className="text-xs text-blue-400 font-mono uppercase tracking-widest mb-2">Report Generated</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-blue-400 font-mono uppercase tracking-widest">Daily Operational Summary</p>
+              <span className="text-[10px] font-mono text-muted-foreground">{reportData?.reportId}</span>
+            </div>
             <p className="text-sm text-white font-medium">{format(new Date(), 'MMMM d, yyyy — HH:mm')} UTC</p>
-            <p className="text-xs text-muted-foreground mt-1">Operator: {user?.name} ({user?.role})</p>
+            <p className="text-xs text-muted-foreground mt-1">Generated by: {user?.name} · {user?.role}</p>
           </div>
           {reportData && (
-            <div className="space-y-3">
-              {[
-                { label: 'Active Sites', value: reportData.summary.activeSites },
-                { label: 'Critical Alerts', value: reportData.summary.criticalAlerts },
-                { label: 'Protected Lives', value: reportData.summary.protectedPeople?.toLocaleString() },
-                { label: 'Risk Zones', value: reportData.summary.disasterRiskZones },
-                { label: 'Energy Availability', value: `${reportData.summary.energyAvailability}%` },
-                { label: 'Audit Entries', value: reportData.auditLog.length },
-              ].map(row => (
-                <div key={row.label} className="flex justify-between items-center py-2 border-b border-border/30">
-                  <span className="text-sm text-muted-foreground">{row.label}</span>
-                  <span className="font-mono font-bold text-white">{row.value}</span>
+            <>
+              <div>
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Infrastructure</h4>
+                <div className="space-y-2">
+                  {[
+                    { label: 'Total Sites', value: reportData.infrastructure?.totalSites },
+                    { label: 'Online', value: reportData.infrastructure?.onlineSites, color: 'text-green-400' },
+                    { label: 'Warning', value: reportData.infrastructure?.warningSites, color: 'text-amber-400' },
+                    { label: 'Critical', value: reportData.infrastructure?.criticalSites, color: 'text-destructive' },
+                    { label: 'Avg Uptime', value: `${reportData.infrastructure?.avgUptime}%` },
+                    { label: 'Avg Power', value: `${reportData.infrastructure?.avgPowerAvailability}%` },
+                  ].map(row => (
+                    <div key={row.label} className="flex justify-between items-center py-1.5 border-b border-border/20">
+                      <span className="text-sm text-muted-foreground">{row.label}</span>
+                      <span className={cn('font-mono font-bold', row.color ?? 'text-white')}>{row.value ?? '—'}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">LifeMesh — Protected Persons</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: 'Total', value: reportData.lifeMesh?.totalProtected, color: 'text-white' },
+                    { label: 'Safe', value: reportData.lifeMesh?.safe, color: 'text-green-400' },
+                    { label: 'At Risk', value: reportData.lifeMesh?.atRisk, color: 'text-amber-400' },
+                    { label: 'Emergency', value: reportData.lifeMesh?.emergency, color: 'text-destructive' },
+                    { label: 'Children', value: reportData.lifeMesh?.children, color: 'text-blue-400' },
+                    { label: 'Elderly', value: reportData.lifeMesh?.elderly, color: 'text-purple-400' },
+                  ].map(row => (
+                    <div key={row.label} className="bg-secondary/30 rounded-xl p-3 text-center border border-border/30">
+                      <div className={cn('text-xl font-display font-bold', row.color)}>{row.value ?? 0}</div>
+                      <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">{row.label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Alerts Summary</h4>
+                <div className="space-y-2">
+                  {[
+                    { label: 'Total Alerts', value: reportData.alerts?.total },
+                    { label: 'Critical', value: reportData.alerts?.critical, color: 'text-destructive' },
+                    { label: 'Active', value: reportData.alerts?.active, color: 'text-amber-400' },
+                    { label: 'Resolved', value: reportData.alerts?.resolved, color: 'text-green-400' },
+                    { label: 'Disaster Alerts', value: reportData.earthShield?.activeDisasterAlerts },
+                    { label: 'Pop. at Risk', value: (reportData.earthShield?.affectedPopulation ?? 0).toLocaleString(), color: 'text-destructive' },
+                  ].map(row => (
+                    <div key={row.label} className="flex justify-between items-center py-1.5 border-b border-border/20">
+                      <span className="text-sm text-muted-foreground">{row.label}</span>
+                      <span className={cn('font-mono font-bold', row.color ?? 'text-white')}>{row.value ?? '—'}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
           <div className="flex gap-3 pt-2">
             <Button variant="ghost" onClick={() => setReportModal(false)} className="flex-1">Close</Button>
@@ -647,6 +775,64 @@ export default function Dashboard() {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      {/* Deploy Node Modal */}
+      <Modal isOpen={deployModal} onClose={() => setDeployModal(false)} title="Deploy New Node">
+        <form onSubmit={deployNode} className="space-y-4">
+          {deployResult && (
+            <div className={cn(
+              'p-4 rounded-xl text-sm font-medium flex items-start gap-3',
+              deployResult.success
+                ? 'bg-green-500/10 border border-green-500/30 text-green-400'
+                : 'bg-destructive/10 border border-destructive/30 text-destructive'
+            )}>
+              {deployResult.success ? <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" /> : <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />}
+              {deployResult.message}
+            </div>
+          )}
+          <div className="space-y-2">
+            <Label className="text-white">Node Name</Label>
+            <Input className="bg-background border-border/80" value={deployForm.name} onChange={e => setDeployForm({...deployForm, name: e.target.value})} placeholder="e.g. Nairobi East Grid Hub" required />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-white">Facility Type</Label>
+              <Select className="bg-background border-border/80" value={deployForm.type} onChange={e => setDeployForm({...deployForm, type: e.target.value})}
+                options={['village', 'clinic', 'school', 'district', 'shelter'].map(v => ({ label: v.toUpperCase(), value: v }))} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Population</Label>
+              <Input className="bg-background border-border/80 font-mono" type="number" value={deployForm.population} onChange={e => setDeployForm({...deployForm, population: e.target.value})} placeholder="0" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-white">Location / City</Label>
+              <Input className="bg-background border-border/80" value={deployForm.location} onChange={e => setDeployForm({...deployForm, location: e.target.value})} placeholder="e.g. Nairobi Central" required />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Country</Label>
+              <Input className="bg-background border-border/80" value={deployForm.country} onChange={e => setDeployForm({...deployForm, country: e.target.value})} placeholder="e.g. Kenya" required />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-white">Latitude</Label>
+              <Input className="bg-background border-border/80 font-mono" value={deployForm.latitude} onChange={e => setDeployForm({...deployForm, latitude: e.target.value})} placeholder="-1.2921" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Longitude</Label>
+              <Input className="bg-background border-border/80 font-mono" value={deployForm.longitude} onChange={e => setDeployForm({...deployForm, longitude: e.target.value})} placeholder="36.8219" />
+            </div>
+          </div>
+          <div className="flex gap-3 pt-2">
+            <Button type="button" variant="ghost" onClick={() => setDeployModal(false)} className="flex-1">Cancel</Button>
+            <Button type="submit" isLoading={deploySubmitting} className="flex-1 shadow-[0_0_15px_rgba(201,168,76,0.3)]">
+              <MapPin className="w-4 h-4 mr-2" /> Deploy Node
+            </Button>
+          </div>
+        </form>
       </Modal>
     </motion.div>
   );

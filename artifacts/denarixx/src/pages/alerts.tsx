@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useGetUnifiedAlerts } from '@workspace/api-client-react';
 import { PageHeader, Card, Badge, Button, Skeleton, EmptyState, cn } from '@/components/ui-core';
 import { format } from 'date-fns';
-import { Bell, Filter, ShieldAlert, Zap, Globe, MapPin, Search, ArrowRight, X, CheckCircle2, AlertTriangle, Info, Clock, CheckCheck } from 'lucide-react';
+import { Bell, Filter, ShieldAlert, Zap, Globe, MapPin, Search, ArrowRight, X, CheckCircle2, AlertTriangle, Info, Clock, CheckCheck, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
@@ -23,6 +23,31 @@ export default function Alerts() {
   const [severity, setSeverity] = useState<string>('');
   const [status, setStatus] = useState<string>('');
   const [selectedAlert, setSelectedAlert] = useState<UnifiedAlert | null>(null);
+  const [exportLoading, setExportLoading] = useState(false);
+
+  const exportReport = async () => {
+    setExportLoading(true);
+    try {
+      const resp = await fetch('/api/reports/alerts', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ module: module || undefined, severity: severity || undefined, status: status || undefined }),
+      });
+      if (resp.ok) {
+        const report = await resp.json();
+        const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `denarixx-alerts-report-${format(new Date(), 'yyyy-MM-dd-HHmm')}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch { /* ignore */ } finally {
+      setExportLoading(false);
+    }
+  };
   
   const { data: alerts, isLoading, refetch } = useGetUnifiedAlerts({
     module: module || undefined,
@@ -98,6 +123,11 @@ export default function Alerts() {
                   <span className="text-destructive text-xs font-bold uppercase tracking-wider">{criticalCount} {t('alerts.criticalActive')}</span>
                 </div>
               )}
+              <Button variant="outline" size="sm" onClick={exportReport} disabled={exportLoading || isLoading}>
+                {exportLoading
+                  ? <><div className="w-3.5 h-3.5 mr-2 border-2 border-current/30 border-t-current rounded-full animate-spin" /> Generating...</>
+                  : <><Download className="w-3.5 h-3.5 mr-2" /> Export Report</>}
+              </Button>
             </div>
           }
         />

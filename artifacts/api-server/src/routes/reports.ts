@@ -222,4 +222,108 @@ router.post("/reports/alerts", async (req: AuthRequest, res) => {
   }
 });
 
+router.post("/reports/daily", async (req: AuthRequest, res) => {
+  try {
+    const operator = req.sessionUser!;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [
+      allSites, allAlerts, allPersons, auditEntries,
+      energySnapshot, disasterAlerts,
+    ] = await Promise.all([
+      db.select().from(sitesTable).orderBy(sitesTable.name),
+      db.select().from(unifiedAlertsTable).orderBy(desc(unifiedAlertsTable.createdAt)).limit(50),
+      db.select().from(protectedPersonsTable),
+      db.select().from(auditLogTable).orderBy(desc(auditLogTable.createdAt)).limit(30),
+      db.select({
+        batteryLevel: energyMetricsTable.batteryLevel,
+        solarGeneration: energyMetricsTable.solarGeneration,
+        gridStatus: energyMetricsTable.gridStatus,
+      }).from(energyMetricsTable).orderBy(desc(energyMetricsTable.recordedAt)).limit(40),
+      db.select().from(disasterAlertsTable).where(eq(disasterAlertsTable.status, "active")),
+    ]);
+
+    const avgBattery = energySnapshot.length > 0
+      ? energySnapshot.reduce((s, m) => s + m.batteryLevel, 0) / energySnapshot.length : 0;
+    const avgSolar = energySnapshot.length > 0
+      ? energySnapshot.reduce((s, m) => s + m.solarGeneration, 0) / energySnapshot.length : 0;
+
+    const report = {
+      reportType: "daily_operational",
+      reportId: `RPT-DAILY-${Date.now()}`,
+      generatedAt: new Date().toISOString(),
+      generatedBy: { email: operator.email, name: operator.name, role: operator.role },
+      platform: "Denarixx OneEarth",
+      reportDate: new Date().toISOString().split("T")[0],
+      infrastructure: {
+        totalSites: allSites.length,
+        onlineSites: allSites.filter(s => s.status === "online").length,
+        warningSites: allSites.filter(s => s.status === "warning").length,
+        criticalSites: allSites.filter(s => s.status === "critical").length,
+        offlineSites: allSites.filter(s => s.status === "offline").length,
+        avgUptime: allSites.length > 0
+          ? Math.round(allSites.reduce((s, site) => s + site.uptime, 0) / allSites.length * 10) / 10 : 0,
+        avgPowerAvailability: allSites.length > 0
+          ? Math.round(allSites.reduce((s, site) => s + site.powerAvailability, 0) / allSites.length * 10) / 10 : 0,
+      },
+      energy: {
+        avgBatteryLevel: Math.round(avgBattery * 10) / 10,
+        avgSolarGeneration: Math.round(avgSolar * 10) / 10,
+        energyAvailability: Math.round(((avgBattery * 0.6) + (avgSolar * 0.4)) * 10) / 10,
+        stableSites: energySnapshot.filter(e => e.gridStatus === "stable").length,
+        unstableSites: energySnapshot.filter(e => e.gridStatus === "unstable").length,
+        offlineSites: energySnapshot.filter(e => e.gridStatus === "offline").length,
+      },
+      lifeMesh: {
+        totalProtected: allPersons.length,
+        safe: allPersons.filter(p => p.status === "safe").length,
+        atRisk: allPersons.filter(p => p.status === "at-risk").length,
+        emergency: allPersons.filter(p => p.status === "emergency").length,
+        unknown: allPersons.filter(p => p.status === "unknown").length,
+        children: allPersons.filter(p => p.category === "child").length,
+        elderly: allPersons.filter(p => p.category === "elderly").length,
+      },
+      alerts: {
+        total: allAlerts.length,
+        critical: allAlerts.filter(a => a.severity === "critical").length,
+        warning: allAlerts.filter(a => a.severity === "warning").length,
+        info: allAlerts.filter(a => a.severity === "info").length,
+        active: allAlerts.filter(a => a.status === "active").length,
+        acknowledged: allAlerts.filter(a => a.status === "acknowledged").length,
+        resolved: allAlerts.filter(a => a.status === "resolved").length,
+        recent10: allAlerts.slice(0, 10).map(a => ({
+          title: a.title, severity: a.severity, module: a.module,
+          status: a.status, location: a.location, createdAt: a.createdAt.toISOString(),
+        })),
+      },
+      earthShield: {
+        activeDisasterAlerts: disasterAlerts.length,
+        criticalDisasters: disasterAlerts.filter(a => a.severity === "critical").length,
+        affectedPopulation: disasterAlerts.reduce((s, a) => s + (a.affectedPopulation ?? 0), 0),
+      },
+      auditLog: auditEntries.slice(0, 20).map(e => ({
+        actor: e.actor,
+        actorRole: e.actorRole,
+        action: e.action,
+        target: e.target,
+        createdAt: e.createdAt.toISOString(),
+      })),
+    };
+
+    await db.insert(auditLogTable).values({
+      actor: operator.email,
+      actorRole: operator.role,
+      action: "report.generate",
+      target: "daily",
+      details: JSON.stringify({ reportType: "daily_operational", reportId: report.reportId }),
+    }).catch(() => {});
+
+    return res.json(report);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 export default router;
