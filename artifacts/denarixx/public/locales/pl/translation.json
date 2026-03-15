@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "dashboard": "Pulpit",
+    "energy": "Sieć Energetyczna",
+    "lifemesh": "Sieć LifeMesh",
+    "earthshield": "Intel EarthShield",
+    "alerts": "Zunifikowane Alerty",
+    "sites": "Lokalizacje i Węzły",
+    "users": "Personel",
+    "settings": "Ustawienia Systemu",
+    "terminate": "Zakończ",
+    "core": "Rdzeń",
+    "modules": "Moduły",
+    "management": "Zarządzanie"
+  },
+  "header": {
+    "search": "Przeszukaj globalne bazy danych...",
+    "systemOnline": "System Online",
+    "levelAuth": "Auth Poziom 5",
+    "energyGrid": "Sieć Energetyczna",
+    "lifemeshNet": "Sieć LifeMesh",
+    "earthshieldIntel": "Intel EarthShield"
+  },
+  "dashboard": {
+    "title": "Globalne Dowodzenie",
+    "description": "Nadzór w czasie rzeczywistym nad infrastrukturą Denarixx we wszystkich aktywnych modułach.",
+    "activeSites": "Aktywne Lokalizacje",
+    "criticalAlerts": "Alerty Krytyczne",
+    "protectedLives": "Chronione Osoby",
+    "riskZones": "Strefy Ryzyka",
+    "energyAvail": "Dostępn. Energii",
+    "africaOps": "Operacje Afryka",
+    "liveNodeStatus": "Status Węzła na Żywo",
+    "rapidDeploy": "Szybkie Wdrożenie",
+    "emergencyDrill": "Ćwiczenie Awaryjne",
+    "emergencyDrillDesc": "Zainicjuj protokół reagowania obejmujący całą sieć.",
+    "deployNode": "Wdróż Węzeł",
+    "deployNodeDesc": "Zarejestruj nowy sprzęt infrastrukturalny.",
+    "generateReport": "Generuj Raport",
+    "broadcastAlert": "Wyślij Alert",
+    "threatFeed": "Aktywny Feed Zagrożeń",
+    "viewArchive": "Pokaż Archiwum",
+    "online": "Online",
+    "critical": "Krytyczny",
+    "ack": "ACK"
+  },
+  "energy": {
+    "title": "Dowodzenie Energetyką",
+    "description": "Monitorowanie w czasie rzeczywistym zdecentralizowanych mikrosieci solarnych i rezerw baterii.",
+    "gridNominal": "Sieć Nominalna",
+    "netPowerFlow": "Netto Przepływ Energii",
+    "storageReserves": "Rezerwy Magazynowe"
+  },
+  "lifemesh": {
+    "title": "Intel LifeMesh",
+    "description": "Biometryczne śledzenie bezpieczeństwa i autonomiczna koordynacja reagowania kryzysowego.",
+    "secured": "Zabezpieczony",
+    "atRisk": "Zagrożony",
+    "emergency": "Nagły wypadek",
+    "totalTracked": "Łącznie Śledzonych",
+    "masterOverride": "Główne Zastąpienie",
+    "masterOverrideDesc": "Ominij standardowe protokoły i wyślij drony szybkiego reagowania do wskazanego beaconu.",
+    "initiateSOS": "Zainicjuj SOS",
+    "activeBioSigs": "Aktywne Bio-Sygnatury",
+    "queryId": "Zapytaj o ID...",
+    "incidentTelemetry": "Telemetria Incydentów"
+  },
+  "earthshield": {
+    "title": "Inteligencja EarthShield",
+    "description": "Predykcyjne modelowanie planetarne i autonomiczne łagodzenie skutków katastrof.",
+    "floodVectors": "Wektory Powodzi",
+    "thermalAnomalies": "Anomalie Termiczne",
+    "atmosphericEvents": "Zdarzenia Atmosferyczne",
+    "gridStress": "Przeciążenie Sieci",
+    "activeThreatMatrices": "Aktywne Regionalne Macierze Zagrożeń",
+    "readinessIndex": "Regionalny Indeks Gotowości"
+  },
+  "alerts": {
+    "title": "Zunifikowany Rejestr Akcji",
+    "description": "Globalny, międzymodułowy rejestr zdarzeń i alertów systemowych.",
+    "allModules": "Wszystkie Moduły",
+    "severity": "Ważność",
+    "any": "Dowolny",
+    "critical": "Krytyczny",
+    "warning": "Ostrzeżenie"
+  },
+  "sites": { "title": "Lokalizacje i Węzły", "description": "Rejestr fizycznej infrastruktury i status operacyjny." },
+  "users": { "title": "Rejestr Personelu", "description": "Zarządzanie dostępem operatorów i przypisywanie ról." },
+  "settings": { "title": "Konfiguracja Systemu", "description": "Kontrolki platformy, integracje i parametry bezpieczeństwa." },
+  "common": {
+    "loading": "Ładowanie...", "active": "Aktywny", "resolved": "Rozwiązany", "acknowledged": "Potwierdzony",
+    "error": "Błąd", "save": "Zapisz", "cancel": "Anuluj", "confirm": "Potwierdź",
+    "dismiss": "Odrzuć", "status": "Status", "location": "Lokalizacja", "type": "Typ"
+  },
+  "lang": {
+    "en": "English", "fr": "Français", "sw": "Kiswahili", "ar": "العربية", "pt": "Português",
+    "de": "Deutsch", "es": "Español", "it": "Italiano", "nl": "Nederlands", "pl": "Polski",
+    "ru": "Русский", "tr": "Türkçe", "zh": "中文", "ja": "日本語", "ko": "한국어",
+    "hi": "हिन्दी", "fa": "فارسی", "he": "עברית"
+  }
+}

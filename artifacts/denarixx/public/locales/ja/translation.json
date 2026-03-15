@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "dashboard": "ダッシュボード",
+    "energy": "エネルギーグリッド",
+    "lifemesh": "LifeMeshネットワーク",
+    "earthshield": "EarthShieldインテル",
+    "alerts": "統合アラート",
+    "sites": "サイトとノード",
+    "users": "人員",
+    "settings": "システム設定",
+    "terminate": "終了",
+    "core": "コア",
+    "modules": "モジュール",
+    "management": "管理"
+  },
+  "header": {
+    "search": "グローバルデータベースを検索...",
+    "systemOnline": "システムオンライン",
+    "levelAuth": "レベル5認証",
+    "energyGrid": "エネルギーグリッド",
+    "lifemeshNet": "LifeMeshネットワーク",
+    "earthshieldIntel": "EarthShieldインテル"
+  },
+  "dashboard": {
+    "title": "グローバルコマンド",
+    "description": "すべてのアクティブモジュールにわたるDenarixxインフラのリアルタイム監視。",
+    "activeSites": "アクティブサイト",
+    "criticalAlerts": "重大アラート",
+    "protectedLives": "保護された人員",
+    "riskZones": "リスクゾーン",
+    "energyAvail": "エネルギー可用性",
+    "africaOps": "アフリカオペレーション",
+    "liveNodeStatus": "ライブノードステータス",
+    "rapidDeploy": "迅速展開",
+    "emergencyDrill": "緊急訓練",
+    "emergencyDrillDesc": "ネットワーク全体の対応プロトコルを開始。",
+    "deployNode": "ノード展開",
+    "deployNodeDesc": "新しいインフラハードウェアを登録。",
+    "generateReport": "レポート生成",
+    "broadcastAlert": "アラート放送",
+    "threatFeed": "アクティブ脅威フィード",
+    "viewArchive": "アーカイブ表示",
+    "online": "オンライン",
+    "critical": "重大",
+    "ack": "確認"
+  },
+  "energy": {
+    "title": "エネルギーコマンド",
+    "description": "分散型太陽光マイクログリッドとバッテリー蓄電のリアルタイム監視。",
+    "gridNominal": "グリッド正常",
+    "netPowerFlow": "正味電力フロー",
+    "storageReserves": "蓄電備蓄"
+  },
+  "lifemesh": {
+    "title": "LifeMeshインテル",
+    "description": "生体認証安全追跡と自律緊急応答調整。",
+    "secured": "安全",
+    "atRisk": "危険",
+    "emergency": "緊急事態",
+    "totalTracked": "追跡総数",
+    "masterOverride": "マスターオーバーライド",
+    "masterOverrideDesc": "標準プロトコルをバイパスし、指定ビーコンへ緊急ドローンを派遣。",
+    "initiateSOS": "SOS開始",
+    "activeBioSigs": "アクティブバイオ署名",
+    "queryId": "IDを検索...",
+    "incidentTelemetry": "インシデントテレメトリ"
+  },
+  "earthshield": {
+    "title": "EarthShieldインテリジェンス",
+    "description": "予測的惑星モデリングと自律的災害軽減。",
+    "floodVectors": "洪水ベクター",
+    "thermalAnomalies": "熱異常",
+    "atmosphericEvents": "大気現象",
+    "gridStress": "グリッドストレス",
+    "activeThreatMatrices": "アクティブ地域脅威マトリックス",
+    "readinessIndex": "地域準備指数"
+  },
+  "alerts": {
+    "title": "統合アクションログ",
+    "description": "グローバルクロスモジュールイベントレジストリとシステムアラート。",
+    "allModules": "全モジュール",
+    "severity": "重大度",
+    "any": "すべて",
+    "critical": "重大",
+    "warning": "警告"
+  },
+  "sites": { "title": "サイトとノード", "description": "物理インフラレジストリと運用状態。" },
+  "users": { "title": "人員レジストリ", "description": "オペレーターアクセス管理とロール割り当て。" },
+  "settings": { "title": "システム設定", "description": "プラットフォーム制御、統合、セキュリティパラメーター。" },
+  "common": {
+    "loading": "読み込み中...", "active": "アクティブ", "resolved": "解決済み", "acknowledged": "確認済み",
+    "error": "エラー", "save": "保存", "cancel": "キャンセル", "confirm": "確認",
+    "dismiss": "閉じる", "status": "ステータス", "location": "場所", "type": "タイプ"
+  },
+  "lang": {
+    "en": "English", "fr": "Français", "sw": "Kiswahili", "ar": "العربية", "pt": "Português",
+    "de": "Deutsch", "es": "Español", "it": "Italiano", "nl": "Nederlands", "pl": "Polski",
+    "ru": "Русский", "tr": "Türkçe", "zh": "中文", "ja": "日本語", "ko": "한국어",
+    "hi": "हिन्दी", "fa": "فارسی", "he": "עברית"
+  }
+}

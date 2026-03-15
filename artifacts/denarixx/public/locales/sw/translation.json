@@ -115,6 +115,19 @@
     "fr": "Français",
     "sw": "Kiswahili",
     "ar": "العربية",
-    "pt": "Português"
+    "pt": "Português",
+    "de": "Deutsch",
+    "es": "Español",
+    "it": "Italiano",
+    "nl": "Nederlands",
+    "pl": "Polski",
+    "ru": "Русский",
+    "tr": "Türkçe",
+    "zh": "中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "hi": "हिन्दी",
+    "fa": "فارسی",
+    "he": "עברית"
   }
 }

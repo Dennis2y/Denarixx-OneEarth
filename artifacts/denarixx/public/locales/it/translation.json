@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "dashboard": "Pannello di Controllo",
+    "energy": "Rete Energetica",
+    "lifemesh": "Rete LifeMesh",
+    "earthshield": "Intel EarthShield",
+    "alerts": "Allerte Unificate",
+    "sites": "Siti & Nodi",
+    "users": "Personale",
+    "settings": "Configurazione Sistema",
+    "terminate": "Termina",
+    "core": "Nucleo",
+    "modules": "Moduli",
+    "management": "Gestione"
+  },
+  "header": {
+    "search": "Interroga i database globali...",
+    "systemOnline": "Sistema Online",
+    "levelAuth": "Auth Livello 5",
+    "energyGrid": "Rete Energetica",
+    "lifemeshNet": "Rete LifeMesh",
+    "earthshieldIntel": "Intel EarthShield"
+  },
+  "dashboard": {
+    "title": "Comando Globale",
+    "description": "Supervisione in tempo reale dell'infrastruttura Denarixx su tutti i moduli attivi.",
+    "activeSites": "Siti Attivi",
+    "criticalAlerts": "Allerte Critiche",
+    "protectedLives": "Vite Protette",
+    "riskZones": "Zone di Rischio",
+    "energyAvail": "Disponib. Energia",
+    "africaOps": "Operazioni Africa",
+    "liveNodeStatus": "Stato Nodo Live",
+    "rapidDeploy": "Dispiegamento Rapido",
+    "emergencyDrill": "Esercitazione d'Emergenza",
+    "emergencyDrillDesc": "Avvia il protocollo di risposta su tutta la rete.",
+    "deployNode": "Distribuisci Nodo",
+    "deployNodeDesc": "Registra nuovo hardware infrastrutturale.",
+    "generateReport": "Genera Rapporto",
+    "broadcastAlert": "Trasmetti Allerta",
+    "threatFeed": "Feed Minacce Attive",
+    "viewArchive": "Visualizza Archivio",
+    "online": "Online",
+    "critical": "Critico",
+    "ack": "ACK"
+  },
+  "energy": {
+    "title": "Comando Energetico",
+    "description": "Monitoraggio in tempo reale delle microret solari decentralizzate e delle riserve di batterie.",
+    "gridNominal": "Rete Nominale",
+    "netPowerFlow": "Flusso Energetico Netto",
+    "storageReserves": "Riserve di Stoccaggio"
+  },
+  "lifemesh": {
+    "title": "Intel LifeMesh",
+    "description": "Tracciamento biometrico della sicurezza e coordinamento autonomo delle emergenze.",
+    "secured": "Protetto",
+    "atRisk": "A Rischio",
+    "emergency": "Emergenza",
+    "totalTracked": "Totale Tracciati",
+    "masterOverride": "Override Principale",
+    "masterOverrideDesc": "Aggira i protocolli standard per inviare droni di risposta rapida al beacon specificato.",
+    "initiateSOS": "Avvia SOS",
+    "activeBioSigs": "Bio-Firme Attive",
+    "queryId": "Cerca ID...",
+    "incidentTelemetry": "Telemetria Incidenti"
+  },
+  "earthshield": {
+    "title": "Intelligence EarthShield",
+    "description": "Modellazione planetaria predittiva e mitigazione autonoma dei disastri.",
+    "floodVectors": "Vettori Alluvione",
+    "thermalAnomalies": "Anomalie Termiche",
+    "atmosphericEvents": "Eventi Atmosferici",
+    "gridStress": "Stress Rete",
+    "activeThreatMatrices": "Matrici di Minaccia Regionale Attive",
+    "readinessIndex": "Indice di Prontezza Regionale"
+  },
+  "alerts": {
+    "title": "Registro Azioni Unificate",
+    "description": "Registro eventi globale e allerte di sistema.",
+    "allModules": "Tutti i Moduli",
+    "severity": "Gravità",
+    "any": "Qualsiasi",
+    "critical": "Critico",
+    "warning": "Avviso"
+  },
+  "sites": { "title": "Siti & Nodi", "description": "Registro infrastrutture fisiche e stato operativo." },
+  "users": { "title": "Registro Personale", "description": "Gestione accessi operatori e assegnazione ruoli." },
+  "settings": { "title": "Configurazione Sistema", "description": "Controlli piattaforma, integrazioni e parametri di sicurezza." },
+  "common": {
+    "loading": "Caricamento...", "active": "Attivo", "resolved": "Risolto", "acknowledged": "Confermato",
+    "error": "Errore", "save": "Salva", "cancel": "Annulla", "confirm": "Conferma",
+    "dismiss": "Ignora", "status": "Stato", "location": "Posizione", "type": "Tipo"
+  },
+  "lang": {
+    "en": "English", "fr": "Français", "sw": "Kiswahili", "ar": "العربية", "pt": "Português",
+    "de": "Deutsch", "es": "Español", "it": "Italiano", "nl": "Nederlands", "pl": "Polski",
+    "ru": "Русский", "tr": "Türkçe", "zh": "中文", "ja": "日本語", "ko": "한국어",
+    "hi": "हिन्दी", "fa": "فارسی", "he": "עברית"
+  }
+}

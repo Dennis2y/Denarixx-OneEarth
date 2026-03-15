@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "dashboard": "Kontrol Paneli",
+    "energy": "Enerji Şebekesi",
+    "lifemesh": "LifeMesh Ağı",
+    "earthshield": "EarthShield İstihbarat",
+    "alerts": "Birleşik Uyarılar",
+    "sites": "Siteler & Düğümler",
+    "users": "Personel",
+    "settings": "Sistem Ayarları",
+    "terminate": "Sonlandır",
+    "core": "Çekirdek",
+    "modules": "Modüller",
+    "management": "Yönetim"
+  },
+  "header": {
+    "search": "Küresel veri tabanlarını sorgula...",
+    "systemOnline": "Sistem Çevrimiçi",
+    "levelAuth": "Seviye 5 Yetki",
+    "energyGrid": "Enerji Şebekesi",
+    "lifemeshNet": "LifeMesh Ağı",
+    "earthshieldIntel": "EarthShield İstihbarat"
+  },
+  "dashboard": {
+    "title": "Küresel Komuta",
+    "description": "Tüm aktif modüllerde Denarixx altyapısının gerçek zamanlı gözetimi.",
+    "activeSites": "Aktif Siteler",
+    "criticalAlerts": "Kritik Uyarılar",
+    "protectedLives": "Korunan Hayatlar",
+    "riskZones": "Risk Bölgeleri",
+    "energyAvail": "Enerji Müsaitliği",
+    "africaOps": "Afrika Operasyonları",
+    "liveNodeStatus": "Canlı Düğüm Durumu",
+    "rapidDeploy": "Hızlı Konuşlandırma",
+    "emergencyDrill": "Acil Durum Tatbikatı",
+    "emergencyDrillDesc": "Ağ genelinde yanıt protokolünü başlat.",
+    "deployNode": "Düğüm Konuşlandır",
+    "deployNodeDesc": "Yeni altyapı donanımını kaydet.",
+    "generateReport": "Rapor Oluştur",
+    "broadcastAlert": "Uyarı Yayınla",
+    "threatFeed": "Aktif Tehdit Akışı",
+    "viewArchive": "Arşivi Görüntüle",
+    "online": "Çevrimiçi",
+    "critical": "Kritik",
+    "ack": "TAM"
+  },
+  "energy": {
+    "title": "Enerji Komutası",
+    "description": "Merkezi olmayan güneş mikro şebekelerin ve pil rezervlerinin gerçek zamanlı izlenmesi.",
+    "gridNominal": "Şebeke Normal",
+    "netPowerFlow": "Net Güç Akışı",
+    "storageReserves": "Depolama Rezervleri"
+  },
+  "lifemesh": {
+    "title": "LifeMesh İstihbarat",
+    "description": "Biyometrik güvenlik takibi ve otonom acil yanıt koordinasyonu.",
+    "secured": "Güvende",
+    "atRisk": "Risk Altında",
+    "emergency": "Acil Durum",
+    "totalTracked": "Toplam Takip",
+    "masterOverride": "Ana Geçersiz Kılma",
+    "masterOverrideDesc": "Standart protokolleri atlayarak belirtilen işarete hızlı yanıt insansız hava araçları gönderin.",
+    "initiateSOS": "SOS Başlat",
+    "activeBioSigs": "Aktif Bio-İmzalar",
+    "queryId": "ID Sorgula...",
+    "incidentTelemetry": "Olay Telemetrisi"
+  },
+  "earthshield": {
+    "title": "EarthShield İstihbaratı",
+    "description": "Tahmine dayalı gezegen modellemesi ve otonom afet hafifletme.",
+    "floodVectors": "Sel Vektörleri",
+    "thermalAnomalies": "Termal Anomaliler",
+    "atmosphericEvents": "Atmosferik Olaylar",
+    "gridStress": "Şebeke Stresi",
+    "activeThreatMatrices": "Aktif Bölgesel Tehdit Matrisleri",
+    "readinessIndex": "Bölgesel Hazırlık Endeksi"
+  },
+  "alerts": {
+    "title": "Birleşik Eylem Günlüğü",
+    "description": "Küresel, modüller arası olay kaydı ve sistem uyarıları.",
+    "allModules": "Tüm Modüller",
+    "severity": "Önem Derecesi",
+    "any": "Herhangi",
+    "critical": "Kritik",
+    "warning": "Uyarı"
+  },
+  "sites": { "title": "Siteler & Düğümler", "description": "Fiziksel altyapı kaydı ve operasyonel durum." },
+  "users": { "title": "Personel Kaydı", "description": "Operatör erişim yönetimi ve rol ataması." },
+  "settings": { "title": "Sistem Yapılandırması", "description": "Platform kontrolleri, entegrasyonlar ve güvenlik parametreleri." },
+  "common": {
+    "loading": "Yükleniyor...", "active": "Aktif", "resolved": "Çözüldü", "acknowledged": "Onaylandı",
+    "error": "Hata", "save": "Kaydet", "cancel": "İptal", "confirm": "Onayla",
+    "dismiss": "Kapat", "status": "Durum", "location": "Konum", "type": "Tür"
+  },
+  "lang": {
+    "en": "English", "fr": "Français", "sw": "Kiswahili", "ar": "العربية", "pt": "Português",
+    "de": "Deutsch", "es": "Español", "it": "Italiano", "nl": "Nederlands", "pl": "Polski",
+    "ru": "Русский", "tr": "Türkçe", "zh": "中文", "ja": "日本語", "ko": "한국어",
+    "hi": "हिन्दी", "fa": "فارسی", "he": "עברית"
+  }
+}

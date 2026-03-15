@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "dashboard": "डैशबोर्ड",
+    "energy": "ऊर्जा ग्रिड",
+    "lifemesh": "LifeMesh नेटवर्क",
+    "earthshield": "EarthShield इंटेल",
+    "alerts": "एकीकृत अलर्ट",
+    "sites": "साइट और नोड",
+    "users": "कार्मिक",
+    "settings": "सिस्टम सेटिंग्स",
+    "terminate": "समाप्त करें",
+    "core": "मुख्य",
+    "modules": "मॉड्यूल",
+    "management": "प्रबंधन"
+  },
+  "header": {
+    "search": "वैश्विक डेटाबेस क्वेरी करें...",
+    "systemOnline": "सिस्टम ऑनलाइन",
+    "levelAuth": "स्तर 5 प्राधिकरण",
+    "energyGrid": "ऊर्जा ग्रिड",
+    "lifemeshNet": "LifeMesh नेटवर्क",
+    "earthshieldIntel": "EarthShield इंटेल"
+  },
+  "dashboard": {
+    "title": "वैश्विक कमान",
+    "description": "सभी सक्रिय मॉड्यूल में Denarixx इन्फ्रास्ट्रक्चर की रीयल-टाइम निगरानी।",
+    "activeSites": "सक्रिय साइट",
+    "criticalAlerts": "गंभीर अलर्ट",
+    "protectedLives": "संरक्षित जीवन",
+    "riskZones": "जोखिम क्षेत्र",
+    "energyAvail": "ऊर्जा उपलब्धता",
+    "africaOps": "अफ्रीका संचालन",
+    "liveNodeStatus": "लाइव नोड स्थिति",
+    "rapidDeploy": "त्वरित तैनाती",
+    "emergencyDrill": "आपातकालीन अभ्यास",
+    "emergencyDrillDesc": "नेटवर्क-व्यापी प्रतिक्रिया प्रोटोकॉल शुरू करें।",
+    "deployNode": "नोड तैनात करें",
+    "deployNodeDesc": "नया इन्फ्रास्ट्रक्चर हार्डवेयर पंजीकृत करें।",
+    "generateReport": "रिपोर्ट बनाएं",
+    "broadcastAlert": "अलर्ट प्रसारित करें",
+    "threatFeed": "सक्रिय खतरा फ़ीड",
+    "viewArchive": "संग्रह देखें",
+    "online": "ऑनलाइन",
+    "critical": "गंभीर",
+    "ack": "पावती"
+  },
+  "energy": {
+    "title": "ऊर्जा कमान",
+    "description": "विकेंद्रीकृत सौर माइक्रोग्रिड और बैटरी भंडार की रीयल-टाइम निगरानी।",
+    "gridNominal": "ग्रिड सामान्य",
+    "netPowerFlow": "शुद्ध बिजली प्रवाह",
+    "storageReserves": "भंडारण भंडार"
+  },
+  "lifemesh": {
+    "title": "LifeMesh इंटेल",
+    "description": "बायोमेट्रिक सुरक्षा ट्रैकिंग और स्वायत्त आपातकालीन प्रतिक्रिया समन्वय।",
+    "secured": "सुरक्षित",
+    "atRisk": "जोखिम में",
+    "emergency": "आपातकाल",
+    "totalTracked": "कुल ट्रैक किए",
+    "masterOverride": "मास्टर ओवरराइड",
+    "masterOverrideDesc": "मानक प्रोटोकॉल को बायपास करके निर्दिष्ट बीकन पर त्वरित प्रतिक्रिया ड्रोन भेजें।",
+    "initiateSOS": "SOS शुरू करें",
+    "activeBioSigs": "सक्रिय बायो-हस्ताक्षर",
+    "queryId": "ID क्वेरी करें...",
+    "incidentTelemetry": "घटना टेलीमेट्री"
+  },
+  "earthshield": {
+    "title": "EarthShield इंटेलिजेंस",
+    "description": "पूर्वानुमानित ग्रहीय मॉडलिंग और स्वायत्त आपदा शमन।",
+    "floodVectors": "बाढ़ वेक्टर",
+    "thermalAnomalies": "तापीय विसंगतियाँ",
+    "atmosphericEvents": "वायुमंडलीय घटनाएँ",
+    "gridStress": "ग्रिड तनाव",
+    "activeThreatMatrices": "सक्रिय क्षेत्रीय खतरा मैट्रिक्स",
+    "readinessIndex": "क्षेत्रीय तैयारी सूचकांक"
+  },
+  "alerts": {
+    "title": "एकीकृत कार्य लॉग",
+    "description": "वैश्विक, क्रॉस-मॉड्यूल इवेंट रजिस्ट्री और सिस्टम अलर्ट।",
+    "allModules": "सभी मॉड्यूल",
+    "severity": "गंभीरता",
+    "any": "कोई भी",
+    "critical": "गंभीर",
+    "warning": "चेतावनी"
+  },
+  "sites": { "title": "साइट और नोड", "description": "भौतिक इन्फ्रास्ट्रक्चर रजिस्ट्री और परिचालन स्थिति।" },
+  "users": { "title": "कार्मिक रजिस्ट्री", "description": "ऑपरेटर पहुँच प्रबंधन और भूमिका असाइनमेंट।" },
+  "settings": { "title": "सिस्टम कॉन्फ़िगरेशन", "description": "प्लेटफ़ॉर्म नियंत्रण, एकीकरण और सुरक्षा पैरामीटर।" },
+  "common": {
+    "loading": "लोड हो रहा है...", "active": "सक्रिय", "resolved": "हल किया", "acknowledged": "स्वीकृत",
+    "error": "त्रुटि", "save": "सहेजें", "cancel": "रद्द करें", "confirm": "पुष्टि करें",
+    "dismiss": "बंद करें", "status": "स्थिति", "location": "स्थान", "type": "प्रकार"
+  },
+  "lang": {
+    "en": "English", "fr": "Français", "sw": "Kiswahili", "ar": "العربية", "pt": "Português",
+    "de": "Deutsch", "es": "Español", "it": "Italiano", "nl": "Nederlands", "pl": "Polski",
+    "ru": "Русский", "tr": "Türkçe", "zh": "中文", "ja": "日本語", "ko": "한국어",
+    "hi": "हिन्दी", "fa": "فارسی", "he": "עברית"
+  }
+}

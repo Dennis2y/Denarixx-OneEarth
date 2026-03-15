@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "dashboard": "داشبورد",
+    "energy": "شبکه انرژی",
+    "lifemesh": "شبکه LifeMesh",
+    "earthshield": "اطلاعات EarthShield",
+    "alerts": "هشدارهای یکپارچه",
+    "sites": "سایت‌ها و گره‌ها",
+    "users": "پرسنل",
+    "settings": "تنظیمات سیستم",
+    "terminate": "خاتمه",
+    "core": "هسته",
+    "modules": "ماژول‌ها",
+    "management": "مدیریت"
+  },
+  "header": {
+    "search": "جستجوی پایگاه داده جهانی...",
+    "systemOnline": "سیستم آنلاین",
+    "levelAuth": "مجوز سطح ۵",
+    "energyGrid": "شبکه انرژی",
+    "lifemeshNet": "شبکه LifeMesh",
+    "earthshieldIntel": "اطلاعات EarthShield"
+  },
+  "dashboard": {
+    "title": "فرماندهی جهانی",
+    "description": "نظارت بلادرنگ بر زیرساخت Denarixx در تمام ماژول‌های فعال.",
+    "activeSites": "سایت‌های فعال",
+    "criticalAlerts": "هشدارهای بحرانی",
+    "protectedLives": "جان‌های محافظت‌شده",
+    "riskZones": "مناطق خطر",
+    "energyAvail": "دسترسی به انرژی",
+    "africaOps": "عملیات آفریقا",
+    "liveNodeStatus": "وضعیت زنده گره",
+    "rapidDeploy": "استقرار سریع",
+    "emergencyDrill": "تمرین اضطراری",
+    "emergencyDrillDesc": "شروع پروتکل پاسخ سراسری شبکه.",
+    "deployNode": "استقرار گره",
+    "deployNodeDesc": "ثبت سخت‌افزار زیرساختی جدید.",
+    "generateReport": "تولید گزارش",
+    "broadcastAlert": "پخش هشدار",
+    "threatFeed": "فید تهدیدات فعال",
+    "viewArchive": "مشاهده بایگانی",
+    "online": "آنلاین",
+    "critical": "بحرانی",
+    "ack": "تأیید"
+  },
+  "energy": {
+    "title": "فرماندهی انرژی",
+    "description": "نظارت بلادرنگ بر ریزشبکه‌های خورشیدی غیرمتمرکز و ذخایر باتری.",
+    "gridNominal": "شبکه عادی",
+    "netPowerFlow": "جریان خالص توان",
+    "storageReserves": "ذخایر ذخیره‌سازی"
+  },
+  "lifemesh": {
+    "title": "اطلاعات LifeMesh",
+    "description": "ردیابی امنیتی بیومتریک و هماهنگی خودکار پاسخ اضطراری.",
+    "secured": "ایمن",
+    "atRisk": "در خطر",
+    "emergency": "اضطراری",
+    "totalTracked": "کل ردیابی‌شده",
+    "masterOverride": "نادیده‌گیری اصلی",
+    "masterOverrideDesc": "دور زدن پروتکل‌های استاندارد برای ارسال اجباری پهپادهای پاسخ سریع.",
+    "initiateSOS": "شروع SOS",
+    "activeBioSigs": "امضاهای بیولوژیکی فعال",
+    "queryId": "جستجوی شناسه...",
+    "incidentTelemetry": "تله‌متری حادثه"
+  },
+  "earthshield": {
+    "title": "اطلاعات EarthShield",
+    "description": "مدل‌سازی سیاره‌ای پیش‌بینی‌پذیر و کاهش خودکار بلایا.",
+    "floodVectors": "بردارهای سیل",
+    "thermalAnomalies": "ناهنجاری‌های حرارتی",
+    "atmosphericEvents": "رویدادهای جوی",
+    "gridStress": "استرس شبکه",
+    "activeThreatMatrices": "ماتریس‌های تهدید منطقه‌ای فعال",
+    "readinessIndex": "شاخص آمادگی منطقه‌ای"
+  },
+  "alerts": {
+    "title": "گزارش اقدامات یکپارچه",
+    "description": "ثبت رویدادهای جهانی چند ماژوله و هشدارهای سیستم.",
+    "allModules": "همه ماژول‌ها",
+    "severity": "شدت",
+    "any": "هر کدام",
+    "critical": "بحرانی",
+    "warning": "هشدار"
+  },
+  "sites": { "title": "سایت‌ها و گره‌ها", "description": "ثبت زیرساخت فیزیکی و وضعیت عملیاتی." },
+  "users": { "title": "ثبت پرسنل", "description": "مدیریت دسترسی اپراتور و تخصیص نقش." },
+  "settings": { "title": "پیکربندی سیستم", "description": "کنترل‌های پلتفرم، ادغام‌ها و پارامترهای امنیتی." },
+  "common": {
+    "loading": "در حال بارگذاری...", "active": "فعال", "resolved": "حل‌شده", "acknowledged": "تأییدشده",
+    "error": "خطا", "save": "ذخیره", "cancel": "لغو", "confirm": "تأیید",
+    "dismiss": "بستن", "status": "وضعیت", "location": "مکان", "type": "نوع"
+  },
+  "lang": {
+    "en": "English", "fr": "Français", "sw": "Kiswahili", "ar": "العربية", "pt": "Português",
+    "de": "Deutsch", "es": "Español", "it": "Italiano", "nl": "Nederlands", "pl": "Polski",
+    "ru": "Русский", "tr": "Türkçe", "zh": "中文", "ja": "日本語", "ko": "한국어",
+    "hi": "हिन्दी", "fa": "فارسی", "he": "עברית"
+  }
+}

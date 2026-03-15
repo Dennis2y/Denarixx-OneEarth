@@ -1,29 +1,71 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Home, Zap, Shield, Globe, Bell, MapPin, Users, Settings, LogOut, Menu, Search, Languages, Cpu } from 'lucide-react';
+import { Home, Zap, Shield, Globe, Bell, MapPin, Users, Settings, LogOut, Menu, Search, Languages, Cpu, ChevronDown } from 'lucide-react';
 import { cn } from './ui-core';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useAuth, roleLabel } from '@/context/auth';
 
-const LANGUAGES = [
-  { code: 'en', label: 'EN', name: 'English', dir: 'ltr' },
-  { code: 'fr', label: 'FR', name: 'Français', dir: 'ltr' },
-  { code: 'sw', label: 'SW', name: 'Kiswahili', dir: 'ltr' },
-  { code: 'ar', label: 'AR', name: 'العربية', dir: 'rtl' },
-  { code: 'pt', label: 'PT', name: 'Português', dir: 'ltr' },
+type LangEntry = { code: string; label: string; name: string; dir: 'ltr' | 'rtl'; nativeName: string };
+
+type RegionGroup = {
+  region: string;
+  languages: LangEntry[];
+};
+
+const LANGUAGE_GROUPS: RegionGroup[] = [
+  {
+    region: 'Africa',
+    languages: [
+      { code: 'en', label: 'EN', name: 'English', nativeName: 'English', dir: 'ltr' },
+      { code: 'fr', label: 'FR', name: 'Français', nativeName: 'Français', dir: 'ltr' },
+      { code: 'sw', label: 'SW', name: 'Kiswahili', nativeName: 'Kiswahili', dir: 'ltr' },
+      { code: 'pt', label: 'PT', name: 'Português', nativeName: 'Português', dir: 'ltr' },
+      { code: 'ar', label: 'AR', name: 'Arabic', nativeName: 'العربية', dir: 'rtl' },
+    ],
+  },
+  {
+    region: 'Europe',
+    languages: [
+      { code: 'de', label: 'DE', name: 'German', nativeName: 'Deutsch', dir: 'ltr' },
+      { code: 'es', label: 'ES', name: 'Spanish', nativeName: 'Español', dir: 'ltr' },
+      { code: 'it', label: 'IT', name: 'Italian', nativeName: 'Italiano', dir: 'ltr' },
+      { code: 'nl', label: 'NL', name: 'Dutch', nativeName: 'Nederlands', dir: 'ltr' },
+      { code: 'pl', label: 'PL', name: 'Polish', nativeName: 'Polski', dir: 'ltr' },
+      { code: 'ru', label: 'RU', name: 'Russian', nativeName: 'Русский', dir: 'ltr' },
+      { code: 'tr', label: 'TR', name: 'Turkish', nativeName: 'Türkçe', dir: 'ltr' },
+    ],
+  },
+  {
+    region: 'Asia',
+    languages: [
+      { code: 'zh', label: 'ZH', name: 'Chinese', nativeName: '中文', dir: 'ltr' },
+      { code: 'ja', label: 'JA', name: 'Japanese', nativeName: '日本語', dir: 'ltr' },
+      { code: 'ko', label: 'KO', name: 'Korean', nativeName: '한국어', dir: 'ltr' },
+      { code: 'hi', label: 'HI', name: 'Hindi', nativeName: 'हिन्दी', dir: 'ltr' },
+    ],
+  },
+  {
+    region: 'Middle East',
+    languages: [
+      { code: 'fa', label: 'FA', name: 'Persian', nativeName: 'فارسی', dir: 'rtl' },
+      { code: 'he', label: 'HE', name: 'Hebrew', nativeName: 'עברית', dir: 'rtl' },
+    ],
+  },
 ];
+
+const ALL_LANGUAGES: LangEntry[] = LANGUAGE_GROUPS.flatMap(g => g.languages);
 
 function LanguageSwitcher() {
   const { i18n } = useTranslation();
   const [open, setOpen] = useState(false);
-  const current = LANGUAGES.find(l => l.code === i18n.resolvedLanguage) || LANGUAGES[0];
+  const current = ALL_LANGUAGES.find(l => l.code === i18n.resolvedLanguage) ?? ALL_LANGUAGES[0];
 
-  const handleSelect = (code: string, dir: string) => {
-    i18n.changeLanguage(code);
-    document.documentElement.setAttribute('dir', dir);
-    document.documentElement.setAttribute('lang', code);
+  const handleSelect = (lang: LangEntry) => {
+    i18n.changeLanguage(lang.code);
+    document.documentElement.setAttribute('dir', lang.dir);
+    document.documentElement.setAttribute('lang', lang.code);
     setOpen(false);
   };
 
@@ -36,27 +78,45 @@ function LanguageSwitcher() {
       >
         <Languages className="w-4 h-4" />
         <span className="hidden sm:inline tracking-widest uppercase">{current.label}</span>
+        <ChevronDown className={cn('w-3 h-3 transition-transform hidden sm:block', open && 'rotate-180')} />
       </button>
+
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 w-44 bg-popover border border-border rounded-xl shadow-2xl z-50 overflow-hidden backdrop-blur-md">
-            <div className="px-3 py-2 border-b border-border">
+          <div className="absolute right-0 top-full mt-2 w-56 bg-popover border border-border rounded-xl shadow-2xl z-50 overflow-hidden backdrop-blur-md">
+            <div className="px-3 py-2 border-b border-border flex items-center justify-between">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Select Language</p>
+              <p className="text-[10px] text-primary font-mono">{ALL_LANGUAGES.length} langs</p>
             </div>
-            {LANGUAGES.map(lang => (
-              <button
-                key={lang.code}
-                onClick={() => handleSelect(lang.code, lang.dir)}
-                className={cn(
-                  "w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-colors",
-                  i18n.resolvedLanguage === lang.code ? "bg-primary/10 text-primary" : "text-foreground hover:bg-secondary hover:text-white"
-                )}
-              >
-                <span>{lang.name}</span>
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{lang.label}</span>
-              </button>
-            ))}
+            <div className="max-h-72 overflow-y-auto custom-scrollbar">
+              {LANGUAGE_GROUPS.map((group) => (
+                <div key={group.region}>
+                  <div className="px-3 py-1.5 bg-secondary/30 border-b border-t border-border/40 sticky top-0">
+                    <p className="text-[9px] font-bold text-primary uppercase tracking-[0.2em]">{group.region}</p>
+                  </div>
+                  {group.languages.map((lang) => {
+                    const isActive = i18n.resolvedLanguage === lang.code;
+                    return (
+                      <button
+                        key={lang.code}
+                        onClick={() => handleSelect(lang)}
+                        className={cn(
+                          'w-full flex items-center justify-between px-4 py-2 text-sm transition-colors',
+                          isActive ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-secondary hover:text-white'
+                        )}
+                        dir={lang.dir}
+                      >
+                        <span className="font-medium">{lang.nativeName}</span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-2 shrink-0">
+                          {lang.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
         </>
       )}
@@ -87,7 +147,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     document.documentElement.classList.add("dark");
     const saved = localStorage.getItem('i18nextLng') || navigator.language.split('-')[0];
-    const lang = LANGUAGES.find(l => l.code === saved) || LANGUAGES[0];
+    const lang = ALL_LANGUAGES.find(l => l.code === saved) ?? ALL_LANGUAGES[0];
     document.documentElement.setAttribute('dir', lang.dir);
     document.documentElement.setAttribute('lang', lang.code);
     const interval = setInterval(() => setTime(new Date()), 1000);
@@ -182,75 +242,73 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           )}
 
-          <button onClick={handleLogout} className={cn(
-            "flex items-center w-full px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors group/logout text-sm",
-            !sidebarOpen && "md:justify-center"
-          )}>
-            <LogOut className="w-4 h-4 shrink-0 group-hover/logout:scale-110 transition-transform" />
-            <span className={cn("ml-3.5 font-medium", !sidebarOpen && "md:hidden")}>{t('nav.terminate')}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 rounded-xl text-muted-foreground hover:text-white hover:bg-secondary transition-colors border border-transparent hover:border-border/50"
+              title={sidebarOpen ? "Collapse" : "Expand"}
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleLogout}
+              className={cn("p-2 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors border border-transparent hover:border-destructive/30", !sidebarOpen && "md:mx-auto")}
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col relative w-full overflow-hidden">
-        {/* Header */}
-        <header className="h-16 border-b border-border bg-background/80 backdrop-blur-md flex items-center justify-between px-6 z-30 shrink-0">
-          <div className="flex items-center gap-4 flex-1">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-white transition-colors">
+      {/* Main content */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
+        {/* Top bar */}
+        <header className="h-16 border-b border-border/50 flex items-center justify-between px-6 bg-background/80 backdrop-blur-md shrink-0 z-30">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="md:hidden p-2 rounded-xl text-muted-foreground hover:text-white hover:bg-secondary transition-colors"
+            >
               <Menu className="w-5 h-5" />
             </button>
-            <div className="hidden lg:flex items-center gap-5 ml-4">
-              {[t('header.energyGrid'), t('header.lifemeshNet'), t('header.earthshieldIntel')].map(label => (
-                <div key={label} className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
-                  {label}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex-1 max-w-sm hidden md:block mx-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <div className="relative hidden sm:block">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
               <input
                 type="text"
                 placeholder={t('header.search')}
-                className="w-full bg-input/50 border border-border rounded-full pl-10 pr-4 py-2 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all"
+                className="bg-secondary/50 border border-border/50 rounded-xl pl-10 pr-4 py-2 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary/50 focus:bg-secondary/80 w-72 transition-all"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-3 flex-1 justify-end">
-            <div className="text-xs font-mono text-muted-foreground hidden sm:block">{format(time, 'HH:mm:ss')} UTC</div>
+          <div className="flex items-center gap-3">
             <LanguageSwitcher />
-            <button className="relative p-2 text-muted-foreground hover:text-white transition-colors rounded-full hover:bg-secondary">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-destructive border-[1.5px] border-background"></span>
-              </span>
-            </button>
-            <div className="flex items-center gap-3 pl-3 border-l border-border">
-              <div className="text-right hidden sm:block">
-                <div className="text-sm font-bold text-white">{displayName}</div>
-                <div className="text-[10px] text-primary tracking-widest uppercase">Level {clearanceLevel} Auth</div>
+            {user && (
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-secondary/50 border border-border/50">
+                <div className="w-6 h-6 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-[10px] font-bold text-primary">
+                  {initials}
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-white leading-none">{displayName}</div>
+                  <div className="text-[9px] text-primary capitalize tracking-wider mt-0.5">{roleLabel(user.role)}</div>
+                </div>
               </div>
-              <div className="w-9 h-9 rounded-full bg-secondary border-2 border-primary/50 flex items-center justify-center text-primary font-bold text-sm overflow-hidden shadow-[0_0_10px_rgba(201,168,76,0.2)]">
-                {initials}
-              </div>
-            </div>
+            )}
           </div>
         </header>
 
-        {/* Page Content */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-africa-ambient">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-background to-background pointer-events-none -z-10" />
-          <div className="p-4 md:p-8 lg:p-10 max-w-[1600px] mx-auto min-h-full">
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto p-6 relative custom-scrollbar">
+          <div
+            className="absolute inset-0 pointer-events-none opacity-[0.03]"
+            style={{ backgroundImage: `url(${import.meta.env.BASE_URL}africa-night-hero.png)`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'grayscale(100%)' }}
+          />
+          <div className="relative z-10 max-w-[1600px] mx-auto">
             {children}
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

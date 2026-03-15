@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "dashboard": "לוח בקרה",
+    "energy": "רשת האנרגיה",
+    "lifemesh": "רשת LifeMesh",
+    "earthshield": "מודיעין EarthShield",
+    "alerts": "התראות מאוחדות",
+    "sites": "אתרים וצמתים",
+    "users": "כוח אדם",
+    "settings": "הגדרות מערכת",
+    "terminate": "סיום",
+    "core": "ליבה",
+    "modules": "מודולים",
+    "management": "ניהול"
+  },
+  "header": {
+    "search": "שאילתת מסדי נתונים גלובליים...",
+    "systemOnline": "המערכת מחוברת",
+    "levelAuth": "הרשאת רמה 5",
+    "energyGrid": "רשת האנרגיה",
+    "lifemeshNet": "רשת LifeMesh",
+    "earthshieldIntel": "מודיעין EarthShield"
+  },
+  "dashboard": {
+    "title": "פיקוד גלובלי",
+    "description": "פיקוח בזמן אמת על תשתית Denarixx בכל המודולים הפעילים.",
+    "activeSites": "אתרים פעילים",
+    "criticalAlerts": "התראות קריטיות",
+    "protectedLives": "חיים מוגנים",
+    "riskZones": "אזורי סיכון",
+    "energyAvail": "זמינות אנרגיה",
+    "africaOps": "מבצעי אפריקה",
+    "liveNodeStatus": "מצב צומת חי",
+    "rapidDeploy": "פריסה מהירה",
+    "emergencyDrill": "תרגיל חירום",
+    "emergencyDrillDesc": "הפעלת פרוטוקול תגובה כלל-רשתי.",
+    "deployNode": "פריסת צומת",
+    "deployNodeDesc": "רישום חומרת תשתית חדשה.",
+    "generateReport": "יצירת דוח",
+    "broadcastAlert": "שידור התראה",
+    "threatFeed": "עדכון איומים פעילים",
+    "viewArchive": "הצגת ארכיון",
+    "online": "מחובר",
+    "critical": "קריטי",
+    "ack": "אישור"
+  },
+  "energy": {
+    "title": "פיקוד אנרגיה",
+    "description": "ניטור בזמן אמת של מיקרו-רשתות סולאריות מבוזרות ורזרבות סוללות.",
+    "gridNominal": "רשת תקינה",
+    "netPowerFlow": "זרימת הספק נטו",
+    "storageReserves": "רזרבות אחסון"
+  },
+  "lifemesh": {
+    "title": "מודיעין LifeMesh",
+    "description": "מעקב ביטחוני ביומטרי ותיאום אוטונומי של תגובה לחירום.",
+    "secured": "מאובטח",
+    "atRisk": "בסיכון",
+    "emergency": "חירום",
+    "totalTracked": "סה״כ במעקב",
+    "masterOverride": "עקיפה ראשית",
+    "masterOverrideDesc": "עקיפת פרוטוקולים סטנדרטיים לשליחה מאולצת של כטב״מ תגובה מהירה.",
+    "initiateSOS": "הפעלת SOS",
+    "activeBioSigs": "חתימות ביו פעילות",
+    "queryId": "שאילת מזהה...",
+    "incidentTelemetry": "טלמטריית אירועים"
+  },
+  "earthshield": {
+    "title": "מודיעין EarthShield",
+    "description": "מידול פלנטרי חזוי והפחתת אסונות אוטונומית.",
+    "floodVectors": "וקטורי שיטפונות",
+    "thermalAnomalies": "אנומליות תרמיות",
+    "atmosphericEvents": "אירועים אטמוספריים",
+    "gridStress": "עומס רשת",
+    "activeThreatMatrices": "מטריצות איום אזוריות פעילות",
+    "readinessIndex": "מדד מוכנות אזורי"
+  },
+  "alerts": {
+    "title": "יומן פעולות מאוחד",
+    "description": "רישום אירועים גלובלי רב-מודולי והתראות מערכת.",
+    "allModules": "כל המודולים",
+    "severity": "חומרה",
+    "any": "כלשהו",
+    "critical": "קריטי",
+    "warning": "אזהרה"
+  },
+  "sites": { "title": "אתרים וצמתים", "description": "רישום תשתית פיזית ומצב תפעולי." },
+  "users": { "title": "רישום כוח אדם", "description": "ניהול גישת מפעילים והקצאת תפקידים." },
+  "settings": { "title": "תצורת מערכת", "description": "בקרות פלטפורמה, אינטגרציות ופרמטרי אבטחה." },
+  "common": {
+    "loading": "טוען...", "active": "פעיל", "resolved": "נפתר", "acknowledged": "אושר",
+    "error": "שגיאה", "save": "שמור", "cancel": "ביטול", "confirm": "אישור",
+    "dismiss": "סגור", "status": "סטטוס", "location": "מיקום", "type": "סוג"
+  },
+  "lang": {
+    "en": "English", "fr": "Français", "sw": "Kiswahili", "ar": "العربية", "pt": "Português",
+    "de": "Deutsch", "es": "Español", "it": "Italiano", "nl": "Nederlands", "pl": "Polski",
+    "ru": "Русский", "tr": "Türkçe", "zh": "中文", "ja": "日本語", "ko": "한국어",
+    "hi": "हिन्दी", "fa": "فارسی", "he": "עברית"
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "dashboard": "대시보드",
+    "energy": "에너지 그리드",
+    "lifemesh": "LifeMesh 네트워크",
+    "earthshield": "EarthShield 인텔",
+    "alerts": "통합 경보",
+    "sites": "사이트 및 노드",
+    "users": "인원",
+    "settings": "시스템 설정",
+    "terminate": "종료",
+    "core": "핵심",
+    "modules": "모듈",
+    "management": "관리"
+  },
+  "header": {
+    "search": "글로벌 데이터베이스 조회...",
+    "systemOnline": "시스템 온라인",
+    "levelAuth": "레벨 5 인증",
+    "energyGrid": "에너지 그리드",
+    "lifemeshNet": "LifeMesh 네트워크",
+    "earthshieldIntel": "EarthShield 인텔"
+  },
+  "dashboard": {
+    "title": "글로벌 사령부",
+    "description": "모든 활성 모듈에 걸쳐 Denarixx 인프라의 실시간 감시.",
+    "activeSites": "활성 사이트",
+    "criticalAlerts": "중요 경보",
+    "protectedLives": "보호 인원",
+    "riskZones": "위험 구역",
+    "energyAvail": "에너지 가용성",
+    "africaOps": "아프리카 작전",
+    "liveNodeStatus": "실시간 노드 상태",
+    "rapidDeploy": "신속 배치",
+    "emergencyDrill": "비상 훈련",
+    "emergencyDrillDesc": "전 네트워크 대응 프로토콜 시작.",
+    "deployNode": "노드 배치",
+    "deployNodeDesc": "새 인프라 하드웨어 등록.",
+    "generateReport": "보고서 생성",
+    "broadcastAlert": "경보 방송",
+    "threatFeed": "활성 위협 피드",
+    "viewArchive": "아카이브 보기",
+    "online": "온라인",
+    "critical": "위험",
+    "ack": "확인"
+  },
+  "energy": {
+    "title": "에너지 사령부",
+    "description": "분산형 태양광 마이크로그리드 및 배터리 저장 예비량의 실시간 모니터링.",
+    "gridNominal": "그리드 정상",
+    "netPowerFlow": "순 전력 흐름",
+    "storageReserves": "저장 예비량"
+  },
+  "lifemesh": {
+    "title": "LifeMesh 인텔",
+    "description": "생체인식 안전 추적 및 자율 비상 대응 조정.",
+    "secured": "안전",
+    "atRisk": "위험",
+    "emergency": "비상사태",
+    "totalTracked": "총 추적 수",
+    "masterOverride": "마스터 오버라이드",
+    "masterOverrideDesc": "표준 프로토콜을 우회하여 지정 비콘으로 신속 대응 드론을 강제 파견.",
+    "initiateSOS": "SOS 시작",
+    "activeBioSigs": "활성 생체 서명",
+    "queryId": "ID 조회...",
+    "incidentTelemetry": "사건 원격측정"
+  },
+  "earthshield": {
+    "title": "EarthShield 인텔리전스",
+    "description": "예측 행성 모델링 및 자율 재난 완화.",
+    "floodVectors": "홍수 벡터",
+    "thermalAnomalies": "열 이상",
+    "atmosphericEvents": "대기 사건",
+    "gridStress": "그리드 스트레스",
+    "activeThreatMatrices": "활성 지역 위협 매트릭스",
+    "readinessIndex": "지역 준비 지수"
+  },
+  "alerts": {
+    "title": "통합 행동 로그",
+    "description": "전 세계 교차 모듈 이벤트 레지스트리 및 시스템 경보.",
+    "allModules": "전체 모듈",
+    "severity": "심각도",
+    "any": "전체",
+    "critical": "위험",
+    "warning": "경고"
+  },
+  "sites": { "title": "사이트 및 노드", "description": "물리적 인프라 레지스트리 및 운영 상태." },
+  "users": { "title": "인원 레지스트리", "description": "운영자 접근 관리 및 역할 배정." },
+  "settings": { "title": "시스템 구성", "description": "플랫폼 제어, 통합 및 보안 매개변수." },
+  "common": {
+    "loading": "로딩 중...", "active": "활성", "resolved": "해결됨", "acknowledged": "확인됨",
+    "error": "오류", "save": "저장", "cancel": "취소", "confirm": "확인",
+    "dismiss": "닫기", "status": "상태", "location": "위치", "type": "유형"
+  },
+  "lang": {
+    "en": "English", "fr": "Français", "sw": "Kiswahili", "ar": "العربية", "pt": "Português",
+    "de": "Deutsch", "es": "Español", "it": "Italiano", "nl": "Nederlands", "pl": "Polski",
+    "ru": "Русский", "tr": "Türkçe", "zh": "中文", "ja": "日本語", "ko": "한국어",
+    "hi": "हिन्दी", "fa": "فارسی", "he": "עברית"
+  }
+}

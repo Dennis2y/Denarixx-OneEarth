@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "dashboard": "控制面板",
+    "energy": "能源网格",
+    "lifemesh": "LifeMesh 网络",
+    "earthshield": "EarthShield 情报",
+    "alerts": "统一警报",
+    "sites": "站点与节点",
+    "users": "人员",
+    "settings": "系统设置",
+    "terminate": "终止",
+    "core": "核心",
+    "modules": "模块",
+    "management": "管理"
+  },
+  "header": {
+    "search": "查询全球数据库...",
+    "systemOnline": "系统在线",
+    "levelAuth": "5级权限",
+    "energyGrid": "能源网格",
+    "lifemeshNet": "LifeMesh 网络",
+    "earthshieldIntel": "EarthShield 情报"
+  },
+  "dashboard": {
+    "title": "全球指挥",
+    "description": "实时监控所有活跃模块的 Denarixx 基础设施。",
+    "activeSites": "活跃站点",
+    "criticalAlerts": "严重警报",
+    "protectedLives": "受保护人员",
+    "riskZones": "风险区域",
+    "energyAvail": "能源可用性",
+    "africaOps": "非洲运营",
+    "liveNodeStatus": "实时节点状态",
+    "rapidDeploy": "快速部署",
+    "emergencyDrill": "紧急演练",
+    "emergencyDrillDesc": "启动全网响应协议。",
+    "deployNode": "部署节点",
+    "deployNodeDesc": "注册新的基础设施硬件。",
+    "generateReport": "生成报告",
+    "broadcastAlert": "广播警报",
+    "threatFeed": "活跃威胁信息流",
+    "viewArchive": "查看档案",
+    "online": "在线",
+    "critical": "严重",
+    "ack": "确认"
+  },
+  "energy": {
+    "title": "能源指挥",
+    "description": "实时监控分散式太阳能微电网和电池储备。",
+    "gridNominal": "电网正常",
+    "netPowerFlow": "净功率流",
+    "storageReserves": "储能备用"
+  },
+  "lifemesh": {
+    "title": "LifeMesh 情报",
+    "description": "生物特征安全追踪与自主紧急响应协调。",
+    "secured": "安全",
+    "atRisk": "危险",
+    "emergency": "紧急情况",
+    "totalTracked": "追踪总数",
+    "masterOverride": "主覆盖",
+    "masterOverrideDesc": "绕过标准协议，强制向指定信标派遣快速响应无人机。",
+    "initiateSOS": "启动SOS",
+    "activeBioSigs": "活跃生物特征",
+    "queryId": "查询ID...",
+    "incidentTelemetry": "事件遥测"
+  },
+  "earthshield": {
+    "title": "EarthShield 情报",
+    "description": "预测性行星建模与自主灾害缓解。",
+    "floodVectors": "洪水向量",
+    "thermalAnomalies": "热异常",
+    "atmosphericEvents": "大气事件",
+    "gridStress": "电网压力",
+    "activeThreatMatrices": "活跃区域威胁矩阵",
+    "readinessIndex": "区域准备指数"
+  },
+  "alerts": {
+    "title": "统一行动日志",
+    "description": "全球跨模块事件注册表和系统警报。",
+    "allModules": "所有模块",
+    "severity": "严重程度",
+    "any": "任何",
+    "critical": "严重",
+    "warning": "警告"
+  },
+  "sites": { "title": "站点与节点", "description": "物理基础设施注册表和运营状态。" },
+  "users": { "title": "人员注册表", "description": "操作员访问管理和角色分配。" },
+  "settings": { "title": "系统配置", "description": "平台控制、集成和安全参数。" },
+  "common": {
+    "loading": "加载中...", "active": "活跃", "resolved": "已解决", "acknowledged": "已确认",
+    "error": "错误", "save": "保存", "cancel": "取消", "confirm": "确认",
+    "dismiss": "关闭", "status": "状态", "location": "位置", "type": "类型"
+  },
+  "lang": {
+    "en": "English", "fr": "Français", "sw": "Kiswahili", "ar": "العربية", "pt": "Português",
+    "de": "Deutsch", "es": "Español", "it": "Italiano", "nl": "Nederlands", "pl": "Polski",
+    "ru": "Русский", "tr": "Türkçe", "zh": "中文", "ja": "日本語", "ko": "한국어",
+    "hi": "हिन्दी", "fa": "فارسی", "he": "עברית"
+  }
+}

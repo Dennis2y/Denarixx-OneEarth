@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "dashboard": "Панель управления",
+    "energy": "Энергосеть",
+    "lifemesh": "Сеть LifeMesh",
+    "earthshield": "Intel EarthShield",
+    "alerts": "Единые оповещения",
+    "sites": "Объекты и узлы",
+    "users": "Персонал",
+    "settings": "Настройки системы",
+    "terminate": "Завершить",
+    "core": "Ядро",
+    "modules": "Модули",
+    "management": "Управление"
+  },
+  "header": {
+    "search": "Запрос глобальных баз данных...",
+    "systemOnline": "Система в сети",
+    "levelAuth": "Авторизация уровня 5",
+    "energyGrid": "Энергосеть",
+    "lifemeshNet": "Сеть LifeMesh",
+    "earthshieldIntel": "Intel EarthShield"
+  },
+  "dashboard": {
+    "title": "Глобальное командование",
+    "description": "Мониторинг инфраструктуры Denarixx в реальном времени по всем активным модулям.",
+    "activeSites": "Активные объекты",
+    "criticalAlerts": "Критические угрозы",
+    "protectedLives": "Под защитой",
+    "riskZones": "Зоны риска",
+    "energyAvail": "Доступность энергии",
+    "africaOps": "Операции в Африке",
+    "liveNodeStatus": "Статус узла в реальном времени",
+    "rapidDeploy": "Быстрое развёртывание",
+    "emergencyDrill": "Аварийные учения",
+    "emergencyDrillDesc": "Инициировать протокол реагирования на всю сеть.",
+    "deployNode": "Развернуть узел",
+    "deployNodeDesc": "Зарегистрировать новое инфраструктурное оборудование.",
+    "generateReport": "Сформировать отчёт",
+    "broadcastAlert": "Транслировать оповещение",
+    "threatFeed": "Активные угрозы",
+    "viewArchive": "Просмотр архива",
+    "online": "В сети",
+    "critical": "Критично",
+    "ack": "ПОД"
+  },
+  "energy": {
+    "title": "Командование энергетикой",
+    "description": "Мониторинг децентрализованных солнечных микросетей и аккумуляторных резервов в реальном времени.",
+    "gridNominal": "Сеть в норме",
+    "netPowerFlow": "Чистый поток мощности",
+    "storageReserves": "Резервы хранилища"
+  },
+  "lifemesh": {
+    "title": "Intel LifeMesh",
+    "description": "Биометрическое отслеживание безопасности и автономная координация аварийного реагирования.",
+    "secured": "Защищён",
+    "atRisk": "Под угрозой",
+    "emergency": "Чрезвычайная ситуация",
+    "totalTracked": "Всего отслеживается",
+    "masterOverride": "Главный Override",
+    "masterOverrideDesc": "Обойти стандартные протоколы для экстренной отправки дронов к указанному маяку.",
+    "initiateSOS": "Отправить SOS",
+    "activeBioSigs": "Активные биосигнатуры",
+    "queryId": "Запрос ID...",
+    "incidentTelemetry": "Телеметрия инцидентов"
+  },
+  "earthshield": {
+    "title": "Интеллект EarthShield",
+    "description": "Прогнозная планетарная модель и автономное предотвращение катастроф.",
+    "floodVectors": "Векторы наводнений",
+    "thermalAnomalies": "Тепловые аномалии",
+    "atmosphericEvents": "Атмосферные явления",
+    "gridStress": "Нагрузка на сеть",
+    "activeThreatMatrices": "Активные региональные матрицы угроз",
+    "readinessIndex": "Региональный индекс готовности"
+  },
+  "alerts": {
+    "title": "Единый журнал действий",
+    "description": "Глобальный межмодульный реестр событий и системных оповещений.",
+    "allModules": "Все модули",
+    "severity": "Серьёзность",
+    "any": "Любой",
+    "critical": "Критично",
+    "warning": "Предупреждение"
+  },
+  "sites": { "title": "Объекты и узлы", "description": "Реестр физической инфраструктуры и операционный статус." },
+  "users": { "title": "Реестр персонала", "description": "Управление доступом операторов и назначение ролей." },
+  "settings": { "title": "Конфигурация системы", "description": "Управление платформой, интеграции и параметры безопасности." },
+  "common": {
+    "loading": "Загрузка...", "active": "Активно", "resolved": "Решено", "acknowledged": "Подтверждено",
+    "error": "Ошибка", "save": "Сохранить", "cancel": "Отмена", "confirm": "Подтвердить",
+    "dismiss": "Закрыть", "status": "Статус", "location": "Расположение", "type": "Тип"
+  },
+  "lang": {
+    "en": "English", "fr": "Français", "sw": "Kiswahili", "ar": "العربية", "pt": "Português",
+    "de": "Deutsch", "es": "Español", "it": "Italiano", "nl": "Nederlands", "pl": "Polski",
+    "ru": "Русский", "tr": "Türkçe", "zh": "中文", "ja": "日本語", "ko": "한국어",
+    "hi": "हिन्दी", "fa": "فارسی", "he": "עברית"
+  }
+}

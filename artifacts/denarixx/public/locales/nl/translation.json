@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "dashboard": "Overzicht",
+    "energy": "Energienet",
+    "lifemesh": "LifeMesh Netwerk",
+    "earthshield": "EarthShield Intel",
+    "alerts": "Gecombineerde Waarschuwingen",
+    "sites": "Locaties & Knooppunten",
+    "users": "Personeel",
+    "settings": "Systeeminstellingen",
+    "terminate": "Beëindigen",
+    "core": "Kern",
+    "modules": "Modules",
+    "management": "Beheer"
+  },
+  "header": {
+    "search": "Globale databases raadplegen...",
+    "systemOnline": "Systeem Online",
+    "levelAuth": "Niveau 5 Auth",
+    "energyGrid": "Energienet",
+    "lifemeshNet": "LifeMesh Netwerk",
+    "earthshieldIntel": "EarthShield Intel"
+  },
+  "dashboard": {
+    "title": "Globaal Commando",
+    "description": "Realtime toezicht op Denarixx-infrastructuur in alle actieve modules.",
+    "activeSites": "Actieve Locaties",
+    "criticalAlerts": "Kritieke Waarschuwingen",
+    "protectedLives": "Beschermde Levens",
+    "riskZones": "Risicozones",
+    "energyAvail": "Energiebeschikbh.",
+    "africaOps": "Afrika Operaties",
+    "liveNodeStatus": "Live Knooppuntstatus",
+    "rapidDeploy": "Snelle Inzet",
+    "emergencyDrill": "Noodoefen",
+    "emergencyDrillDesc": "Netwerkbrede responsprotocol initiëren.",
+    "deployNode": "Knooppunt Inzetten",
+    "deployNodeDesc": "Nieuwe infrastructuurhardware registreren.",
+    "generateReport": "Rapport Genereren",
+    "broadcastAlert": "Waarschuwing Uitzenden",
+    "threatFeed": "Actieve Dreiging Feed",
+    "viewArchive": "Archief Bekijken",
+    "online": "Online",
+    "critical": "Kritiek",
+    "ack": "ACK"
+  },
+  "energy": {
+    "title": "Energie Commando",
+    "description": "Realtime bewaking van gedecentraliseerde zonnemicrogrids en batterijreserves.",
+    "gridNominal": "Net Nominaal",
+    "netPowerFlow": "Netto Energiestroom",
+    "storageReserves": "Opslagreserves"
+  },
+  "lifemesh": {
+    "title": "LifeMesh Intel",
+    "description": "Biometrische veiligheidsregistratie en autonome noodresponscoördinatie.",
+    "secured": "Beveiligd",
+    "atRisk": "Gevaar",
+    "emergency": "Noodgeval",
+    "totalTracked": "Totaal Gevolgd",
+    "masterOverride": "Hoofd Override",
+    "masterOverrideDesc": "Standaardprotocollen omzeilen voor snelle inzet van drones naar opgegeven baken.",
+    "initiateSOS": "SOS Starten",
+    "activeBioSigs": "Actieve Bio-Handtekeningen",
+    "queryId": "ID opvragen...",
+    "incidentTelemetry": "Incident Telemetrie"
+  },
+  "earthshield": {
+    "title": "EarthShield Intelligentie",
+    "description": "Voorspellende planetaire modellering en autonome rampvermindering.",
+    "floodVectors": "Overstromingsvectoren",
+    "thermalAnomalies": "Thermische Anomalieën",
+    "atmosphericEvents": "Atmosferische Gebeurtenissen",
+    "gridStress": "Netwerkstress",
+    "activeThreatMatrices": "Actieve Regionale Dreigingsmatrices",
+    "readinessIndex": "Regionale Gereedheidsindex"
+  },
+  "alerts": {
+    "title": "Gecombineerd Actielogboek",
+    "description": "Globaal, moduloverschrijdend gebeurtenisregister en systeemwaarschuwingen.",
+    "allModules": "Alle Modules",
+    "severity": "Ernst",
+    "any": "Willekeurig",
+    "critical": "Kritiek",
+    "warning": "Waarschuwing"
+  },
+  "sites": { "title": "Locaties & Knooppunten", "description": "Fysiek infrastructuurregister en operationele status." },
+  "users": { "title": "Personeelsregister", "description": "Operatortoegang en roltoewijzing." },
+  "settings": { "title": "Systeemconfiguratie", "description": "Platformbeheer, integraties en beveiligingsparameters." },
+  "common": {
+    "loading": "Laden...", "active": "Actief", "resolved": "Opgelost", "acknowledged": "Bevestigd",
+    "error": "Fout", "save": "Opslaan", "cancel": "Annuleren", "confirm": "Bevestigen",
+    "dismiss": "Sluiten", "status": "Status", "location": "Locatie", "type": "Type"
+  },
+  "lang": {
+    "en": "English", "fr": "Français", "sw": "Kiswahili", "ar": "العربية", "pt": "Português",
+    "de": "Deutsch", "es": "Español", "it": "Italiano", "nl": "Nederlands", "pl": "Polski",
+    "ru": "Русский", "tr": "Türkçe", "zh": "中文", "ja": "日本語", "ko": "한국어",
+    "hi": "हिन्दी", "fa": "فارسی", "he": "עברית"
+  }
+}

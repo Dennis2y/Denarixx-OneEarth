@@ -9,16 +9,17 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
-    supportedLngs: ['en', 'fr', 'sw', 'ar', 'pt'],
+    supportedLngs: ['en', 'fr', 'sw', 'ar', 'pt', 'de', 'es', 'it', 'nl', 'pl', 'ru', 'tr', 'zh', 'ja', 'ko', 'hi', 'fa', 'he'],
     ns: ['translation'],
     defaultNS: 'translation',
     backend: {
       loadPath: `${import.meta.env.BASE_URL}locales/{{lng}}/translation.json`,
     },
     detection: {
-      order: ['querystring', 'navigator', 'htmlTag'],
+      order: ['localStorage', 'querystring', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
       lookupQuerystring: 'lang',
+      lookupLocalStorage: 'i18nextLng',
     },
     interpolation: {
       escapeValue: false,
