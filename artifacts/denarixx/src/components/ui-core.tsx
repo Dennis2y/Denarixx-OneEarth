@@ -50,7 +50,7 @@ export function Button({ className, variant = 'default', size = 'default', isLoa
 
 // --- Badge ---
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: 'default' | 'critical' | 'warning' | 'info' | 'safe';
+  variant?: 'default' | 'critical' | 'warning' | 'info' | 'safe' | 'outline';
 }
 export function Badge({ className, variant = 'default', children, ...props }: BadgeProps) {
   return (
@@ -61,6 +61,7 @@ export function Badge({ className, variant = 'default', children, ...props }: Ba
       variant === 'warning' && "bg-amber-500/10 text-amber-400 border border-amber-500/30",
       variant === 'info' && "bg-blue-500/10 text-blue-400 border border-blue-500/30",
       variant === 'safe' && "bg-green-500/10 text-green-400 border border-green-500/30",
+      variant === 'outline' && "border border-border text-foreground",
       className
     )} {...props}>
       {children}
@@ -163,6 +164,30 @@ export function LoadingScreen() {
         <img src={`${import.meta.env.BASE_URL}denarixx-logo.png`} className="absolute inset-6 w-12 h-12 object-contain animate-pulse" alt="Loading" />
       </div>
       <p className="text-primary font-display tracking-[0.2em] uppercase text-sm animate-pulse">Initializing Data Stream...</p>
+    </div>
+  );
+}
+
+// --- Skeleton ---
+export function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn("animate-pulse rounded-md bg-muted/50", className)}
+      {...props}
+    />
+  );
+}
+
+// --- Empty State ---
+export function EmptyState({ icon: Icon, title, description, action }: { icon: any, title: string, description?: string, action?: React.ReactNode }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+      <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center border border-primary/20 mb-6 gold-glow">
+        <Icon className="w-10 h-10 text-muted-foreground opacity-50" />
+      </div>
+      <h3 className="text-2xl font-display font-semibold text-white mb-2">{title}</h3>
+      {description && <p className="text-muted-foreground max-w-md mb-6">{description}</p>}
+      {action && <div>{action}</div>}
     </div>
   );
 }

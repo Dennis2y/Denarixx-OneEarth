@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useGetProtectedPersons, useGetSafetyIncidents, useTriggerSOS } from '@workspace/api-client-react';
-import { PageHeader, LoadingScreen, Card, Badge, Table, Th, Td, Button, Modal, Input, Label, Select } from '@/components/ui-core';
-import { Shield, ShieldAlert, HeartPulse, Search } from 'lucide-react';
+import { PageHeader, LoadingScreen, Card, Badge, Button, Modal, Input, Label, Select, cn } from '@/components/ui-core';
+import { Shield, ShieldAlert, HeartPulse, Search, MapPin, Activity, Phone, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function LifeMesh() {
@@ -22,152 +22,216 @@ export default function LifeMesh() {
       onSuccess: () => {
         setSosOpen(false);
         setSosData({ personId: '', location: '', message: '' });
-        // Assume cache invalidation handled or fake success alert
-        alert("SOS Broadcast Sent to Global Response Network.");
+        alert("CRITICAL SOS DISPATCHED TO GLOBAL RESPONSE NETWORK.");
       }
     });
   };
 
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'safe': return 'bg-green-500 text-green-500 border-green-500/30';
+      case 'emergency': return 'bg-destructive text-destructive border-destructive/30';
+      case 'at-risk': return 'bg-amber-500 text-amber-500 border-amber-500/30';
+      default: return 'bg-muted-foreground text-muted-foreground border-border';
+    }
+  };
+
+  const safeCount = persons?.filter(p => p.status === 'safe').length || 0;
+  const riskCount = persons?.filter(p => p.status === 'at-risk').length || 0;
+  const emergencyCount = persons?.filter(p => p.status === 'emergency').length || 0;
+
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <PageHeader 
-        title="Denarixx LifeMesh" 
-        description="Individual safety tracking and emergency response coordination."
+        title="LifeMesh Intel" 
+        description="Biometric safety tracking and autonomous emergency response coordination."
       />
 
-      {/* Emergency Override Banner */}
-      <div className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center bg-gradient-to-r from-destructive/20 to-background border border-destructive/30 p-8 rounded-2xl relative overflow-hidden shadow-[0_0_40px_rgba(220,38,38,0.1)] group">
-        <div className="absolute top-0 left-0 w-2 bg-destructive h-full animate-pulse shadow-[0_0_20px_rgba(220,38,38,1)]"></div>
-        <div className="mb-6 md:mb-0 relative z-10">
-          <h2 className="text-3xl font-display font-bold text-white mb-2 flex items-center drop-shadow-md">
-            <ShieldAlert className="w-8 h-8 mr-3 text-destructive" /> Emergency Protocol
-          </h2>
-          <p className="text-destructive-foreground/80 text-lg max-w-xl">
-            Trigger immediate network-wide safety broadcast. Dispatches closest response teams and shifts local grid resources to critical mode.
-          </p>
-        </div>
-        <Button 
-          size="lg" 
-          variant="destructive" 
-          onClick={() => setSosOpen(true)} 
-          className="h-16 px-10 md:px-14 text-xl font-bold uppercase tracking-widest shadow-[0_0_30px_rgba(220,38,38,0.6)] hover:shadow-[0_0_50px_rgba(220,38,38,0.9)] animate-pulse"
-          style={{ animationDuration: '2s' }}
-        >
-          Initiate SOS
-        </Button>
+      {/* Top Metric Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <Card className="p-4 flex flex-col items-center justify-center border-b-4 border-b-green-500 bg-green-500/5 text-center">
+           <span className="text-3xl font-display font-bold text-white">{safeCount}</span>
+           <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Secured</span>
+        </Card>
+        <Card className="p-4 flex flex-col items-center justify-center border-b-4 border-b-amber-500 bg-amber-500/5 text-center">
+           <span className="text-3xl font-display font-bold text-amber-500">{riskCount}</span>
+           <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">At Risk</span>
+        </Card>
+        <Card className="p-4 flex flex-col items-center justify-center border-b-4 border-b-destructive bg-destructive/5 text-center">
+           <span className="text-3xl font-display font-bold text-destructive">{emergencyCount}</span>
+           <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Emergency</span>
+        </Card>
+        <Card className="p-4 flex flex-col items-center justify-center border-b-4 border-b-border bg-secondary/30 text-center">
+           <span className="text-3xl font-display font-bold text-muted-foreground">{persons?.length}</span>
+           <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Total Tracked</span>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-2 p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-2xl font-display font-semibold text-white flex items-center">
-              <UsersIcon className="w-6 h-6 mr-3 text-primary" /> Protected Personnel
-            </h3>
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Search ID or Name" className="pl-10 h-10" />
-            </div>
-          </div>
+        {/* Left Col: Persons Grid & Banner */}
+        <div className="lg:col-span-2 space-y-6">
           
-          <Table>
-            <thead>
-              <tr>
-                <Th>ID</Th>
-                <Th>Name</Th>
-                <Th>Category</Th>
-                <Th>Status</Th>
-                <Th>Last Location</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {persons?.map(p => (
-                <tr key={p.id} className="hover:bg-secondary/30 transition-colors">
-                  <Td className="text-muted-foreground font-mono text-xs">#{p.id}</Td>
-                  <Td className="font-bold text-white">{p.name}</Td>
-                  <Td><Badge variant="outline" className="border-primary/50 text-primary">{p.category}</Badge></Td>
-                  <Td>
-                    <Badge variant={p.status === 'safe' ? 'safe' : p.status === 'emergency' ? 'critical' : 'warning'}>
-                      {p.status}
-                    </Badge>
-                  </Td>
-                  <Td className="text-sm text-muted-foreground">{p.lastKnownLocation}</Td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Card>
-
-        <div className="space-y-6">
-          <Card className="p-6 border-t-4 border-t-primary bg-secondary/20">
-            <h3 className="text-xl font-display font-semibold text-white mb-6">Active Safety Incidents</h3>
-            <div className="space-y-4">
-              {incidents?.filter(i => i.status !== 'resolved').map(incident => (
-                <div key={incident.id} className="bg-background/50 border border-border/50 rounded-xl p-4 hover:border-primary/50 transition-colors">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-bold text-white text-sm">{incident.title}</h4>
-                    <Badge variant={incident.severity === 'critical' ? 'critical' : 'warning'}>{incident.severity}</Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{incident.description}</p>
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-primary font-medium">{incident.location}</span>
-                    <span className="text-muted-foreground uppercase tracking-widest">{incident.status}</span>
-                  </div>
-                </div>
-              ))}
-              {(!incidents || incidents.filter(i => i.status !== 'resolved').length === 0) && (
-                <div className="text-center p-6 text-muted-foreground">
-                  <HeartPulse className="w-10 h-10 mx-auto mb-3 opacity-20" />
-                  <p>No active incidents.</p>
-                </div>
-              )}
+          {/* Emergency Override Banner */}
+          <div className="bg-gradient-to-r from-card to-card border border-destructive/30 p-6 rounded-2xl relative overflow-hidden shadow-[0_0_30px_rgba(220,38,38,0.1)] group flex flex-col sm:flex-row items-center justify-between">
+            <div className="absolute top-0 left-0 w-1.5 bg-destructive h-full animate-pulse"></div>
+            <div className="absolute inset-0 bg-destructive/5 pointer-events-none group-hover:bg-destructive/10 transition-colors" />
+            
+            <div className="mb-4 sm:mb-0 relative z-10 flex-1 pr-4">
+              <h2 className="text-2xl font-display font-bold text-white mb-1 flex items-center">
+                <ShieldAlert className="w-6 h-6 mr-2 text-destructive" /> Master Override
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Bypass standard protocols to forcefully dispatch rapid response drones to a specified beacon.
+              </p>
             </div>
+            <Button 
+              size="lg" 
+              variant="destructive" 
+              onClick={() => setSosOpen(true)} 
+              className="w-full sm:w-auto h-14 px-8 text-lg font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.4)] animate-pulse hover:animate-none z-10"
+              style={{ animationDuration: '3s' }}
+            >
+              Initiate SOS
+            </Button>
+          </div>
+
+          {/* Persons Grid */}
+          <Card className="p-6 bg-transparent border-none shadow-none px-0">
+            <div className="flex justify-between items-center mb-6 px-1">
+              <h3 className="text-xl font-display font-bold text-white">Active Bio-Signatures</h3>
+              <div className="relative w-48 md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input placeholder="Query ID..." className="pl-9 h-9 rounded-full bg-secondary/50 border-border/50 text-xs" />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {persons?.map(p => (
+                <div key={p.id} className="bg-card border border-border/50 rounded-2xl p-4 hover:border-primary/40 transition-colors group relative overflow-hidden">
+                  <div className={cn("absolute top-0 left-0 w-full h-1 opacity-50", getStatusColor(p.status))} />
+                  
+                  <div className="flex items-start gap-4">
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-full bg-secondary border border-border flex items-center justify-center text-lg font-bold text-white shadow-inner">
+                        {p.name.split(' ').map(n=>n[0]).join('').substring(0,2)}
+                      </div>
+                      <div className={cn("absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-card", getStatusColor(p.status).split(' ')[0])} />
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start">
+                        <h4 className="font-bold text-white text-base truncate pr-2">{p.name}</h4>
+                        <span className="text-[10px] font-mono text-muted-foreground bg-secondary px-1.5 rounded">ID:{p.id}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 mt-1 mb-3">
+                        <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4 border-primary/30 text-primary">{p.category}</Badge>
+                        <span className="text-xs text-muted-foreground">{p.age} yrs</span>
+                      </div>
+                      
+                      <div className="space-y-1.5">
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <MapPin className="w-3 h-3 mr-1.5 text-white/50" />
+                          <span className="truncate">{p.lastKnownLocation}</span>
+                        </div>
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <Phone className="w-3 h-3 mr-1.5 text-white/50" />
+                          <span className="truncate">{p.contactPhone}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        {/* Right Col: Timeline & Chain */}
+        <div className="space-y-6">
+          <Card className="p-6 bg-secondary/20">
+            <h3 className="text-lg font-display font-bold text-white mb-6 flex items-center">
+              <Activity className="w-5 h-5 mr-2 text-primary" /> Incident Telemetry
+            </h3>
+            
+            <div className="relative border-l-2 border-border/50 ml-3 pl-5 space-y-6">
+              {incidents?.slice(0, 4).map((incident, i) => (
+                <div key={incident.id} className="relative">
+                  <div className={cn(
+                    "absolute -left-[27px] w-3 h-3 rounded-full border-2 border-background",
+                    incident.severity === 'critical' ? 'bg-destructive shadow-[0_0_8px_rgba(220,38,38,0.8)]' : 'bg-amber-500'
+                  )} />
+                  <div className="bg-background/50 border border-border/50 rounded-xl p-3 hover:border-primary/30 transition-colors">
+                    <div className="flex justify-between items-start mb-1">
+                      <span className="text-[10px] font-mono text-muted-foreground">{new Date(incident.occurredAt).toLocaleTimeString()}</span>
+                      <Badge variant={incident.severity === 'critical' ? 'critical' : 'warning'} className="text-[8px] py-0 h-4">{incident.status}</Badge>
+                    </div>
+                    <h4 className="font-bold text-white text-sm leading-tight mb-1">{incident.title}</h4>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{incident.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <Card className="p-6 border-primary/20 bg-primary/5">
+             <h3 className="text-sm font-display font-bold text-primary uppercase tracking-widest mb-4">Response Protocol Chain</h3>
+             <div className="flex flex-col gap-2">
+                <div className="bg-card border border-border/50 rounded-lg p-3 text-sm font-medium text-white shadow-sm">1. AI Threat Verification</div>
+                <div className="flex justify-center"><ChevronRight className="w-4 h-4 text-primary rotate-90" /></div>
+                <div className="bg-card border border-border/50 rounded-lg p-3 text-sm font-medium text-white shadow-sm">2. Drone Recon Dispatch</div>
+                <div className="flex justify-center"><ChevronRight className="w-4 h-4 text-primary rotate-90" /></div>
+                <div className="bg-card border border-primary/50 rounded-lg p-3 text-sm font-medium text-primary shadow-[0_0_15px_rgba(201,168,76,0.1)]">3. Med-Evac / Ground Team</div>
+             </div>
           </Card>
         </div>
       </div>
 
-      <Modal isOpen={sosModalOpen} onClose={() => setSosOpen(false)} title="Broadcast Emergency SOS">
+      <Modal isOpen={sosModalOpen} onClose={() => setSosOpen(false)} title="EMERGENCY DIRECTIVE">
         <form onSubmit={handleSOS} className="space-y-5">
-          <div className="bg-destructive/10 text-destructive text-sm p-4 rounded-xl border border-destructive/20 mb-4">
-            <strong>WARNING:</strong> This action will alert all regional authorities and dispatch emergency services. Misuse is a federal offense.
+          <div className="bg-destructive/10 text-destructive text-sm p-4 rounded-xl border border-destructive/30 mb-2 flex items-start">
+            <ShieldAlert className="w-5 h-5 mr-3 shrink-0 mt-0.5" />
+            <p><strong>RESTRICTED ACTION:</strong> You are authorizing an immediate physical response. This will re-route network power and deploy assets. All actions logged to central command.</p>
           </div>
-          <div className="space-y-2">
-            <Label>Target Personnel ID</Label>
+          
+          <div className="space-y-3">
+            <Label className="text-white font-bold">Target Bio-Signature</Label>
             <Select 
               value={sosData.personId} 
               onChange={e => setSosData({...sosData, personId: e.target.value})}
-              options={persons?.map(p => ({ label: `${p.name} (ID: ${p.id})`, value: p.id.toString() })) || []}
+              options={persons?.map(p => ({ label: `${p.name} — ${p.lastKnownLocation}`, value: p.id.toString() })) || []}
+              className="bg-background border-border/80 text-base py-3"
               required
             />
           </div>
-          <div className="space-y-2">
-            <Label>Incident Location</Label>
+          
+          <div className="space-y-3">
+            <Label className="text-white font-bold">Override Coordinates / Location</Label>
             <Input 
               value={sosData.location} 
               onChange={e => setSosData({...sosData, location: e.target.value})} 
-              placeholder="e.g. Sector 4, Main Clinic" 
+              placeholder="Enter precise extraction point..." 
+              className="bg-background border-border/80 text-base py-3 font-mono"
               required 
             />
           </div>
-          <div className="space-y-2">
-            <Label>Situation Details (Optional)</Label>
+          
+          <div className="space-y-3">
+            <Label className="text-white font-bold">Tactical Brief (Optional)</Label>
             <textarea 
-              className="w-full rounded-xl border border-border bg-input/50 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[100px]"
+              className="flex w-full rounded-xl border border-border/80 bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[100px] resize-none"
               value={sosData.message}
               onChange={e => setSosData({...sosData, message: e.target.value})}
-              placeholder="Provide specific details to aid response teams..."
+              placeholder="Hostiles, medical needs, terrain conditions..."
             />
           </div>
-          <div className="pt-4 flex gap-3">
-            <Button type="button" variant="outline" className="flex-1" onClick={() => setSosOpen(false)}>Cancel</Button>
-            <Button type="submit" variant="destructive" className="flex-1" isLoading={sosPending}>Confirm Dispatch</Button>
+          
+          <div className="pt-6 flex gap-4">
+            <Button type="button" variant="outline" className="flex-1 h-12" onClick={() => setSosOpen(false)}>Abort</Button>
+            <Button type="submit" variant="destructive" className="flex-[2] h-12 text-lg tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.5)]" isLoading={sosPending}>AUTHORIZE DISPATCH</Button>
           </div>
         </form>
       </Modal>
     </motion.div>
   );
-}
-
-// Temporary Icon for this file
-function UsersIcon(props: any) {
-  return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
 }
