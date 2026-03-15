@@ -6,6 +6,7 @@ import {
   Battery, Activity, ChevronRight, Download, Clock, TrendingDown,
   CheckCircle2, Radio, Siren, RefreshCw
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 type ScenarioType =
   | 'flood_event'
@@ -17,11 +18,11 @@ type ScenarioType =
 
 interface ScenarioOption {
   id: ScenarioType;
-  label: string;
+  labelKey: string;
+  descKey: string;
   icon: React.ComponentType<{ className?: string }>;
   module: 'energy' | 'lifemesh' | 'earthshield';
   color: string;
-  description: string;
 }
 
 interface SimulationResult {
@@ -55,28 +56,28 @@ interface SimulationResult {
 
 const SCENARIOS: ScenarioOption[] = [
   {
-    id: 'flood_event', label: 'Flood Event', icon: Globe, module: 'earthshield',
-    color: 'text-blue-400', description: 'Rapid onset flooding across low-lying village and shelter sites',
+    id: 'flood_event', labelKey: 'commandCenter.scenarioFlood', descKey: 'commandCenter.scenarioFloodDesc',
+    icon: Globe, module: 'earthshield', color: 'text-blue-400',
   },
   {
-    id: 'severe_storm', label: 'Severe Storm', icon: Radio, module: 'earthshield',
-    color: 'text-indigo-400', description: 'Category 3+ storm threatening grid and school/clinic infrastructure',
+    id: 'severe_storm', labelKey: 'commandCenter.scenarioStorm', descKey: 'commandCenter.scenarioStormDesc',
+    icon: Radio, module: 'earthshield', color: 'text-indigo-400',
   },
   {
-    id: 'wildfire_risk', label: 'Wildfire Risk', icon: AlertTriangle, module: 'earthshield',
-    color: 'text-orange-400', description: 'Active fire front within 5km of district infrastructure',
+    id: 'wildfire_risk', labelKey: 'commandCenter.scenarioWildfire', descKey: 'commandCenter.scenarioWildfireDesc',
+    icon: AlertTriangle, module: 'earthshield', color: 'text-orange-400',
   },
   {
-    id: 'clinic_power_outage', label: 'Clinic Power Outage', icon: Zap, module: 'energy',
-    color: 'text-yellow-400', description: 'Complete grid loss at critical medical facility',
+    id: 'clinic_power_outage', labelKey: 'commandCenter.scenarioClinic', descKey: 'commandCenter.scenarioClinicDesc',
+    icon: Zap, module: 'energy', color: 'text-yellow-400',
   },
   {
-    id: 'multi_site_outage', label: 'Multi-Site Outage', icon: Activity, module: 'energy',
-    color: 'text-destructive', description: 'Cascading power failure across 4+ infrastructure nodes',
+    id: 'multi_site_outage', labelKey: 'commandCenter.scenarioMultiSite', descKey: 'commandCenter.scenarioMultiSiteDesc',
+    icon: Activity, module: 'energy', color: 'text-destructive',
   },
   {
-    id: 'child_emergency_sos', label: 'Child Emergency / SOS', icon: Siren, module: 'lifemesh',
-    color: 'text-red-400', description: 'Critical SOS beacon from tracked child — immediate dispatch required',
+    id: 'child_emergency_sos', labelKey: 'commandCenter.scenarioChildSOS', descKey: 'commandCenter.scenarioChildSOSDesc',
+    icon: Siren, module: 'lifemesh', color: 'text-red-400',
   },
 ];
 
@@ -86,7 +87,7 @@ const MODULE_COLORS: Record<string, string> = {
   earthshield: 'text-blue-400 border-blue-500/30 bg-blue-500/10',
 };
 
-function ReadinessMeter({ score }: { score: number }) {
+function ReadinessMeter({ score, label }: { score: number; label: string }) {
   const color = score >= 70 ? '#22c55e' : score >= 45 ? '#f59e0b' : '#ef4444';
   const circumference = 2 * Math.PI * 54;
   const offset = circumference - (score / 100) * circumference;
@@ -102,14 +103,13 @@ function ReadinessMeter({ score }: { score: number }) {
       </svg>
       <div className="text-center z-10">
         <div className="text-3xl font-display font-bold text-white">{score}</div>
-        <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold">Readiness</div>
+        <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold">{label}</div>
       </div>
     </div>
   );
 }
 
 function TimelineEvent({ event, index }: { event: SimulationResult['escalationTimeline'][0]; index: number }) {
-  const isLast = false;
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -139,6 +139,7 @@ function TimelineEvent({ event, index }: { event: SimulationResult['escalationTi
 }
 
 export default function CommandCenter() {
+  const { t } = useTranslation();
   const [selectedScenario, setSelectedScenario] = useState<ScenarioType | null>(null);
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -161,7 +162,7 @@ export default function CommandCenter() {
       const data: SimulationResult = await res.json();
       setResult(data);
     } catch (e) {
-      setError('Simulation failed. Check API connection.');
+      setError(t('commandCenter.simulationFailed'));
     } finally {
       setLoading(false);
     }
@@ -172,26 +173,25 @@ export default function CommandCenter() {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <PageHeader
-        title="Command Center"
-        description="Unified system brain — scenario simulation and cross-module operational response."
+        title={t('commandCenter.title')}
+        description={t('commandCenter.description')}
         actions={
           result && (
             <Button variant="outline" size="sm" onClick={() => window.print()}>
-              <Download className="w-4 h-4 mr-2" /> Export Report
+              <Download className="w-4 h-4 mr-2" /> {t('commandCenter.exportReport')}
             </Button>
           )
         }
       />
 
-      {/* Scenario Selector */}
       <Card className="p-6 mb-6 border-primary/20 bg-gradient-to-br from-secondary/40 to-card">
         <div className="flex items-center gap-3 mb-5">
           <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
             <Cpu className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="font-display font-bold text-white text-lg">Scenario Simulation Engine</h3>
-            <p className="text-xs text-muted-foreground">Select a scenario and run the AI simulation to compute readiness and recommended actions</p>
+            <h3 className="font-display font-bold text-white text-lg">{t('commandCenter.simulationEngine')}</h3>
+            <p className="text-xs text-muted-foreground">{t('commandCenter.simulationDesc')}</p>
           </div>
         </div>
 
@@ -208,11 +208,11 @@ export default function CommandCenter() {
               )}
             >
               <scenario.icon className={cn("w-6 h-6 mb-2 transition-transform group-hover:scale-110", scenario.color)} />
-              <div className="font-bold text-sm text-white leading-tight mb-1">{scenario.label}</div>
-              <div className="text-[10px] text-muted-foreground leading-snug line-clamp-2">{scenario.description}</div>
+              <div className="font-bold text-sm text-white leading-tight mb-1">{t(scenario.labelKey)}</div>
+              <div className="text-[10px] text-muted-foreground leading-snug line-clamp-2">{t(scenario.descKey)}</div>
               {selectedScenario === scenario.id && (
                 <div className="mt-2 flex items-center gap-1 text-[10px] text-primary font-bold uppercase tracking-wider">
-                  <CheckCircle2 className="w-3 h-3" /> Selected
+                  <CheckCircle2 className="w-3 h-3" /> {t('commandCenter.selected')}
                 </div>
               )}
             </button>
@@ -226,8 +226,8 @@ export default function CommandCenter() {
             className="h-12 px-8 font-bold tracking-widest shadow-[0_0_20px_rgba(201,168,76,0.3)]"
           >
             {loading
-              ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Simulating...</>
-              : <><Play className="w-4 h-4 mr-2" /> Run Simulation</>}
+              ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> {t('commandCenter.simulating')}</>
+              : <><Play className="w-4 h-4 mr-2" /> {t('commandCenter.runSimulation')}</>}
           </Button>
           {selectedMeta && (
             <div className={cn("flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl border", MODULE_COLORS[selectedMeta.module])}>
@@ -239,12 +239,10 @@ export default function CommandCenter() {
         </div>
       </Card>
 
-      {/* Results */}
       <AnimatePresence>
         {result && (
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             
-            {/* Header Bar */}
             <div className={cn(
               "p-4 rounded-2xl border mb-6 flex flex-wrap items-center gap-4",
               result.riskSeverity === 'critical'
@@ -257,21 +255,20 @@ export default function CommandCenter() {
                 "w-2 h-2 rounded-full animate-ping",
                 result.riskSeverity === 'critical' ? 'bg-destructive' : result.riskSeverity === 'warning' ? 'bg-amber-500' : 'bg-green-500'
               )} />
-              <h2 className="font-display font-bold text-white text-lg">{result.scenarioLabel} — Active Simulation</h2>
+              <h2 className="font-display font-bold text-white text-lg">{result.scenarioLabel} — {t('commandCenter.activeSimulation')}</h2>
               <Badge variant={result.riskSeverity === 'critical' ? 'critical' : 'warning'} className="uppercase">
-                {result.riskSeverity} risk
+                {result.riskSeverity} {t('commandCenter.risk')}
               </Badge>
               <span className="text-[10px] font-mono text-muted-foreground ml-auto">SIM ID: {result.scenarioId.slice(-8)}</span>
               <span className="text-[10px] font-mono text-muted-foreground">{new Date(result.simulatedAt).toUTCString()}</span>
             </div>
 
-            {/* Top KPI Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               {[
-                { label: 'Affected Sites', value: result.affectedSites.length, icon: MapPin, color: 'hsl(var(--chart-4))' },
-                { label: 'People at Risk', value: result.estimatedPopulationAtRisk.toLocaleString(), icon: Users, color: 'hsl(var(--destructive))' },
-                { label: 'At-Risk Persons', value: result.atRiskPersonsCount, icon: Shield, color: 'hsl(var(--chart-3))' },
-                { label: 'Critical Facilities', value: result.criticalFacilitiesCount, icon: Activity, color: 'hsl(var(--primary))' },
+                { label: t('commandCenter.affectedSites'), value: result.affectedSites.length, icon: MapPin, color: 'hsl(var(--chart-4))' },
+                { label: t('commandCenter.peopleAtRisk'), value: result.estimatedPopulationAtRisk.toLocaleString(), icon: Users, color: 'hsl(var(--destructive))' },
+                { label: t('commandCenter.atRiskPersons'), value: result.atRiskPersonsCount, icon: Shield, color: 'hsl(var(--chart-3))' },
+                { label: t('commandCenter.criticalFacilities'), value: result.criticalFacilitiesCount, icon: Activity, color: 'hsl(var(--primary))' },
               ].map(({ label, value, icon: Icon, color }) => (
                 <Card key={label} className="p-4 border-t-2" style={{ borderTopColor: color }}>
                   <div className="flex items-center justify-between mb-2">
@@ -283,32 +280,30 @@ export default function CommandCenter() {
               ))}
             </div>
 
-            {/* Main Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
               
-              {/* Readiness + Energy */}
               <div className="flex flex-col gap-6">
                 <Card className="p-6 flex flex-col items-center text-center border-primary/20">
-                  <h3 className="text-sm font-display font-bold text-muted-foreground uppercase tracking-widest mb-4">System Readiness</h3>
-                  <ReadinessMeter score={result.readinessScore} />
+                  <h3 className="text-sm font-display font-bold text-muted-foreground uppercase tracking-widest mb-4">{t('commandCenter.systemReadiness')}</h3>
+                  <ReadinessMeter score={result.readinessScore} label={t('commandCenter.readiness')} />
                   <div className={cn("mt-4 text-sm font-bold",
                     result.readinessScore >= 70 ? 'text-green-400' : result.readinessScore >= 45 ? 'text-amber-400' : 'text-destructive'
                   )}>
-                    {result.readinessScore >= 70 ? 'READY FOR RESPONSE' : result.readinessScore >= 45 ? 'PARTIALLY READY' : 'CRITICAL — RESPONSE REQUIRED'}
+                    {result.readinessScore >= 70 ? t('commandCenter.readyForResponse') : result.readinessScore >= 45 ? t('commandCenter.partiallyReady') : t('commandCenter.criticalResponse')}
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Score factors: energy reserves, active alerts, site risk levels
+                    {t('commandCenter.scoreFactors')}
                   </p>
                 </Card>
 
                 <Card className="p-5 bg-secondary/20">
                   <h3 className="text-sm font-display font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <Battery className="w-4 h-4" /> Energy Status
+                    <Battery className="w-4 h-4" /> {t('commandCenter.energyStatus')}
                   </h3>
                   <div className="space-y-4">
                     <div>
                       <div className="flex justify-between text-xs mb-1">
-                        <span className="text-muted-foreground font-medium">Avg Battery</span>
+                        <span className="text-muted-foreground font-medium">{t('commandCenter.avgBattery')}</span>
                         <span className={cn("font-bold", result.energyStatus.avgBatteryLevel < 30 ? 'text-destructive' : 'text-white')}>
                           {result.energyStatus.avgBatteryLevel}%
                         </span>
@@ -322,7 +317,7 @@ export default function CommandCenter() {
                     </div>
                     <div>
                       <div className="flex justify-between text-xs mb-1">
-                        <span className="text-muted-foreground font-medium">Solar Output</span>
+                        <span className="text-muted-foreground font-medium">{t('commandCenter.solarOutput')}</span>
                         <span className="font-bold text-primary">{result.energyStatus.avgSolarGeneration}%</span>
                       </div>
                       <div className="h-2 bg-secondary rounded-full overflow-hidden">
@@ -330,11 +325,11 @@ export default function CommandCenter() {
                       </div>
                     </div>
                     <div className="flex justify-between text-sm pt-1 border-t border-border/50">
-                      <span className="text-muted-foreground">Backup Duration</span>
+                      <span className="text-muted-foreground">{t('commandCenter.backupDuration')}</span>
                       <span className="font-bold text-white">{result.energyStatus.backupHoursEstimate}h est.</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Grid Stress</span>
+                      <span className="text-muted-foreground">{t('commandCenter.gridStress')}</span>
                       <Badge variant={result.energyStatus.gridStressLevel === 'critical' ? 'critical' : result.energyStatus.gridStressLevel === 'warning' ? 'warning' : 'safe'} className="text-[10px]">
                         {result.energyStatus.gridStressLevel.toUpperCase()}
                       </Badge>
@@ -343,14 +338,13 @@ export default function CommandCenter() {
                 </Card>
               </div>
 
-              {/* Affected Sites */}
               <Card className="p-6 lg:col-span-2">
                 <h3 className="text-sm font-display font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-primary" /> Affected Infrastructure Nodes
+                  <MapPin className="w-4 h-4 text-primary" /> {t('commandCenter.affectedNodes')}
                 </h3>
                 <div className="space-y-3">
                   {result.affectedSites.length === 0 ? (
-                    <div className="text-muted-foreground text-sm text-center py-8">No sites directly affected by this scenario</div>
+                    <div className="text-muted-foreground text-sm text-center py-8">{t('commandCenter.noSitesAffected')}</div>
                   ) : (
                     result.affectedSites.map((site, i) => (
                       <motion.div
@@ -374,13 +368,13 @@ export default function CommandCenter() {
                         </div>
                         <div className="text-right shrink-0">
                           <div className="text-xs font-bold text-white">{site.population.toLocaleString()}</div>
-                          <div className="text-[9px] text-muted-foreground">population</div>
+                          <div className="text-[9px] text-muted-foreground">{t('commandCenter.population')}</div>
                         </div>
                         <div className="text-right shrink-0">
                           <div className={cn("text-xs font-bold", site.powerAvailability < 30 ? 'text-destructive' : site.powerAvailability < 70 ? 'text-amber-400' : 'text-green-400')}>
                             {site.powerAvailability.toFixed(0)}%
                           </div>
-                          <div className="text-[9px] text-muted-foreground">power</div>
+                          <div className="text-[9px] text-muted-foreground">{t('commandCenter.power')}</div>
                         </div>
                       </motion.div>
                     ))
@@ -389,7 +383,7 @@ export default function CommandCenter() {
 
                 {result.criticalFacilities.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-border/50">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-destructive mb-2">Critical Facilities at Risk</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-destructive mb-2">{t('commandCenter.criticalFacilitiesAtRisk')}</div>
                     <div className="flex flex-wrap gap-2">
                       {result.criticalFacilities.map(f => (
                         <div key={f.id} className="flex items-center gap-2 bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-1.5 text-xs">
@@ -404,13 +398,11 @@ export default function CommandCenter() {
               </Card>
             </div>
 
-            {/* Actions + Timeline */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
-              {/* Recommended Actions */}
               <Card className="p-6 border-primary/20">
                 <h3 className="text-sm font-display font-bold text-primary uppercase tracking-widest mb-5 flex items-center gap-2">
-                  <ChevronRight className="w-4 h-4" /> Recommended Actions
+                  <ChevronRight className="w-4 h-4" /> {t('commandCenter.recommendedActions')}
                 </h3>
                 <ol className="space-y-3">
                   {result.recommendedActions.map((action, i) => (
@@ -430,10 +422,9 @@ export default function CommandCenter() {
                 </ol>
               </Card>
 
-              {/* Escalation Timeline */}
               <Card className="p-6 bg-secondary/20">
                 <h3 className="text-sm font-display font-bold text-muted-foreground uppercase tracking-widest mb-5 flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-primary" /> Escalation Timeline
+                  <Clock className="w-4 h-4 text-primary" /> {t('commandCenter.escalationTimeline')}
                 </h3>
                 <div className="space-y-0">
                   {result.escalationTimeline.map((evt, i) => (
@@ -452,9 +443,9 @@ export default function CommandCenter() {
           <div className="w-24 h-24 rounded-full bg-secondary/50 border border-border flex items-center justify-center mb-6">
             <Cpu className="w-10 h-10 text-muted-foreground" />
           </div>
-          <h3 className="text-xl font-display font-bold text-white mb-2">Select a Scenario</h3>
+          <h3 className="text-xl font-display font-bold text-white mb-2">{t('commandCenter.selectScenario')}</h3>
           <p className="text-muted-foreground text-sm max-w-sm">
-            Choose a scenario above and run the simulation engine to compute live readiness, impacted assets, and recommended response actions.
+            {t('commandCenter.selectScenarioDesc')}
           </p>
         </div>
       )}

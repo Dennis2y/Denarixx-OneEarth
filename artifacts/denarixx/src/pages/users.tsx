@@ -4,8 +4,10 @@ import { PageHeader, LoadingScreen, Card, Badge, Table, Th, Td, Button, Skeleton
 import { Users as UsersIcon, Shield, Mail, Activity, Lock, Plus } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 export default function Users() {
+  const { t } = useTranslation();
   const { data: users, isLoading } = useGetUsers();
 
   const getRoleColor = (role: string) => {
@@ -21,11 +23,11 @@ export default function Users() {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <PageHeader 
-        title="Personnel & Clearance" 
-        description="Manage authenticated operators, bio-identities, and organizational access levels."
+        title={t('users.title')}
+        description={t('users.description')}
         actions={
           <Button className="shadow-[0_0_15px_rgba(201,168,76,0.2)]">
-            <Plus className="w-4 h-4 mr-2" /> Grant New Clearance
+            <Plus className="w-4 h-4 mr-2" /> {t('users.grantClearance')}
           </Button>
         }
       />
@@ -34,21 +36,21 @@ export default function Users() {
         <Card className="p-6 bg-secondary/30 border-l-4 border-l-primary flex items-center">
           <Shield className="w-10 h-10 text-primary mr-4 opacity-50" />
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Admin Level Access</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t('users.adminLevel')}</p>
             <p className="text-2xl font-display font-bold text-white">{users?.filter(u => u.role === 'admin').length || 0}</p>
           </div>
         </Card>
         <Card className="p-6 bg-secondary/30 border-l-4 border-l-blue-500 flex items-center">
           <Activity className="w-10 h-10 text-blue-500 mr-4 opacity-50" />
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Active Operators</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t('users.activeOperators')}</p>
             <p className="text-2xl font-display font-bold text-white">{users?.filter(u => u.status === 'active').length || 0}</p>
           </div>
         </Card>
         <Card className="p-6 bg-secondary/30 border-l-4 border-l-destructive flex items-center">
           <Lock className="w-10 h-10 text-destructive mr-4 opacity-50" />
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Suspended Accounts</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t('users.suspendedAccounts')}</p>
             <p className="text-2xl font-display font-bold text-white">{users?.filter(u => u.status === 'suspended').length || 0}</p>
           </div>
         </Card>
@@ -63,12 +65,12 @@ export default function Users() {
           <Table>
             <thead>
               <tr>
-                <Th>Operator Designation</Th>
-                <Th>Clearance Role</Th>
-                <Th>Organization</Th>
-                <Th>System Status</Th>
-                <Th>Last Uplink</Th>
-                <Th className="text-right">Actions</Th>
+                <Th>{t('users.colDesignation')}</Th>
+                <Th>{t('users.colRole')}</Th>
+                <Th>{t('users.colOrganization')}</Th>
+                <Th>{t('users.colStatus')}</Th>
+                <Th>{t('users.colLastUplink')}</Th>
+                <Th className="text-right">{t('users.colActions')}</Th>
               </tr>
             </thead>
             <tbody>
@@ -104,10 +106,10 @@ export default function Users() {
                     </div>
                   </Td>
                   <Td className="text-sm text-muted-foreground font-mono">
-                    {user.lastLogin ? formatDistanceToNow(new Date(user.lastLogin), { addSuffix: true }) : 'Never'}
+                    {user.lastLogin ? formatDistanceToNow(new Date(user.lastLogin), { addSuffix: true }) : t('users.never')}
                   </Td>
                   <Td className="text-right">
-                    <Button variant="ghost" size="sm" className="text-xs font-medium hover:bg-destructive/10 hover:text-destructive">Revoke Access</Button>
+                    <Button variant="ghost" size="sm" className="text-xs font-medium hover:bg-destructive/10 hover:text-destructive">{t('users.revokeAccess')}</Button>
                   </Td>
                 </tr>
               ))}

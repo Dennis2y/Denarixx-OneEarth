@@ -3,10 +3,12 @@ import { useLocation } from 'wouter';
 import { Loader2, Shield, Zap, Globe, AlertCircle } from 'lucide-react';
 import { Button, Input, Label } from '@/components/ui-core';
 import { useAuth } from '@/context/auth';
+import { useTranslation } from 'react-i18next';
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const { login, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('commander@denarixx.io');
   const [password, setPassword] = useState('denarixx2026');
   const [loading, setLoading] = useState(false);
@@ -34,7 +36,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden selection:bg-primary/30">
-      {/* Background image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 transition-opacity duration-1000"
         style={{
@@ -42,8 +43,6 @@ export default function Login() {
           opacity: videoLoaded ? 0 : 1,
         }}
       />
-
-      {/* Background video */}
       <video
         ref={videoRef}
         className="absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-[1500ms]"
@@ -52,8 +51,6 @@ export default function Login() {
         onLoadedData={() => setVideoLoaded(true)}
         src={`${import.meta.env.BASE_URL}africa-city-night.mp4`}
       />
-
-      {/* Overlays */}
       <div className="absolute inset-0 z-10 pointer-events-none">
         <div className="absolute inset-0 bg-black/50" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/40" />
@@ -62,11 +59,9 @@ export default function Login() {
       <div className="absolute inset-0 z-10 pointer-events-none opacity-[0.03]"
         style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,1) 2px, rgba(255,255,255,1) 3px)', backgroundSize: '100% 3px' }} />
 
-      {/* Ambient glows */}
       <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-primary/15 rounded-full blur-[120px] z-10 pointer-events-none animate-pulse" style={{ animationDuration: '7s' }} />
       <div className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] bg-blue-600/10 rounded-full blur-[100px] z-10 pointer-events-none animate-pulse" style={{ animationDuration: '11s' }} />
 
-      {/* Module badges */}
       <div className="absolute top-8 left-0 right-0 flex justify-center gap-6 z-20 px-4">
         {[
           { icon: Zap, label: 'Energy Grid', color: 'text-primary' },
@@ -81,7 +76,6 @@ export default function Login() {
         ))}
       </div>
 
-      {/* Login card */}
       <div className="relative z-20 w-full max-w-md px-4">
         <div className="backdrop-blur-xl bg-black/55 border border-white/10 rounded-3xl p-10 shadow-[0_0_80px_rgba(0,0,0,0.8),0_0_40px_rgba(201,168,76,0.1)]">
           <div className="flex flex-col items-center mb-10">
@@ -102,10 +96,10 @@ export default function Login() {
               </div>
             )}
             <div className="space-y-2">
-              <Label className="text-muted-foreground uppercase tracking-widest text-[10px] font-bold">Operator Identity</Label>
+              <Label className="text-muted-foreground uppercase tracking-widest text-[10px] font-bold">{t('login.operatorIdentity')}</Label>
               <Input
                 type="email"
-                placeholder="Enter Access Email"
+                placeholder={t('login.enterEmail')}
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
@@ -114,7 +108,7 @@ export default function Login() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-muted-foreground uppercase tracking-widest text-[10px] font-bold">Security Passphrase</Label>
+              <Label className="text-muted-foreground uppercase tracking-widest text-[10px] font-bold">{t('login.securityPassphrase')}</Label>
               <Input
                 type="password"
                 placeholder="••••••••"
@@ -126,22 +120,21 @@ export default function Login() {
               />
             </div>
 
-            {/* Demo accounts hint */}
             <div className="text-[10px] text-white/30 bg-white/5 rounded-lg p-3 border border-white/5">
-              <span className="text-white/50 font-semibold">Demo accounts: </span>
+              <span className="text-white/50 font-semibold">{t('login.demoAccounts')} </span>
               commander@denarixx.io / denarixx2026 · adaeze@denarixx.io / operator123
             </div>
 
             <div className="pt-2">
               <Button type="submit" className="w-full h-14 text-sm font-bold uppercase tracking-[0.25em] shadow-[0_0_30px_rgba(201,168,76,0.4)] rounded-xl" disabled={loading}>
-                {loading ? <span className="flex items-center gap-3"><Loader2 className="animate-spin w-5 h-5" /> Authenticating...</span> : 'Initiate Uplink'}
+                {loading ? <span className="flex items-center gap-3"><Loader2 className="animate-spin w-5 h-5" /> {t('login.authenticating')}</span> : t('login.initiateUplink')}
               </Button>
             </div>
           </form>
 
           <div className="mt-8 text-center border-t border-white/10 pt-6">
-            <p className="text-[9px] text-white/30 uppercase tracking-[0.2em]">Global Unified AI Infrastructure · Classified Level 5</p>
-            <p className="text-[9px] text-primary/40 uppercase tracking-[0.15em] mt-1">v2.4.1 — OneEarth Platform</p>
+            <p className="text-[9px] text-white/30 uppercase tracking-[0.2em]">{t('login.classified')}</p>
+            <p className="text-[9px] text-primary/40 uppercase tracking-[0.15em] mt-1">{t('login.version')}</p>
           </div>
         </div>
       </div>

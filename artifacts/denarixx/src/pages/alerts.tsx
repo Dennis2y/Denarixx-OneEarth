@@ -4,6 +4,7 @@ import { PageHeader, Card, Badge, Button, Skeleton, EmptyState, cn } from '@/com
 import { format } from 'date-fns';
 import { Bell, Filter, ShieldAlert, Zap, Globe, MapPin, Search, ArrowRight, X, CheckCircle2, AlertTriangle, Info, Clock, CheckCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 type UnifiedAlert = {
   id: number;
@@ -17,6 +18,7 @@ type UnifiedAlert = {
 };
 
 export default function Alerts() {
+  const { t } = useTranslation();
   const [module, setModule] = useState<string>('');
   const [severity, setSeverity] = useState<string>('');
   const [status, setStatus] = useState<string>('');
@@ -84,33 +86,30 @@ export default function Alerts() {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex relative min-h-[calc(100vh-140px)]">
       
-      {/* Main Content */}
       <div className={cn("flex-1 transition-all duration-300", selectedAlert ? "pr-[420px]" : "")}>
         <PageHeader 
-          title="Unified Action Log" 
-          description="Global, cross-module event registry and system alerts."
+          title={t('alerts.title')}
+          description={t('alerts.description')}
           actions={
             <div className="flex items-center gap-3">
               {criticalCount > 0 && (
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-destructive/10 border border-destructive/30 rounded-xl">
                   <div className="w-2 h-2 rounded-full bg-destructive animate-ping" />
-                  <span className="text-destructive text-xs font-bold uppercase tracking-wider">{criticalCount} Critical Active</span>
+                  <span className="text-destructive text-xs font-bold uppercase tracking-wider">{criticalCount} {t('alerts.criticalActive')}</span>
                 </div>
               )}
             </div>
           }
         />
 
-        {/* Filters */}
         <Card className="p-5 mb-6 border-primary/15 bg-secondary/20 backdrop-blur-md space-y-4">
-          {/* Module Filter */}
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5 shrink-0">
-              <Filter className="w-3 h-3" /> Module
+              <Filter className="w-3 h-3" /> {t('alerts.module')}
             </span>
             <div className="flex flex-wrap gap-2">
               {[
-                { val: '', label: 'All' },
+                { val: '', label: t('alerts.all') },
                 { val: 'energy', label: 'Energy' },
                 { val: 'lifemesh', label: 'LifeMesh' },
                 { val: 'earthshield', label: 'EarthShield' },
@@ -126,15 +125,14 @@ export default function Alerts() {
             </div>
           </div>
 
-          {/* Severity + Status Filters */}
           <div className="flex flex-wrap gap-6 border-t border-border/30 pt-4">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground shrink-0">Severity</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground shrink-0">{t('alerts.severity')}</span>
               {[
-                { val: '', label: 'Any', cls: '' },
-                { val: 'critical', label: 'Critical', cls: 'data-[active=true]:bg-destructive/20 data-[active=true]:text-destructive data-[active=true]:border-destructive/50' },
-                { val: 'warning', label: 'Warning', cls: 'data-[active=true]:bg-amber-500/20 data-[active=true]:text-amber-400 data-[active=true]:border-amber-500/50' },
-                { val: 'info', label: 'Info', cls: 'data-[active=true]:bg-blue-500/20 data-[active=true]:text-blue-400 data-[active=true]:border-blue-500/50' },
+                { val: '', label: t('alerts.any'), cls: '' },
+                { val: 'critical', label: t('alerts.critical'), cls: 'data-[active=true]:bg-destructive/20 data-[active=true]:text-destructive data-[active=true]:border-destructive/50' },
+                { val: 'warning', label: t('alerts.warning'), cls: 'data-[active=true]:bg-amber-500/20 data-[active=true]:text-amber-400 data-[active=true]:border-amber-500/50' },
+                { val: 'info', label: t('alerts.info'), cls: 'data-[active=true]:bg-blue-500/20 data-[active=true]:text-blue-400 data-[active=true]:border-blue-500/50' },
               ].map(({ val, label, cls }) => (
                 <button key={val} onClick={() => setSeverity(val)}
                   data-active={severity === val}
@@ -145,12 +143,12 @@ export default function Alerts() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground shrink-0">Status</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground shrink-0">{t('alerts.status')}</span>
               {[
-                { val: '', label: 'All' },
-                { val: 'active', label: 'Active' },
-                { val: 'acknowledged', label: 'Acknowledged' },
-                { val: 'resolved', label: 'Resolved' },
+                { val: '', label: t('alerts.all') },
+                { val: 'active', label: t('alerts.active') },
+                { val: 'acknowledged', label: t('alerts.acknowledged') },
+                { val: 'resolved', label: t('alerts.resolved') },
               ].map(({ val, label }) => (
                 <button key={val} onClick={() => setStatus(val)}
                   className={cn(
@@ -186,9 +184,9 @@ export default function Alerts() {
           <Card className="border-dashed border-2 border-border/50 bg-transparent">
             <EmptyState 
               icon={Search} 
-              title="No anomalies detected" 
-              description="The system has found no records matching your filter configuration."
-              action={<Button variant="outline" onClick={() => { setModule(''); setSeverity(''); setStatus(''); }}>Reset Filters</Button>}
+              title={t('alerts.noAnomalies')}
+              description={t('alerts.noAnomaliesDesc')}
+              action={<Button variant="outline" onClick={() => { setModule(''); setSeverity(''); setStatus(''); }}>{t('alerts.resetFilters')}</Button>}
             />
           </Card>
         ) : (
@@ -237,7 +235,6 @@ export default function Alerts() {
         )}
       </div>
 
-      {/* Slide-in Details Drawer */}
       <AnimatePresence>
         {selectedAlert && (
           <motion.div 
@@ -250,7 +247,7 @@ export default function Alerts() {
             <div className="h-16 flex items-center justify-between px-6 border-b border-border/50 bg-background/50 backdrop-blur shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: getSeverityColor(selectedAlert.severity) }} />
-                <h3 className="font-display font-bold text-white tracking-widest uppercase text-sm">Intel Dossier</h3>
+                <h3 className="font-display font-bold text-white tracking-widest uppercase text-sm">{t('alerts.intelDossier')}</h3>
               </div>
               <button onClick={() => setSelectedAlert(null)} className="p-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-white transition-colors">
                 <X className="w-5 h-5" />
@@ -258,7 +255,6 @@ export default function Alerts() {
             </div>
             
             <div className="flex-1 overflow-y-auto custom-scrollbar">
-              {/* Severity header */}
               <div className="p-6 border-b border-border/50" style={{ borderTopColor: getSeverityColor(selectedAlert.severity), borderTopWidth: 3 }}>
                 <div className="flex flex-wrap gap-2 mb-3">
                   <Badge variant={selectedAlert.severity as any}>{selectedAlert.severity.toUpperCase()}</Badge>
@@ -279,41 +275,41 @@ export default function Alerts() {
 
               <div className="p-6 space-y-6">
                 <div>
-                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground pb-2 mb-3 border-b border-border/50">Event Description</h4>
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground pb-2 mb-3 border-b border-border/50">{t('alerts.eventDescription')}</h4>
                   <p className="text-sm text-foreground leading-relaxed bg-secondary/30 p-4 rounded-xl border border-border/50">
                     {selectedAlert.description}
                   </p>
                 </div>
 
                 <div>
-                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground pb-2 mb-3 border-b border-border/50">Location Intelligence</h4>
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground pb-2 mb-3 border-b border-border/50">{t('alerts.locationIntel')}</h4>
                   <div className="flex items-center gap-3 bg-secondary/30 p-4 rounded-xl border border-border/50">
                     <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
                       <MapPin className="w-4 h-4 text-primary" />
                     </div>
                     <div>
                       <p className="font-bold text-white">{selectedAlert.location}</p>
-                      <p className="text-xs text-muted-foreground font-mono mt-0.5">Geospatial coordinates resolving...</p>
+                      <p className="text-xs text-muted-foreground font-mono mt-0.5">{t('alerts.geoResolving')}</p>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground pb-2 mb-3 border-b border-border/50">Timestamp Chain</h4>
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground pb-2 mb-3 border-b border-border/50">{t('alerts.timestampChain')}</h4>
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm bg-secondary/20 p-3 rounded-lg">
-                      <span className="text-muted-foreground">Event Recorded</span>
+                      <span className="text-muted-foreground">{t('alerts.eventRecorded')}</span>
                       <span className="font-mono font-medium text-white">{format(new Date(selectedAlert.createdAt), 'HH:mm:ss')}</span>
                     </div>
                     <div className="flex justify-between text-sm bg-secondary/20 p-3 rounded-lg">
-                      <span className="text-muted-foreground">Date</span>
+                      <span className="text-muted-foreground">{t('alerts.date')}</span>
                       <span className="font-mono font-medium text-white">{format(new Date(selectedAlert.createdAt), 'yyyy-MM-dd')}</span>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground pb-2 mb-3 border-b border-border/50">Current Resolution State</h4>
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground pb-2 mb-3 border-b border-border/50">{t('alerts.resolutionState')}</h4>
                   <div className="flex items-center justify-between bg-secondary/30 p-4 rounded-xl border border-border/50">
                     <div className="flex items-center gap-2">
                       {selectedAlert.status === 'resolved' ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : selectedAlert.status === 'acknowledged' ? <CheckCheck className="w-4 h-4 text-primary" /> : <AlertTriangle className="w-4 h-4 text-destructive" />}
@@ -328,16 +324,16 @@ export default function Alerts() {
             <div className="p-5 border-t border-border/50 bg-background/50 space-y-2.5 shrink-0">
               {selectedAlert.status === 'active' && (
                 <Button className="w-full h-11 shadow-[0_0_15px_rgba(201,168,76,0.2)]" onClick={() => handleAcknowledge(selectedAlert)}>
-                  <CheckCheck className="w-4 h-4 mr-2" /> Acknowledge Receipt
+                  <CheckCheck className="w-4 h-4 mr-2" /> {t('alerts.acknowledgeReceipt')}
                 </Button>
               )}
               {selectedAlert.status !== 'resolved' && (
                 <Button variant="outline" className="w-full h-11 border-green-500/30 text-green-400 hover:bg-green-500/10" onClick={() => handleResolve(selectedAlert)}>
-                  <CheckCircle2 className="w-4 h-4 mr-2" /> Mark Resolved
+                  <CheckCircle2 className="w-4 h-4 mr-2" /> {t('alerts.markResolved')}
                 </Button>
               )}
               <Button variant="outline" className="w-full h-11 border-border/50" onClick={() => setSelectedAlert(null)}>
-                Close Dossier
+                {t('alerts.closeDossier')}
               </Button>
             </div>
           </motion.div>

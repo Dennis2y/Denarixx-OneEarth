@@ -4,8 +4,10 @@ import { PageHeader, LoadingScreen, Card, Badge, Table, Th, Td, Button, Modal, I
 import { MapPin, Plus, LayoutGrid, List, Users, Server, Zap, Activity, AlertTriangle, Shield, BarChart3, Clock, Radio } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 
 export default function Sites() {
+  const { t } = useTranslation();
   const { data: sites, isLoading, refetch } = useGetSites();
   const { mutate: createSite, isPending } = useCreateSite();
   const [modalOpen, setModalOpen] = useState(false);
@@ -74,8 +76,8 @@ export default function Sites() {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <PageHeader
-        title="Infrastructure Nodes"
-        description="Global directory and status of all physical Denarixx installations."
+        title={t('sites.title')}
+        description={t('sites.description')}
         actions={
           <div className="flex items-center gap-4">
             <div className="bg-secondary/50 p-1 rounded-xl border border-border/50 flex">
@@ -87,7 +89,7 @@ export default function Sites() {
               </button>
             </div>
             <Button onClick={() => setModalOpen(true)} className="shadow-[0_0_15px_rgba(201,168,76,0.3)]">
-              <Plus className="w-5 h-5 mr-2" /> Deploy Node
+              <Plus className="w-5 h-5 mr-2" /> {t('sites.deployNode')}
             </Button>
           </div>
         }
@@ -105,7 +107,7 @@ export default function Sites() {
         </div>
       ) : sites?.length === 0 ? (
         <Card className="border-dashed border-2 border-border/50 bg-transparent">
-          <EmptyState icon={Server} title="No Nodes Deployed" description="Deploy a new infrastructure node to begin monitoring." action={<Button onClick={() => setModalOpen(true)}>Deploy First Node</Button>} />
+          <EmptyState icon={Server} title={t('sites.noNodes')} description={t('sites.noNodesDesc')} action={<Button onClick={() => setModalOpen(true)}>{t('sites.deployFirstNode')}</Button>} />
         </Card>
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -117,9 +119,9 @@ export default function Sites() {
                   <Badge variant="outline" className="border-primary/30 text-primary uppercase text-[10px] tracking-widest bg-primary/5">{site.type}</Badge>
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
                     {site.status === 'online' ? (
-                      <span className="text-green-500 flex items-center"><div className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2 animate-pulse"/> ONLINE</span>
+                      <span className="text-green-500 flex items-center"><div className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2 animate-pulse"/> {t('sites.online')}</span>
                     ) : (
-                      <span className="text-destructive flex items-center"><div className="w-1.5 h-1.5 rounded-full bg-destructive mr-2"/> OFFLINE</span>
+                      <span className="text-destructive flex items-center"><div className="w-1.5 h-1.5 rounded-full bg-destructive mr-2"/> {t('sites.offline')}</span>
                     )}
                   </div>
                 </div>
@@ -132,20 +134,20 @@ export default function Sites() {
               <div className="p-6 flex-1 bg-card">
                 <div className="grid grid-cols-3 gap-4 mb-6">
                   <div className="text-center">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Uptime</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">{t('sites.uptime')}</p>
                     <p className="font-mono text-lg font-bold text-white">{site.uptime}%</p>
                   </div>
                   <div className="text-center border-l border-r border-border/50">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Power</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">{t('sites.power')}</p>
                     <p className="font-mono text-lg font-bold text-primary">{site.powerAvailability}%</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Risk</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">{t('sites.risk')}</p>
                     <p className={cn('font-bold text-sm mt-1 py-0.5 rounded border capitalize', getRiskColor(site.currentRiskLevel))}>{site.currentRiskLevel}</p>
                   </div>
                 </div>
                 <Button variant="secondary" className="w-full bg-secondary/50 hover:bg-primary hover:text-primary-foreground border border-border/50 group-hover:border-primary/50 transition-colors" onClick={() => loadSiteDetail(site)}>
-                  Access Node Telemetry
+                  {t('sites.accessTelemetry')}
                 </Button>
               </div>
             </Card>
@@ -155,7 +157,7 @@ export default function Sites() {
         <Card>
           <Table>
             <thead>
-              <tr><Th>Node Identifier</Th><Th>Type</Th><Th>Global Position</Th><Th>Risk Level</Th><Th>Status</Th><Th>Uptime</Th><Th>Power Avail.</Th><Th>Action</Th></tr>
+              <tr><Th>{t('sites.colNode')}</Th><Th>{t('sites.colType')}</Th><Th>{t('sites.colPosition')}</Th><Th>{t('sites.colRisk')}</Th><Th>{t('sites.colStatus')}</Th><Th>{t('sites.colUptime')}</Th><Th>{t('sites.colPower')}</Th><Th>{t('sites.colAction')}</Th></tr>
             </thead>
             <tbody>
               {sites?.map((site) => (
@@ -167,7 +169,7 @@ export default function Sites() {
                   <Td><div className="flex items-center text-xs font-bold uppercase tracking-wider"><div className={`w-1.5 h-1.5 rounded-full mr-2 ${site.status === 'online' ? 'bg-green-500 animate-pulse' : 'bg-destructive'}`} /><span className={site.status === 'online' ? 'text-green-500' : 'text-destructive'}>{site.status}</span></div></Td>
                   <Td className="font-mono">{site.uptime}%</Td>
                   <Td className="text-primary font-mono font-bold">{site.powerAvailability}%</Td>
-                  <Td><Button variant="ghost" size="sm" onClick={() => loadSiteDetail(site)}>View</Button></Td>
+                  <Td><Button variant="ghost" size="sm" onClick={() => loadSiteDetail(site)}>{t('sites.view')}</Button></Td>
                 </tr>
               ))}
             </tbody>
@@ -175,16 +177,14 @@ export default function Sites() {
         </Card>
       )}
 
-      {/* Enriched Node Telemetry Modal */}
-      <Modal isOpen={!!selectedSite} onClose={() => { setSelectedSite(null); setSiteDetail(null); }} title="Node Telemetry">
+      <Modal isOpen={!!selectedSite} onClose={() => { setSelectedSite(null); setSiteDetail(null); }} title={t('sites.nodeTelemetry')}>
         {selectedSite && (
           <div className="space-y-5 max-h-[75vh] overflow-y-auto pr-1 custom-scrollbar">
-            {/* Header */}
             <div className="flex items-start justify-between pb-4 border-b border-border/50">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <Badge variant="outline" className="border-primary/30 text-primary uppercase text-[10px]">{selectedSite.type}</Badge>
-                  <Badge variant={selectedSite.currentRiskLevel === 'critical' ? 'critical' : selectedSite.currentRiskLevel === 'high' ? 'warning' : 'safe'} className="bg-transparent text-[10px]">{selectedSite.currentRiskLevel} risk</Badge>
+                  <Badge variant={selectedSite.currentRiskLevel === 'critical' ? 'critical' : selectedSite.currentRiskLevel === 'high' ? 'warning' : 'safe'} className="bg-transparent text-[10px]">{selectedSite.currentRiskLevel} {t('sites.risk')}</Badge>
                 </div>
                 <h2 className="text-2xl font-display font-bold text-white">{selectedSite.name}</h2>
                 <p className="text-sm text-muted-foreground font-mono flex items-center mt-1">
@@ -199,17 +199,16 @@ export default function Sites() {
               </div>
             </div>
 
-            {/* Core KPIs */}
             <div className="grid grid-cols-4 gap-3">
               {[
-                { icon: Users, label: 'Population', value: selectedSite.population.toLocaleString(), color: 'text-blue-400' },
-                { icon: Zap, label: 'Power', value: `${selectedSite.powerAvailability}%`, color: 'text-primary' },
-                { icon: Clock, label: 'Uptime', value: `${selectedSite.uptime}%`, color: 'text-green-400' },
-                { icon: Shield, label: 'Risk', value: selectedSite.currentRiskLevel, color: selectedSite.currentRiskLevel === 'critical' ? 'text-destructive' : selectedSite.currentRiskLevel === 'high' ? 'text-amber-500' : 'text-green-400' },
+                { icon: Users, labelKey: 'sites.population', value: selectedSite.population.toLocaleString(), color: 'text-blue-400' },
+                { icon: Zap, labelKey: 'sites.power', value: `${selectedSite.powerAvailability}%`, color: 'text-primary' },
+                { icon: Clock, labelKey: 'sites.uptime', value: `${selectedSite.uptime}%`, color: 'text-green-400' },
+                { icon: Shield, labelKey: 'sites.risk', value: selectedSite.currentRiskLevel, color: selectedSite.currentRiskLevel === 'critical' ? 'text-destructive' : selectedSite.currentRiskLevel === 'high' ? 'text-amber-500' : 'text-green-400' },
               ].map((kpi) => (
-                <div key={kpi.label} className="bg-secondary/30 p-3 rounded-xl border border-border/50 text-center">
+                <div key={kpi.labelKey} className="bg-secondary/30 p-3 rounded-xl border border-border/50 text-center">
                   <kpi.icon className={cn('w-5 h-5 mx-auto mb-1.5 opacity-60', kpi.color)} />
-                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-0.5">{kpi.label}</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-0.5">{t(kpi.labelKey)}</p>
                   <p className={cn('text-sm font-bold capitalize', kpi.color)}>{kpi.value}</p>
                 </div>
               ))}
@@ -222,39 +221,36 @@ export default function Sites() {
               </div>
             ) : siteDetail && (
               <>
-                {/* Energy Status */}
                 {siteDetail.energy.length > 0 && (
                   <div>
                     <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <Zap className="w-3.5 h-3.5 text-primary" /> Energy Telemetry
+                      <Zap className="w-3.5 h-3.5 text-primary" /> {t('sites.energyTelemetry')}
                     </h4>
                     {siteDetail.energy.map((e: any) => (
                       <div key={e.id} className="grid grid-cols-3 gap-3">
                         <div className="bg-secondary/20 p-3 rounded-xl border border-border/40 text-center">
-                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">Solar Output</p>
+                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">{t('sites.solarOutput')}</p>
                           <p className="text-lg font-mono font-bold text-primary">{e.solarGeneration}%</p>
                         </div>
                         <div className="bg-secondary/20 p-3 rounded-xl border border-border/40 text-center">
-                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">Battery</p>
+                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">{t('sites.battery')}</p>
                           <p className={cn('text-lg font-mono font-bold', e.batteryLevel < 20 ? 'text-destructive' : 'text-green-400')}>{e.batteryLevel}%</p>
                         </div>
                         <div className="bg-secondary/20 p-3 rounded-xl border border-border/40 text-center">
-                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">Grid Status</p>
+                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">{t('sites.gridStatus')}</p>
                           <p className={cn('text-sm font-bold capitalize', e.gridStatus === 'stable' ? 'text-green-400' : 'text-destructive')}>{e.gridStatus}</p>
                         </div>
                       </div>
                     ))}
-                    {siteDetail.energy.length === 0 && <p className="text-xs text-muted-foreground">No energy data recorded for this site.</p>}
                   </div>
                 )}
 
-                {/* Protected Persons */}
                 <div>
                   <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <Users className="w-3.5 h-3.5 text-blue-400" /> Protected Persons ({siteDetail.persons.length})
+                    <Users className="w-3.5 h-3.5 text-blue-400" /> {t('sites.protectedPersons')} ({siteDetail.persons.length})
                   </h4>
                   {siteDetail.persons.length === 0 ? (
-                    <p className="text-xs text-muted-foreground italic">No persons registered at this site.</p>
+                    <p className="text-xs text-muted-foreground italic">{t('sites.noPersons')}</p>
                   ) : (
                     <div className="space-y-2 max-h-36 overflow-y-auto">
                       {siteDetail.persons.map((p: any) => (
@@ -271,14 +267,13 @@ export default function Sites() {
                   )}
                 </div>
 
-                {/* Active Alerts */}
                 <div>
                   <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <AlertTriangle className="w-3.5 h-3.5 text-destructive" /> Active Alerts ({siteDetail.alerts.length})
+                    <AlertTriangle className="w-3.5 h-3.5 text-destructive" /> {t('sites.activeAlerts')} ({siteDetail.alerts.length})
                   </h4>
                   {siteDetail.alerts.length === 0 ? (
                     <div className="flex items-center gap-2 text-xs text-green-400 font-medium">
-                      <div className="w-2 h-2 rounded-full bg-green-500" /> No active alerts for this location.
+                      <div className="w-2 h-2 rounded-full bg-green-500" /> {t('sites.noActiveAlerts')}
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -299,54 +294,53 @@ export default function Sites() {
             )}
 
             <div className="flex gap-3 pt-2 border-t border-border/50">
-              <Button className="flex-1 bg-secondary/80 text-white hover:bg-secondary border border-border" onClick={() => { setSelectedSite(null); setSiteDetail(null); }}>Close</Button>
-              <Button className="flex-1">Run Diagnostics</Button>
+              <Button className="flex-1 bg-secondary/80 text-white hover:bg-secondary border border-border" onClick={() => { setSelectedSite(null); setSiteDetail(null); }}>{t('sites.close')}</Button>
+              <Button className="flex-1">{t('sites.runDiagnostics')}</Button>
             </div>
           </div>
         )}
       </Modal>
 
-      {/* Deploy Node Modal */}
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Initialize New Node">
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={t('sites.initializeNode')}>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <Label className="text-white">Node Designation (Name)</Label>
+            <Label className="text-white">{t('sites.nodeDesignation')}</Label>
             <Input className="bg-background border-border/80 text-base" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required placeholder="e.g. Sector 7 Core" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-white">Facility Type</Label>
+              <Label className="text-white">{t('sites.facilityType')}</Label>
               <Select className="bg-background border-border/80 text-base" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}
                 options={['village', 'clinic', 'school', 'district', 'shelter'].map(v => ({ label: v.toUpperCase(), value: v }))} required />
             </div>
             <div className="space-y-2">
-              <Label className="text-white">Protected Population</Label>
+              <Label className="text-white">{t('sites.protectedPopulation')}</Label>
               <Input className="bg-background border-border/80 text-base font-mono" type="number" value={formData.population || ''} onChange={e => setFormData({...formData, population: e.target.value})} required />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-white">Region / City</Label>
+              <Label className="text-white">{t('sites.regionCity')}</Label>
               <Input className="bg-background border-border/80 text-base" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} required />
             </div>
             <div className="space-y-2">
-              <Label className="text-white">Country</Label>
+              <Label className="text-white">{t('sites.country')}</Label>
               <Input className="bg-background border-border/80 text-base" value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} required />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-white">Latitude</Label>
+              <Label className="text-white">{t('sites.latitude')}</Label>
               <Input className="bg-background border-border/80 text-base font-mono" type="number" step="0.0001" value={formData.latitude || ''} onChange={e => setFormData({...formData, latitude: e.target.value})} required />
             </div>
             <div className="space-y-2">
-              <Label className="text-white">Longitude</Label>
+              <Label className="text-white">{t('sites.longitude')}</Label>
               <Input className="bg-background border-border/80 text-base font-mono" type="number" step="0.0001" value={formData.longitude || ''} onChange={e => setFormData({...formData, longitude: e.target.value})} required />
             </div>
           </div>
           <div className="pt-6 flex gap-4 border-t border-border/50">
-            <Button type="button" variant="ghost" onClick={() => setModalOpen(false)} className="flex-1 h-12">Abort</Button>
-            <Button type="submit" isLoading={isPending} className="flex-1 h-12 text-md shadow-[0_0_15px_rgba(201,168,76,0.3)]">Deploy Initialization</Button>
+            <Button type="button" variant="ghost" onClick={() => setModalOpen(false)} className="flex-1 h-12">{t('sites.abort')}</Button>
+            <Button type="submit" isLoading={isPending} className="flex-1 h-12 text-md shadow-[0_0_15px_rgba(201,168,76,0.3)]">{t('sites.deployInitialization')}</Button>
           </div>
         </form>
       </Modal>

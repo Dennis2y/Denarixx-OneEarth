@@ -4,8 +4,10 @@ import { PageHeader, LoadingScreen, Card, Badge, Table, Th, Td, cn } from '@/com
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 import { Zap, Battery, Activity, AlertTriangle, Sun, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 export default function Energy() {
+  const { t } = useTranslation();
   const { data: metrics, isLoading: metricsLoading } = useGetEnergyMetrics();
   const { data: chartData, isLoading: chartLoading } = useGetEnergyChart({ siteId: 1 });
   const [dismissedAlerts, setDismissedAlerts] = React.useState<number[]>([]);
@@ -14,7 +16,6 @@ export default function Energy() {
 
   const criticalSites = metrics?.filter(m => m.gridStatus === 'unstable' || m.batteryLevel < 30) || [];
   
-  // Format for RadialBarChart
   const batteryData = metrics?.slice(0, 5).map((m, i) => ({
     name: m.siteName,
     value: m.batteryLevel,
@@ -24,12 +25,11 @@ export default function Energy() {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <PageHeader 
-        title="Energy Command" 
-        description="Real-time monitoring of decentralized solar microgrids and battery storage reserves."
-        actions={<Badge variant="safe" className="px-4 py-2 text-sm shadow-[0_0_15px_rgba(34,197,94,0.3)]"><Zap className="w-4 h-4 mr-2"/> Grid Nominal</Badge>}
+        title={t('energy.title')}
+        description={t('energy.description')}
+        actions={<Badge variant="safe" className="px-4 py-2 text-sm shadow-[0_0_15px_rgba(34,197,94,0.3)]"><Zap className="w-4 h-4 mr-2"/> {t('energy.gridNominal')}</Badge>}
       />
 
-      {/* Dismissable Alerts */}
       <AnimatePresence>
         {criticalSites.map(site => !dismissedAlerts.includes(site.id) && (
           <motion.div 
@@ -44,7 +44,7 @@ export default function Energy() {
                 <AlertTriangle className="w-5 h-5 mr-3 shrink-0" />
                 <div>
                   <span className="font-bold text-white mr-2">{site.siteName}</span>
-                  <span className="text-sm">Battery capacity dropping below optimal threshold ({site.batteryLevel}%).</span>
+                  <span className="text-sm">{t('energy.batteryLow')} ({site.batteryLevel}%).</span>
                 </div>
               </div>
               <button onClick={() => setDismissedAlerts([...dismissedAlerts, site.id])} className="p-1 hover:bg-amber-500/20 rounded-md transition-colors">
@@ -57,14 +57,13 @@ export default function Energy() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
         
-        {/* Main Chart */}
         <Card className="lg:col-span-3 p-6 border-primary/20 bg-gradient-to-b from-card to-background">
           <div className="flex justify-between items-center mb-6">
             <div>
               <h3 className="text-2xl font-display font-bold text-white flex items-center gap-2">
-                <Activity className="w-5 h-5 text-primary" /> Net Power Flow
+                <Activity className="w-5 h-5 text-primary" /> {t('energy.netPowerFlow')}
               </h3>
-              <p className="text-muted-foreground text-sm font-medium mt-1 uppercase tracking-widest">Aggregated Generation vs Load (24H)</p>
+              <p className="text-muted-foreground text-sm font-medium mt-1 uppercase tracking-widest">{t('energy.aggregated')}</p>
             </div>
           </div>
           
@@ -90,18 +89,17 @@ export default function Energy() {
                   labelStyle={{ color: 'hsl(var(--muted-foreground))', marginBottom: '8px' }}
                 />
                 <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: '500' }} />
-                <Area type="monotone" name="Solar Yield" dataKey="solar" stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={1} fill="url(#colorSolar)" />
-                <Area type="monotone" name="Battery Output" dataKey="battery" stroke="hsl(var(--chart-2))" strokeWidth={3} fillOpacity={1} fill="url(#colorBattery)" />
+                <Area type="monotone" name={t('energy.solarYield')} dataKey="solar" stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={1} fill="url(#colorSolar)" />
+                <Area type="monotone" name={t('energy.batteryOutput')} dataKey="battery" stroke="hsl(var(--chart-2))" strokeWidth={3} fillOpacity={1} fill="url(#colorBattery)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </Card>
 
-        {/* Sidebar panels */}
         <div className="space-y-6">
           <Card className="p-6 relative overflow-hidden group">
              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent pointer-events-none" />
-             <h3 className="text-sm font-display font-bold text-muted-foreground uppercase tracking-widest mb-6">Storage Reserves</h3>
+             <h3 className="text-sm font-display font-bold text-muted-foreground uppercase tracking-widest mb-6">{t('energy.storageReserves')}</h3>
              
              <div className="h-[200px] w-full -ml-4">
                <ResponsiveContainer width="100%" height="100%">
@@ -130,7 +128,7 @@ export default function Energy() {
           <Card className="p-0 overflow-hidden border-destructive/20 bg-destructive/5">
              <div className="p-4 border-b border-destructive/20 bg-destructive/10">
                <h4 className="text-destructive font-bold text-sm uppercase tracking-widest flex items-center">
-                 <AlertTriangle className="w-4 h-4 mr-2"/> Critical Nodes
+                 <AlertTriangle className="w-4 h-4 mr-2"/> {t('energy.criticalNodes')}
                </h4>
              </div>
              <div className="p-2">
@@ -143,15 +141,14 @@ export default function Energy() {
                    </div>
                  </div>
                )) : (
-                 <div className="p-6 text-center text-sm text-muted-foreground">All nodes operating within safe parameters.</div>
+                 <div className="p-6 text-center text-sm text-muted-foreground">{t('energy.allSafe')}</div>
                )}
              </div>
           </Card>
         </div>
       </div>
 
-      {/* Mini Site Cards Grid */}
-      <h3 className="text-xl font-display font-bold text-white mb-4 ml-1">Node Analytics Matrix</h3>
+      <h3 className="text-xl font-display font-bold text-white mb-4 ml-1">{t('energy.nodeMatrix')}</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {metrics?.map((metric) => (
           <Card key={metric.id} className="p-5 hover:-translate-y-1 transition-transform border-border/50 bg-secondary/20 hover:bg-secondary/40">
@@ -164,13 +161,13 @@ export default function Energy() {
             
             <div className="space-y-4">
               <div className="flex justify-between items-end">
-                <div className="text-sm text-muted-foreground flex items-center"><Sun className="w-4 h-4 mr-1"/> Solar Yield</div>
+                <div className="text-sm text-muted-foreground flex items-center"><Sun className="w-4 h-4 mr-1"/> {t('energy.solarYield')}</div>
                 <div className="text-xl font-mono font-bold text-primary">{metric.solarGeneration} <span className="text-xs text-muted-foreground">kW</span></div>
               </div>
               
               <div>
                 <div className="flex justify-between text-sm text-muted-foreground mb-1.5">
-                  <span className="flex items-center"><Battery className="w-4 h-4 mr-1"/> Storage</span>
+                  <span className="flex items-center"><Battery className="w-4 h-4 mr-1"/> {t('energy.storage')}</span>
                   <span className="font-mono">{metric.batteryLevel}%</span>
                 </div>
                 <div className="w-full bg-background rounded-full h-2 overflow-hidden border border-border/50">
