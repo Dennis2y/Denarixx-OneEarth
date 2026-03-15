@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "energy": "شبكة الطاقة",
+    "lifemesh": "شبكة LifeMesh",
+    "earthshield": "استخبارات EarthShield",
+    "alerts": "التنبيهات الموحدة",
+    "sites": "المواقع والعقد",
+    "users": "الأفراد",
+    "settings": "إعدادات النظام",
+    "terminate": "إنهاء الجلسة",
+    "core": "الأساسي",
+    "modules": "الوحدات",
+    "management": "الإدارة"
+  },
+  "header": {
+    "search": "استعلام قواعد البيانات العالمية...",
+    "systemOnline": "النظام متصل",
+    "levelAuth": "تفويض المستوى 5",
+    "energyGrid": "شبكة الطاقة",
+    "lifemeshNet": "شبكة LifeMesh",
+    "earthshieldIntel": "استخبارات EarthShield"
+  },
+  "dashboard": {
+    "title": "القيادة العالمية",
+    "description": "الرصد الفوري للبنية التحتية لـ Denarixx عبر جميع الوحدات النشطة.",
+    "activeSites": "المواقع النشطة",
+    "criticalAlerts": "التنبيهات الحرجة",
+    "protectedLives": "الأرواح المحمية",
+    "riskZones": "مناطق الخطر",
+    "energyAvail": "الطاقة المتاحة",
+    "africaOps": "عمليات أفريقيا",
+    "liveNodeStatus": "حالة العقدة المباشرة",
+    "rapidDeploy": "النشر السريع",
+    "emergencyDrill": "تدريب الطوارئ",
+    "emergencyDrillDesc": "بدء بروتوكول استجابة الشبكة.",
+    "deployNode": "نشر عقدة",
+    "deployNodeDesc": "تسجيل أجهزة بنية تحتية جديدة.",
+    "generateReport": "توليد تقرير",
+    "broadcastAlert": "بث تنبيه",
+    "threatFeed": "تغذية التهديدات النشطة",
+    "viewArchive": "عرض الأرشيف",
+    "online": "متصل",
+    "critical": "حرج",
+    "ack": "تأكيد"
+  },
+  "energy": {
+    "title": "قيادة الطاقة",
+    "description": "مراقبة فورية للشبكات الشمسية الصغيرة اللامركزية واحتياطيات التخزين.",
+    "gridNominal": "الشبكة طبيعية",
+    "netPowerFlow": "تدفق الطاقة الصافي",
+    "storageReserves": "احتياطيات التخزين"
+  },
+  "lifemesh": {
+    "title": "استخبارات LifeMesh",
+    "description": "تتبع الأمان البيومتري وتنسيق الاستجابة للطوارئ المستقل.",
+    "secured": "آمن",
+    "atRisk": "في خطر",
+    "emergency": "طوارئ",
+    "totalTracked": "إجمالي المتتبعين",
+    "masterOverride": "تجاوز رئيسي",
+    "masterOverrideDesc": "تجاوز البروتوكولات القياسية لإرسال طائرات الاستجابة السريعة.",
+    "initiateSOS": "إرسال نداء استغاثة",
+    "activeBioSigs": "البصمات الحيوية النشطة",
+    "queryId": "البحث بالمعرف...",
+    "incidentTelemetry": "قياس عن بُعد للحوادث"
+  },
+  "earthshield": {
+    "title": "استخبارات EarthShield",
+    "description": "النمذجة الكوكبية التنبؤية والتخفيف المستقل من الكوارث.",
+    "floodVectors": "متجهات الفيضانات",
+    "thermalAnomalies": "الشذوذات الحرارية",
+    "atmosphericEvents": "الأحداث الجوية",
+    "gridStress": "إجهاد الشبكة",
+    "activeThreatMatrices": "مصفوفات التهديد الإقليمية النشطة",
+    "readinessIndex": "مؤشر الاستعداد الإقليمي"
+  },
+  "alerts": {
+    "title": "سجل الإجراءات الموحد",
+    "description": "سجل الأحداث العالمي متعدد الوحدات وتنبيهات النظام.",
+    "allModules": "جميع الوحدات",
+    "severity": "الشدة",
+    "any": "أي",
+    "critical": "حرج",
+    "warning": "تحذير"
+  },
+  "sites": {
+    "title": "المواقع والعقد",
+    "description": "سجل البنية التحتية المادية والحالة التشغيلية."
+  },
+  "users": {
+    "title": "سجل الأفراد",
+    "description": "إدارة وصول المشغلين وتعيين الأدوار."
+  },
+  "settings": {
+    "title": "تكوين النظام",
+    "description": "ضوابط مستوى المنصة والتكاملات ومعلمات الأمان."
+  },
+  "common": {
+    "loading": "جارٍ التحميل...",
+    "active": "نشط",
+    "resolved": "محلول",
+    "acknowledged": "مقرّ به",
+    "error": "خطأ",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "dismiss": "رفض",
+    "status": "الحالة",
+    "location": "الموقع",
+    "type": "النوع"
+  },
+  "lang": {
+    "en": "English",
+    "fr": "Français",
+    "sw": "Kiswahili",
+    "ar": "العربية",
+    "pt": "Português"
+  }
+}

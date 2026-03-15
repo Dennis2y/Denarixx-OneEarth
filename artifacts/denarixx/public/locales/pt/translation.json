@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "dashboard": "Painel de Controlo",
+    "energy": "Rede de Energia",
+    "lifemesh": "Rede LifeMesh",
+    "earthshield": "Intel EarthShield",
+    "alerts": "Alertas Unificados",
+    "sites": "Locais & Nós",
+    "users": "Pessoal",
+    "settings": "Configurações do Sistema",
+    "terminate": "Terminar",
+    "core": "Núcleo",
+    "modules": "Módulos",
+    "management": "Gestão"
+  },
+  "header": {
+    "search": "Consultar bases de dados globais...",
+    "systemOnline": "Sistema Online",
+    "levelAuth": "Auth Nível 5",
+    "energyGrid": "Rede de Energia",
+    "lifemeshNet": "Rede LifeMesh",
+    "earthshieldIntel": "Intel EarthShield"
+  },
+  "dashboard": {
+    "title": "Comando Global",
+    "description": "Supervisão em tempo real da infraestrutura Denarixx em todos os módulos ativos.",
+    "activeSites": "Locais Ativos",
+    "criticalAlerts": "Alertas Críticos",
+    "protectedLives": "Vidas Protegidas",
+    "riskZones": "Zonas de Risco",
+    "energyAvail": "Energia Disp.",
+    "africaOps": "Operações África",
+    "liveNodeStatus": "Estado dos Nós em Direto",
+    "rapidDeploy": "Implantação Rápida",
+    "emergencyDrill": "Simulacro de Emergência",
+    "emergencyDrillDesc": "Iniciar protocolo de resposta da rede.",
+    "deployNode": "Implantar Nó",
+    "deployNodeDesc": "Registar novo hardware de infraestrutura.",
+    "generateReport": "Gerar Relatório",
+    "broadcastAlert": "Transmitir Alerta",
+    "threatFeed": "Feed de Ameaças Ativas",
+    "viewArchive": "Ver Arquivo",
+    "online": "Online",
+    "critical": "Crítico",
+    "ack": "ACK"
+  },
+  "energy": {
+    "title": "Comando de Energia",
+    "description": "Monitorização em tempo real de microrredes solares descentralizadas e reservas de armazenamento.",
+    "gridNominal": "Rede Nominal",
+    "netPowerFlow": "Fluxo Líquido de Energia",
+    "storageReserves": "Reservas de Armazenamento"
+  },
+  "lifemesh": {
+    "title": "Intel LifeMesh",
+    "description": "Rastreamento de segurança biométrica e coordenação autónoma de resposta a emergências.",
+    "secured": "Seguro",
+    "atRisk": "Em Risco",
+    "emergency": "Emergência",
+    "totalTracked": "Total Rastreado",
+    "masterOverride": "Substituição Principal",
+    "masterOverrideDesc": "Ignorar protocolos padrão para enviar drones de resposta rápida.",
+    "initiateSOS": "Iniciar SOS",
+    "activeBioSigs": "Bio-Assinaturas Ativas",
+    "queryId": "Pesquisar ID...",
+    "incidentTelemetry": "Telemetria de Incidentes"
+  },
+  "earthshield": {
+    "title": "Inteligência EarthShield",
+    "description": "Modelação planetária preditiva e mitigação autónoma de desastres.",
+    "floodVectors": "Vetores de Inundação",
+    "thermalAnomalies": "Anomalias Térmicas",
+    "atmosphericEvents": "Eventos Atmosféricos",
+    "gridStress": "Stress da Rede",
+    "activeThreatMatrices": "Matrizes de Ameaça Regional Ativas",
+    "readinessIndex": "Índice de Prontidão Regional"
+  },
+  "alerts": {
+    "title": "Registo de Ações Unificado",
+    "description": "Registo global de eventos multi-módulo e alertas do sistema.",
+    "allModules": "Todos os Módulos",
+    "severity": "Gravidade",
+    "any": "Qualquer",
+    "critical": "Crítico",
+    "warning": "Aviso"
+  },
+  "sites": {
+    "title": "Locais & Nós",
+    "description": "Registo de infraestrutura física e estado operacional."
+  },
+  "users": {
+    "title": "Registo de Pessoal",
+    "description": "Gestão de acesso de operadores e atribuição de funções."
+  },
+  "settings": {
+    "title": "Configuração do Sistema",
+    "description": "Controlos ao nível da plataforma, integrações e parâmetros de segurança."
+  },
+  "common": {
+    "loading": "A carregar...",
+    "active": "Ativo",
+    "resolved": "Resolvido",
+    "acknowledged": "Reconhecido",
+    "error": "Erro",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "dismiss": "Dispensar",
+    "status": "Estado",
+    "location": "Localização",
+    "type": "Tipo"
+  },
+  "lang": {
+    "en": "English",
+    "fr": "Français",
+    "sw": "Kiswahili",
+    "ar": "العربية",
+    "pt": "Português"
+  }
+}

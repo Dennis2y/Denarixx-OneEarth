@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "dashboard": "Dashibodi",
+    "energy": "Mtandao wa Nishati",
+    "lifemesh": "Mtandao wa LifeMesh",
+    "earthshield": "Intel ya EarthShield",
+    "alerts": "Tahadhari Zilizounganishwa",
+    "sites": "Maeneo & Nodi",
+    "users": "Wafanyakazi",
+    "settings": "Mipangilio ya Mfumo",
+    "terminate": "Toka",
+    "core": "Msingi",
+    "modules": "Moduli",
+    "management": "Usimamizi"
+  },
+  "header": {
+    "search": "Tafuta kwenye hifadhidata za kimataifa...",
+    "systemOnline": "Mfumo Unaofanya Kazi",
+    "levelAuth": "Idhini Kiwango 5",
+    "energyGrid": "Mtandao wa Nishati",
+    "lifemeshNet": "Mtandao wa LifeMesh",
+    "earthshieldIntel": "Intel ya EarthShield"
+  },
+  "dashboard": {
+    "title": "Amri ya Kimataifa",
+    "description": "Ufuatiliaji wa wakati halisi wa miundombinu ya Denarixx katika moduli zote zinazofanya kazi.",
+    "activeSites": "Maeneo Yanayofanya Kazi",
+    "criticalAlerts": "Tahadhari Muhimu",
+    "protectedLives": "Maisha Yaliyolindwa",
+    "riskZones": "Maeneo Hatarishi",
+    "energyAvail": "Nishati Inayopatikana",
+    "africaOps": "Operesheni Afrika",
+    "liveNodeStatus": "Hali ya Nodi Moja kwa Moja",
+    "rapidDeploy": "Kutumwa Haraka",
+    "emergencyDrill": "Mazoezi ya Dharura",
+    "emergencyDrillDesc": "Anzisha itifaki ya majibu ya mtandao.",
+    "deployNode": "Weka Nodi",
+    "deployNodeDesc": "Sajili vifaa vipya vya miundombinu.",
+    "generateReport": "Tengeneza Ripoti",
+    "broadcastAlert": "Tuma Tahadhari",
+    "threatFeed": "Tishio la Sasa Hivi",
+    "viewArchive": "Angalia Kumbukumbu",
+    "online": "Mtandaoni",
+    "critical": "Muhimu",
+    "ack": "KUKUBALI"
+  },
+  "energy": {
+    "title": "Amri ya Nishati",
+    "description": "Ufuatiliaji wa wakati halisi wa microgridi za jua zilizogatuliwa na akiba za betri.",
+    "gridNominal": "Mtandao Kawaida",
+    "netPowerFlow": "Mtiririko wa Nguvu",
+    "storageReserves": "Akiba za Kuhifadhi"
+  },
+  "lifemesh": {
+    "title": "Intel ya LifeMesh",
+    "description": "Ufuatiliaji wa usalama wa biometria na uratibu wa majibu ya dharura ya kujitegemea.",
+    "secured": "Salama",
+    "atRisk": "Kwa Hatari",
+    "emergency": "Dharura",
+    "totalTracked": "Jumla Inayofuatiliwa",
+    "masterOverride": "Mkuu wa Kubatilisha",
+    "masterOverrideDesc": "Acha itifaki za kawaida kutuma ndege za majibu ya haraka.",
+    "initiateSOS": "Anzisha SOS",
+    "activeBioSigs": "Bio-Sahihi Zinazofanya Kazi",
+    "queryId": "Tafuta ID...",
+    "incidentTelemetry": "Telemetria ya Matukio"
+  },
+  "earthshield": {
+    "title": "Akili ya EarthShield",
+    "description": "Uundaji wa mfano wa sayari unaotabiri na kupunguza maafa kwa uhuru.",
+    "floodVectors": "Vekta za Mafuriko",
+    "thermalAnomalies": "Usumbufu wa Joto",
+    "atmosphericEvents": "Matukio ya Anga",
+    "gridStress": "Msongo wa Mtandao",
+    "activeThreatMatrices": "Matrices za Tishio za Kikanda Zinazofanya Kazi",
+    "readinessIndex": "Kiwango cha Utayari wa Kikanda"
+  },
+  "alerts": {
+    "title": "Kumbukumbu ya Hatua Zilizounganishwa",
+    "description": "Rejista ya matukio ya kimataifa na tahadhari za mfumo.",
+    "allModules": "Moduli Zote",
+    "severity": "Ukali",
+    "any": "Yoyote",
+    "critical": "Muhimu",
+    "warning": "Onyo"
+  },
+  "sites": {
+    "title": "Maeneo & Nodi",
+    "description": "Rejista ya miundombinu ya kimwili na hali ya uendeshaji."
+  },
+  "users": {
+    "title": "Rejista ya Wafanyakazi",
+    "description": "Usimamizi wa ufikiaji wa waendeshaji na ugawaji wa majukumu."
+  },
+  "settings": {
+    "title": "Usanidi wa Mfumo",
+    "description": "Vidhibiti vya ngazi ya jukwaa, muunganiko, na vigezo vya usalama."
+  },
+  "common": {
+    "loading": "Inapakia...",
+    "active": "Inafanya Kazi",
+    "resolved": "Imetatuliwa",
+    "acknowledged": "Imetambuliwa",
+    "error": "Hitilafu",
+    "save": "Hifadhi",
+    "cancel": "Ghairi",
+    "confirm": "Thibitisha",
+    "dismiss": "Kataa",
+    "status": "Hali",
+    "location": "Mahali",
+    "type": "Aina"
+  },
+  "lang": {
+    "en": "English",
+    "fr": "Français",
+    "sw": "Kiswahili",
+    "ar": "العربية",
+    "pt": "Português"
+  }
+}

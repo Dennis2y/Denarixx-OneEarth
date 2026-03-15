@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "dashboard": "Tableau de Bord",
+    "energy": "Réseau Énergétique",
+    "lifemesh": "Réseau LifeMesh",
+    "earthshield": "Intel EarthShield",
+    "alerts": "Alertes Unifiées",
+    "sites": "Sites & Nœuds",
+    "users": "Personnel",
+    "settings": "Paramètres Système",
+    "terminate": "Déconnexion",
+    "core": "Essentiel",
+    "modules": "Modules",
+    "management": "Gestion"
+  },
+  "header": {
+    "search": "Interroger les bases de données mondiales...",
+    "systemOnline": "Système En Ligne",
+    "levelAuth": "Auth Niveau 5",
+    "energyGrid": "Réseau Énergétique",
+    "lifemeshNet": "Réseau LifeMesh",
+    "earthshieldIntel": "Intel EarthShield"
+  },
+  "dashboard": {
+    "title": "Commandement Global",
+    "description": "Surveillance en temps réel de l'infrastructure Denarixx sur tous les modules actifs.",
+    "activeSites": "Sites Actifs",
+    "criticalAlerts": "Alertes Critiques",
+    "protectedLives": "Vies Protégées",
+    "riskZones": "Zones à Risque",
+    "energyAvail": "Énergie Disp.",
+    "africaOps": "Opérations Afrique",
+    "liveNodeStatus": "Statut des Nœuds en Direct",
+    "rapidDeploy": "Déploiement Rapide",
+    "emergencyDrill": "Exercice d'Urgence",
+    "emergencyDrillDesc": "Initier le protocole de réponse réseau.",
+    "deployNode": "Déployer Nœud",
+    "deployNodeDesc": "Enregistrer un nouveau matériel d'infrastructure.",
+    "generateReport": "Générer Rapport",
+    "broadcastAlert": "Diffuser Alerte",
+    "threatFeed": "Flux de Menaces Actives",
+    "viewArchive": "Voir Archives",
+    "online": "En Ligne",
+    "critical": "Critique",
+    "ack": "ACC"
+  },
+  "energy": {
+    "title": "Commandement Énergétique",
+    "description": "Surveillance en temps réel des microréseaux solaires décentralisés et des réserves de stockage.",
+    "gridNominal": "Réseau Nominal",
+    "netPowerFlow": "Flux Net d'Énergie",
+    "storageReserves": "Réserves de Stockage"
+  },
+  "lifemesh": {
+    "title": "Intel LifeMesh",
+    "description": "Suivi biométrique de sécurité et coordination autonome de réponse d'urgence.",
+    "secured": "Sécurisé",
+    "atRisk": "En Danger",
+    "emergency": "Urgence",
+    "totalTracked": "Total Suivi",
+    "masterOverride": "Dérogation Maître",
+    "masterOverrideDesc": "Contourner les protocoles standard pour dépêcher de force des drones d'intervention rapide.",
+    "initiateSOS": "Déclencher SOS",
+    "activeBioSigs": "Bio-Signatures Actives",
+    "queryId": "Rechercher ID...",
+    "incidentTelemetry": "Télémétrie d'Incidents"
+  },
+  "earthshield": {
+    "title": "Intelligence EarthShield",
+    "description": "Modélisation planétaire prédictive et atténuation autonome des catastrophes.",
+    "floodVectors": "Vecteurs d'Inondation",
+    "thermalAnomalies": "Anomalies Thermiques",
+    "atmosphericEvents": "Événements Atmosphériques",
+    "gridStress": "Stress du Réseau",
+    "activeThreatMatrices": "Matrices de Menaces Régionales Actives",
+    "readinessIndex": "Indice de Préparation Régionale"
+  },
+  "alerts": {
+    "title": "Journal d'Actions Unifié",
+    "description": "Registre mondial d'événements inter-modules et alertes système.",
+    "allModules": "Tous les Modules",
+    "severity": "Gravité",
+    "any": "Tout",
+    "critical": "Critique",
+    "warning": "Avertissement"
+  },
+  "sites": {
+    "title": "Sites & Nœuds",
+    "description": "Registre de l'infrastructure physique et statut opérationnel."
+  },
+  "users": {
+    "title": "Registre du Personnel",
+    "description": "Gestion des accès opérateurs et attribution des rôles."
+  },
+  "settings": {
+    "title": "Configuration Système",
+    "description": "Contrôles au niveau de la plateforme, intégrations et paramètres de sécurité."
+  },
+  "common": {
+    "loading": "Chargement...",
+    "active": "Actif",
+    "resolved": "Résolu",
+    "acknowledged": "Reconnu",
+    "error": "Erreur",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "dismiss": "Ignorer",
+    "status": "Statut",
+    "location": "Emplacement",
+    "type": "Type"
+  },
+  "lang": {
+    "en": "English",
+    "fr": "Français",
+    "sw": "Kiswahili",
+    "ar": "العربية",
+    "pt": "Português"
+  }
+}

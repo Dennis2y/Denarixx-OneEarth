@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "energy": "Energy Grid",
+    "lifemesh": "LifeMesh Network",
+    "earthshield": "EarthShield Intel",
+    "alerts": "Unified Alerts",
+    "sites": "Sites & Nodes",
+    "users": "Personnel",
+    "settings": "System Settings",
+    "terminate": "Terminate",
+    "core": "Core",
+    "modules": "Modules",
+    "management": "Management"
+  },
+  "header": {
+    "search": "Query global databanks...",
+    "systemOnline": "System Online",
+    "levelAuth": "Level 5 Auth",
+    "energyGrid": "Energy Grid",
+    "lifemeshNet": "LifeMesh Network",
+    "earthshieldIntel": "EarthShield Intel"
+  },
+  "dashboard": {
+    "title": "Global Command",
+    "description": "Real-time oversight of Denarixx infrastructure across all active modules.",
+    "activeSites": "Active Sites",
+    "criticalAlerts": "Critical Alerts",
+    "protectedLives": "Protected Lives",
+    "riskZones": "Risk Zones",
+    "energyAvail": "Energy Avail.",
+    "africaOps": "Africa Operations",
+    "liveNodeStatus": "Live Node Status",
+    "rapidDeploy": "Rapid Deployment",
+    "emergencyDrill": "Emergency Drill",
+    "emergencyDrillDesc": "Initiate network-wide response protocol.",
+    "deployNode": "Deploy Node",
+    "deployNodeDesc": "Register new infrastructure hardware.",
+    "generateReport": "Generate Report",
+    "broadcastAlert": "Broadcast Alert",
+    "threatFeed": "Active Threat Feed",
+    "viewArchive": "View Archive",
+    "online": "Online",
+    "critical": "Critical",
+    "ack": "ACK"
+  },
+  "energy": {
+    "title": "Energy Command",
+    "description": "Real-time monitoring of decentralized solar microgrids and battery storage reserves.",
+    "gridNominal": "Grid Nominal",
+    "netPowerFlow": "Net Power Flow",
+    "storageReserves": "Storage Reserves"
+  },
+  "lifemesh": {
+    "title": "LifeMesh Intel",
+    "description": "Biometric safety tracking and autonomous emergency response coordination.",
+    "secured": "Secured",
+    "atRisk": "At Risk",
+    "emergency": "Emergency",
+    "totalTracked": "Total Tracked",
+    "masterOverride": "Master Override",
+    "masterOverrideDesc": "Bypass standard protocols to forcefully dispatch rapid response drones to a specified beacon.",
+    "initiateSOS": "Initiate SOS",
+    "activeBioSigs": "Active Bio-Signatures",
+    "queryId": "Query ID...",
+    "incidentTelemetry": "Incident Telemetry"
+  },
+  "earthshield": {
+    "title": "EarthShield Intelligence",
+    "description": "Predictive planetary modeling and autonomous disaster mitigation.",
+    "floodVectors": "Flood Vectors",
+    "thermalAnomalies": "Thermal Anomalies",
+    "atmosphericEvents": "Atmospheric Events",
+    "gridStress": "Grid Stress",
+    "activeThreatMatrices": "Active Regional Threat Matrices",
+    "readinessIndex": "Regional Readiness Index"
+  },
+  "alerts": {
+    "title": "Unified Action Log",
+    "description": "Global, cross-module event registry and system alerts.",
+    "allModules": "All Modules",
+    "severity": "Severity",
+    "any": "Any",
+    "critical": "Critical",
+    "warning": "Warning"
+  },
+  "sites": {
+    "title": "Sites & Nodes",
+    "description": "Physical infrastructure registry and operational status."
+  },
+  "users": {
+    "title": "Personnel Registry",
+    "description": "Operator access management and role assignment."
+  },
+  "settings": {
+    "title": "System Configuration",
+    "description": "Platform-level controls, integrations, and security parameters."
+  },
+  "common": {
+    "loading": "Loading...",
+    "active": "Active",
+    "resolved": "Resolved",
+    "acknowledged": "Acknowledged",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "dismiss": "Dismiss",
+    "status": "Status",
+    "location": "Location",
+    "type": "Type"
+  },
+  "lang": {
+    "en": "English",
+    "fr": "Français",
+    "sw": "Kiswahili",
+    "ar": "العربية",
+    "pt": "Português"
+  }
+}

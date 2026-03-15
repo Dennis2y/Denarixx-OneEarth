@@ -3,8 +3,10 @@ import { useGetProtectedPersons, useGetSafetyIncidents, useTriggerSOS } from '@w
 import { PageHeader, LoadingScreen, Card, Badge, Button, Modal, Input, Label, Select, cn } from '@/components/ui-core';
 import { Shield, ShieldAlert, HeartPulse, Search, MapPin, Activity, Phone, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 export default function LifeMesh() {
+  const { t } = useTranslation();
   const { data: persons, isLoading: pLoading } = useGetProtectedPersons();
   const { data: incidents, isLoading: iLoading } = useGetSafetyIncidents();
   const { mutate: triggerSOS, isPending: sosPending } = useTriggerSOS();
@@ -43,27 +45,27 @@ export default function LifeMesh() {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <PageHeader 
-        title="LifeMesh Intel" 
-        description="Biometric safety tracking and autonomous emergency response coordination."
+        title={t('lifemesh.title')}
+        description={t('lifemesh.description')}
       />
 
       {/* Top Metric Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <Card className="p-4 flex flex-col items-center justify-center border-b-4 border-b-green-500 bg-green-500/5 text-center">
            <span className="text-3xl font-display font-bold text-white">{safeCount}</span>
-           <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Secured</span>
+           <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{t('lifemesh.secured')}</span>
         </Card>
         <Card className="p-4 flex flex-col items-center justify-center border-b-4 border-b-amber-500 bg-amber-500/5 text-center">
            <span className="text-3xl font-display font-bold text-amber-500">{riskCount}</span>
-           <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">At Risk</span>
+           <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{t('lifemesh.atRisk')}</span>
         </Card>
         <Card className="p-4 flex flex-col items-center justify-center border-b-4 border-b-destructive bg-destructive/5 text-center">
            <span className="text-3xl font-display font-bold text-destructive">{emergencyCount}</span>
-           <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Emergency</span>
+           <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{t('lifemesh.emergency')}</span>
         </Card>
         <Card className="p-4 flex flex-col items-center justify-center border-b-4 border-b-border bg-secondary/30 text-center">
            <span className="text-3xl font-display font-bold text-muted-foreground">{persons?.length}</span>
-           <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Total Tracked</span>
+           <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{t('lifemesh.totalTracked')}</span>
         </Card>
       </div>
 

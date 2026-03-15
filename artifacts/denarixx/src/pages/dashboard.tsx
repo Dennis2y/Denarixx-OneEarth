@@ -5,6 +5,7 @@ import { MapPin, AlertTriangle, Users, Globe, Zap, ArrowRight, ShieldAlert, File
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
+import { useTranslation } from 'react-i18next';
 
 const mockSparklines = [
   [40, 42, 45, 43, 48, 52, 50, 55],
@@ -64,6 +65,7 @@ const MOCK_LIVE_ALERTS = [
 ];
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
   const { data: initialAlerts, isLoading: alertsLoading } = useGetUnifiedAlerts({ severity: 'critical' });
   const [liveAlerts, setLiveAlerts] = useState<any[]>([]);
@@ -79,7 +81,7 @@ export default function Dashboard() {
       const newAlert = MOCK_LIVE_ALERTS[Math.floor(Math.random() * MOCK_LIVE_ALERTS.length)];
       setLiveAlerts(prev => {
         const updated = [{ ...newAlert, id: `live-${Date.now()}`, createdAt: new Date().toISOString() }, ...prev];
-        return updated.slice(0, 5); // Keep top 5
+        return updated.slice(0, 5);
       });
     }, 8000);
     return () => clearInterval(interval);
@@ -91,32 +93,31 @@ export default function Dashboard() {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
       <PageHeader 
-        title="Global Command" 
-        description="Real-time oversight of Denarixx infrastructure across all active modules."
+        title={t('dashboard.title')}
+        description={t('dashboard.description')}
       />
 
       {/* KPI Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-        <StatCard title="Active Sites" value={stats.activeSites} icon={MapPin} colorClass="hsl(var(--primary))" trend="+3 New" sparklineData={mockSparklines[0]} />
-        <StatCard title="Critical Alerts" value={stats.criticalAlerts} icon={AlertTriangle} colorClass="hsl(var(--destructive))" sparklineData={mockSparklines[1]} />
-        <StatCard title="Protected Lives" value={stats.protectedPeople.toLocaleString()} icon={Users} colorClass="hsl(var(--chart-3))" sparklineData={mockSparklines[2]} />
-        <StatCard title="Risk Zones" value={stats.disasterRiskZones} icon={Globe} colorClass="hsl(var(--chart-4))" sparklineData={mockSparklines[3]} />
-        <StatCard title="Energy Avail." value={`${stats.energyAvailability}%`} icon={Zap} colorClass="hsl(var(--chart-2))" sparklineData={mockSparklines[4]} />
+        <StatCard title={t('dashboard.activeSites')} value={stats.activeSites} icon={MapPin} colorClass="hsl(var(--primary))" trend="+3 New" sparklineData={mockSparklines[0]} />
+        <StatCard title={t('dashboard.criticalAlerts')} value={stats.criticalAlerts} icon={AlertTriangle} colorClass="hsl(var(--destructive))" sparklineData={mockSparklines[1]} />
+        <StatCard title={t('dashboard.protectedLives')} value={stats.protectedPeople.toLocaleString()} icon={Users} colorClass="hsl(var(--chart-3))" sparklineData={mockSparklines[2]} />
+        <StatCard title={t('dashboard.riskZones')} value={stats.disasterRiskZones} icon={Globe} colorClass="hsl(var(--chart-4))" sparklineData={mockSparklines[3]} />
+        <StatCard title={t('dashboard.energyAvail')} value={`${stats.energyAvailability}%`} icon={Zap} colorClass="hsl(var(--chart-2))" sparklineData={mockSparklines[4]} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         
-        {/* World Map Section */}
+        {/* Operations Map */}
         <Card className="lg:col-span-2 p-0 relative overflow-hidden border-border/50 group">
           <div className="absolute top-6 left-6 z-20 pointer-events-none">
-            <h3 className="text-xl font-display font-bold text-white drop-shadow-md">Africa Operations</h3>
-            <p className="text-xs font-semibold text-primary tracking-widest uppercase mt-1">Live Node Status</p>
+            <h3 className="text-xl font-display font-bold text-white drop-shadow-md">{t('dashboard.africaOps')}</h3>
+            <p className="text-xs font-semibold text-primary tracking-widest uppercase mt-1">{t('dashboard.liveNodeStatus')}</p>
           </div>
           
           <div className="w-full h-[400px] bg-secondary/20 relative flex items-center justify-center overflow-hidden">
             <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent pointer-events-none" />
             
-            {/* Simple Abstract SVG Map (Africa Focus) */}
             <svg viewBox="0 0 100 100" className="w-[80%] h-full opacity-30 text-primary group-hover:opacity-40 transition-opacity duration-1000">
               <path fill="currentColor" d="M10,30 Q30,20 40,10 T70,20 Q80,40 90,50 T70,90 Q40,100 30,80 T10,30 Z" />
             </svg>
@@ -133,7 +134,7 @@ export default function Dashboard() {
                 )} />
                 <div className="absolute top-4 opacity-0 group-hover/node:opacity-100 transition-opacity bg-black/80 backdrop-blur text-xs px-2 py-1 rounded border border-border whitespace-nowrap z-30">
                   <span className="font-bold text-white">{site.name}</span>
-                  <span className={cn("ml-2 uppercase text-[10px]", site.status === 'online' ? 'text-primary' : 'text-destructive')}>{site.status}</span>
+                  <span className={cn("ml-2 uppercase text-[10px]", site.status === 'online' ? 'text-primary' : 'text-destructive')}>{site.status === 'online' ? t('dashboard.online') : t('dashboard.critical')}</span>
                 </div>
               </div>
             ))}
@@ -142,10 +143,10 @@ export default function Dashboard() {
           <div className="absolute bottom-4 left-6 right-6 flex justify-between items-end z-20 pointer-events-none">
             <div className="flex gap-4">
                <div className="flex items-center gap-2 text-xs font-medium text-white bg-background/60 px-3 py-1.5 rounded-full backdrop-blur">
-                 <div className="w-2 h-2 rounded-full bg-primary" /> Online (6)
+                 <div className="w-2 h-2 rounded-full bg-primary" /> {t('dashboard.online')} (6)
                </div>
                <div className="flex items-center gap-2 text-xs font-medium text-white bg-background/60 px-3 py-1.5 rounded-full backdrop-blur">
-                 <div className="w-2 h-2 rounded-full bg-destructive" /> Critical (2)
+                 <div className="w-2 h-2 rounded-full bg-destructive" /> {t('dashboard.critical')} (2)
                </div>
             </div>
           </div>
@@ -153,28 +154,28 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <div className="flex flex-col gap-4">
-          <h3 className="text-sm font-display font-bold text-muted-foreground uppercase tracking-widest px-1">Rapid Deployment</h3>
+          <h3 className="text-sm font-display font-bold text-muted-foreground uppercase tracking-widest px-1">{t('dashboard.rapidDeploy')}</h3>
           
           <button className="flex-1 text-left bg-destructive/10 hover:bg-destructive/20 border border-destructive/30 hover:border-destructive/60 p-5 rounded-2xl transition-all group hover:shadow-[0_0_20px_rgba(220,38,38,0.2)]">
             <AlertTriangle className="w-8 h-8 text-destructive mb-3 group-hover:scale-110 transition-transform" />
-            <h4 className="font-bold text-white text-lg">Emergency Drill</h4>
-            <p className="text-xs text-muted-foreground mt-1">Initiate network-wide response protocol.</p>
+            <h4 className="font-bold text-white text-lg">{t('dashboard.emergencyDrill')}</h4>
+            <p className="text-xs text-muted-foreground mt-1">{t('dashboard.emergencyDrillDesc')}</p>
           </button>
           
           <button className="flex-1 text-left bg-secondary hover:bg-secondary/80 border border-border hover:border-primary/50 p-5 rounded-2xl transition-all group">
             <MapPin className="w-8 h-8 text-primary mb-3 group-hover:scale-110 transition-transform" />
-            <h4 className="font-bold text-white text-lg">Deploy Node</h4>
-            <p className="text-xs text-muted-foreground mt-1">Register new infrastructure hardware.</p>
+            <h4 className="font-bold text-white text-lg">{t('dashboard.deployNode')}</h4>
+            <p className="text-xs text-muted-foreground mt-1">{t('dashboard.deployNodeDesc')}</p>
           </button>
           
           <div className="flex gap-4 flex-1">
             <button className="flex-1 text-left bg-secondary hover:bg-secondary/80 border border-border hover:border-primary/50 p-4 rounded-2xl transition-all group">
               <FileText className="w-6 h-6 text-blue-400 mb-2 group-hover:scale-110 transition-transform" />
-              <h4 className="font-bold text-white text-sm">Generate Report</h4>
+              <h4 className="font-bold text-white text-sm">{t('dashboard.generateReport')}</h4>
             </button>
             <button className="flex-1 text-left bg-secondary hover:bg-secondary/80 border border-border hover:border-primary/50 p-4 rounded-2xl transition-all group">
               <Radio className="w-6 h-6 text-amber-500 mb-2 group-hover:scale-110 transition-transform" />
-              <h4 className="font-bold text-white text-sm">Broadcast Alert</h4>
+              <h4 className="font-bold text-white text-sm">{t('dashboard.broadcastAlert')}</h4>
             </button>
           </div>
         </div>
@@ -184,10 +185,10 @@ export default function Dashboard() {
       <div>
         <div className="flex items-center justify-between mb-4 px-1">
           <h3 className="text-xl font-display font-bold text-white flex items-center gap-3">
-            Active Threat Feed 
+            {t('dashboard.threatFeed')}
             <Badge variant="critical" className="animate-pulse bg-destructive/20 text-destructive border-none">LIVE</Badge>
           </h3>
-          <Button variant="ghost" size="sm">View Archive <ArrowRight className="ml-2 w-4 h-4"/></Button>
+          <Button variant="ghost" size="sm">{t('dashboard.viewArchive')} <ArrowRight className="ml-2 w-4 h-4"/></Button>
         </div>
         
         <div className="space-y-3">
@@ -226,8 +227,8 @@ export default function Dashboard() {
                   </div>
                   
                   <div className="flex items-center gap-2 shrink-0">
-                    <Button variant="outline" size="sm" className="h-8 text-xs border-border/50"><Check className="w-3 h-3 mr-1"/> ACK</Button>
-                    <Button variant="ghost" size="sm" className="h-8 text-xs">Dismiss</Button>
+                    <Button variant="outline" size="sm" className="h-8 text-xs border-border/50"><Check className="w-3 h-3 mr-1"/> {t('dashboard.ack')}</Button>
+                    <Button variant="ghost" size="sm" className="h-8 text-xs">{t('common.dismiss')}</Button>
                   </div>
                 </Card>
               </motion.div>
