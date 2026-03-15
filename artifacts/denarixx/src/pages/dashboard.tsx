@@ -56,11 +56,6 @@ const GLOBAL_SITES = [
   { id: 8, name: 'Abuja Node', cx: '40%', cy: '46%', status: 'online' },
 ];
 
-const MOCK_LIVE_ALERTS = [
-  { id: 'live-1', title: 'Grid Fluctuation Detected', module: 'energy', severity: 'warning', description: 'Minor voltage drop across secondary lines in Sector 4.', location: 'Lagos Grid' },
-  { id: 'live-2', title: 'Unauthorized Access Attempt', module: 'lifemesh', severity: 'critical', description: 'Multiple failed biometric scans at perimeter delta.', location: 'Nairobi Hub' },
-  { id: 'live-3', title: 'Severe Weather Warning', module: 'earthshield', severity: 'warning', description: 'Approaching storm front. Predicted impact in 45 minutes.', location: 'Dakar Station' },
-];
 
 const ACTION_ICONS: Record<string, string> = {
   'auth.login': '🔑',
@@ -122,6 +117,18 @@ export default function Dashboard() {
   const [deploySubmitting, setDeploySubmitting] = useState(false);
   const [deployResult, setDeployResult] = useState<{ success: boolean; message: string } | null>(null);
 
+  const fetchLiveAlerts = useCallback(async () => {
+    try {
+      const resp = await fetch('/api/alerts?status=active', { credentials: 'include' });
+      if (!resp.ok) return;
+      const data = await resp.json();
+      const alerts = Array.isArray(data) ? data : [];
+      setLiveAlerts(alerts.slice(0, 5));
+    } catch {
+      /* non-blocking */
+    }
+  }, []);
+
   const fetchAuditLog = useCallback(async () => {
     try {
       const resp = await fetch('/api/audit/log?limit=30', { credentials: 'include' });
@@ -143,15 +150,14 @@ export default function Dashboard() {
   useEffect(() => {
     fetchAuditLog();
     fetchScenarios();
+    fetchLiveAlerts();
+
     const interval = setInterval(() => {
-      const newAlert = MOCK_LIVE_ALERTS[Math.floor(Math.random() * MOCK_LIVE_ALERTS.length)];
-      setLiveAlerts(prev => {
-        const updated = [{ ...newAlert, id: `live-${Date.now()}`, createdAt: new Date().toISOString() }, ...prev];
-        return updated.slice(0, 5);
-      });
-    }, 8000);
+      fetchLiveAlerts();
+    }, 10000);
+
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchAuditLog, fetchScenarios, fetchLiveAlerts]);
 
   const runDrill = async () => {
     setDrillRunning(true);
@@ -227,6 +233,7 @@ export default function Dashboard() {
         setBroadcastSuccess(true);
         setBroadcastForm({ title: '', module: 'energy', severity: 'warning', location: '', description: '' });
         await fetchAuditLog();
+        await fetchLiveAlerts();
         setTimeout(() => { setBroadcastModal(false); setBroadcastSuccess(false); }, 1800);
       }
     } catch { /* ignore */ } finally {
