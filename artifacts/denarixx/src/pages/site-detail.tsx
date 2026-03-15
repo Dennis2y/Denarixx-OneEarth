@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { format, formatDistanceToNow } from 'date-fns';
 import { LineChart, Line, AreaChart, Area, ResponsiveContainer, XAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useAuth } from '@/context/auth';
+import { useTranslation } from 'react-i18next';
 
 const SITE_TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   village: Globe,
@@ -19,50 +20,25 @@ const SITE_TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }
   shelter: Users,
 };
 
-const RISK_CONFIG = {
-  critical: { color: 'text-destructive', bg: 'bg-destructive/10', border: 'border-destructive/40', label: 'Critical Risk' },
-  high: { color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/40', label: 'High Risk' },
-  medium: { color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/40', label: 'Medium Risk' },
-  low: { color: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/40', label: 'Low Risk' },
-};
-
-const STATUS_CONFIG = {
-  online: { color: 'text-green-400', dot: 'bg-green-400', label: 'Online' },
-  offline: { color: 'text-muted-foreground', dot: 'bg-muted-foreground', label: 'Offline' },
-  warning: { color: 'text-amber-500', dot: 'bg-amber-500', label: 'Warning' },
-  critical: { color: 'text-destructive', dot: 'bg-destructive', label: 'Critical' },
-};
-
-function StatBlock({ label, value, sub, colorClass }: { label: string; value: React.ReactNode; sub?: string; colorClass?: string }) {
-  return (
-    <div className="p-4 bg-secondary/30 rounded-xl border border-border/50">
-      <div className={cn("text-2xl font-display font-bold text-white", colorClass)}>{value}</div>
-      <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mt-1">{label}</div>
-      {sub && <div className="text-xs text-muted-foreground/70 mt-0.5">{sub}</div>}
-    </div>
-  );
-}
-
-function CustomTooltip({ active, payload, label }: any) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="bg-card border border-border rounded-xl p-3 text-xs shadow-xl">
-      <div className="text-muted-foreground mb-1">{label}</div>
-      {payload.map((p: any) => (
-        <div key={p.name} className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ background: p.color }} />
-          <span className="text-white font-semibold">{p.value.toFixed(1)}%</span>
-          <span className="text-muted-foreground">{p.name}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export default function SiteDetail() {
   const params = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const { can, user } = useAuth();
+  const { t } = useTranslation();
+
+  const RISK_CONFIG = {
+    critical: { color: 'text-destructive', bg: 'bg-destructive/10', border: 'border-destructive/40', label: t('siteDetail.criticalRisk') },
+    high: { color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/40', label: t('siteDetail.highRisk') },
+    medium: { color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/40', label: t('siteDetail.mediumRisk') },
+    low: { color: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/40', label: t('siteDetail.lowRisk') },
+  };
+
+  const STATUS_CONFIG = {
+    online: { color: 'text-green-400', dot: 'bg-green-400', label: t('sites.online') },
+    offline: { color: 'text-muted-foreground', dot: 'bg-muted-foreground', label: t('sites.offline') },
+    warning: { color: 'text-amber-500', dot: 'bg-amber-500', label: t('earthshield.warning') },
+    critical: { color: 'text-destructive', dot: 'bg-destructive', label: t('earthshield.critical') },
+  };
 
   const [site, setSite] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -80,7 +56,7 @@ export default function SiteDetail() {
       if (!res.ok) throw new Error('Not found');
       setSite(await res.json());
     } catch {
-      setError('Site not found or access denied.');
+      setError(t('siteDetail.siteNotFound'));
     } finally {
       setLoading(false);
     }
@@ -121,10 +97,10 @@ export default function SiteDetail() {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-center">
         <AlertTriangle className="w-12 h-12 text-destructive mb-4" />
-        <h2 className="text-xl font-display font-bold text-white mb-2">Site Not Found</h2>
+        <h2 className="text-xl font-display font-bold text-white mb-2">{t('siteDetail.siteNotFound')}</h2>
         <p className="text-muted-foreground mb-6">{error}</p>
         <Button variant="outline" onClick={() => setLocation('/sites')}>
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Sites
+          <ArrowLeft className="w-4 h-4 mr-2" /> {t('siteDetail.backToSites')}
         </Button>
       </div>
     );
@@ -134,12 +110,38 @@ export default function SiteDetail() {
   const riskCfg = RISK_CONFIG[site.currentRiskLevel as keyof typeof RISK_CONFIG] ?? RISK_CONFIG.low;
   const statusCfg = STATUS_CONFIG[site.status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.online;
 
-  const energyChartData = [...(site.energyHistory ?? [])].reverse().map((e: any, i: number) => ({
+  const energyChartData = [...(site.energyHistory ?? [])].reverse().map((e: any) => ({
     time: format(new Date(e.recordedAt), 'HH:mm'),
     Battery: e.batteryLevel,
     Solar: e.solarGeneration,
     Load: e.communityLoad,
   }));
+
+  function CustomTooltip({ active, payload, label }: any) {
+    if (!active || !payload?.length) return null;
+    return (
+      <div className="bg-card border border-border rounded-xl p-3 text-xs shadow-xl">
+        <div className="text-muted-foreground mb-1">{label}</div>
+        {payload.map((p: any) => (
+          <div key={p.name} className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full" style={{ background: p.color }} />
+            <span className="text-white font-semibold">{p.value.toFixed(1)}%</span>
+            <span className="text-muted-foreground">{p.name}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  function StatBlock({ label, value, sub, colorClass }: { label: string; value: React.ReactNode; sub?: string; colorClass?: string }) {
+    return (
+      <div className="p-4 bg-secondary/30 rounded-xl border border-border/50">
+        <div className={cn("text-2xl font-display font-bold text-white", colorClass)}>{value}</div>
+        <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mt-1">{label}</div>
+        {sub && <div className="text-xs text-muted-foreground/70 mt-0.5">{sub}</div>}
+      </div>
+    );
+  }
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -176,14 +178,14 @@ export default function SiteDetail() {
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={load}>
-            <RefreshCw className="w-4 h-4 mr-2" /> Refresh
+            <RefreshCw className="w-4 h-4 mr-2" /> {t('siteDetail.refresh')}
           </Button>
           {can('reports.generate') && (
             <Button size="sm" onClick={downloadReport} isLoading={reportLoading}
               className={cn(reportSuccess && 'bg-green-600 hover:bg-green-700')}>
               {reportSuccess
-                ? <><CheckCircle2 className="w-4 h-4 mr-2" /> Report Downloaded</>
-                : <><Download className="w-4 h-4 mr-2" /> Resilience Report</>}
+                ? <><CheckCircle2 className="w-4 h-4 mr-2" /> {t('siteDetail.reportDownloaded')}</>
+                : <><Download className="w-4 h-4 mr-2" /> {t('siteDetail.resilienceReport')}</>}
             </Button>
           )}
         </div>
@@ -192,35 +194,35 @@ export default function SiteDetail() {
       {/* KPI Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3 mb-6">
         <StatBlock
-          label="Uptime"
+          label={t('siteDetail.uptime')}
           value={`${site.uptime?.toFixed(1) ?? '—'}%`}
           colorClass={site.uptime >= 99 ? 'text-green-400' : site.uptime >= 95 ? 'text-amber-400' : 'text-destructive'}
         />
         <StatBlock
-          label="Power Availability"
+          label={t('siteDetail.powerAvailability')}
           value={`${site.powerAvailability?.toFixed(1) ?? '—'}%`}
           colorClass={site.powerAvailability >= 80 ? 'text-primary' : 'text-amber-400'}
         />
         <StatBlock
-          label="Risk Score"
+          label={t('siteDetail.riskScore')}
           value={site.summary?.riskScore ?? '—'}
           colorClass={site.summary?.riskScore >= 70 ? 'text-destructive' : site.summary?.riskScore >= 40 ? 'text-amber-400' : 'text-green-400'}
         />
         <StatBlock
-          label="Protected Persons"
+          label={t('siteDetail.protectedPersons')}
           value={(site.summary?.totalPersons ?? 0).toLocaleString()}
-          sub={`${site.summary?.atRiskPersons ?? 0} at risk`}
+          sub={`${site.summary?.atRiskPersons ?? 0} ${t('siteDetail.atRisk')}`}
         />
         <StatBlock
-          label="Population"
+          label={t('sites.population')}
           value={(site.population ?? 0).toLocaleString()}
-          sub="residents"
+          sub={t('siteDetail.residents')}
         />
         <StatBlock
-          label="Active Alerts"
+          label={t('siteDetail.activeAlerts')}
           value={site.summary?.activeAlertCount ?? 0}
           colorClass={site.summary?.criticalAlertCount > 0 ? 'text-destructive' : 'text-white'}
-          sub={`${site.summary?.criticalAlertCount ?? 0} critical`}
+          sub={`${site.summary?.criticalAlertCount ?? 0} ${t('earthshield.critical').toLowerCase()}`}
         />
       </div>
 
@@ -230,12 +232,12 @@ export default function SiteDetail() {
         <Card className="xl:col-span-2 p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-display font-bold text-white flex items-center gap-2">
-              <Zap className="w-5 h-5 text-primary" /> Energy History
+              <Zap className="w-5 h-5 text-primary" /> {t('siteDetail.energyHistory')}
             </h2>
             {site.latestEnergy && (
               <div className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground">
                 <Clock className="w-3 h-3" />
-                Last reading: {formatDistanceToNow(new Date(site.latestEnergy.recordedAt))} ago
+                {t('siteDetail.lastReading')}: {formatDistanceToNow(new Date(site.latestEnergy.recordedAt))} {t('siteDetail.ago')}
               </div>
             )}
           </div>
@@ -243,7 +245,7 @@ export default function SiteDetail() {
           {energyChartData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <BarChart3 className="w-8 h-8 text-muted-foreground/30 mb-2" />
-              <p className="text-sm text-muted-foreground">No energy data recorded for this site yet.</p>
+              <p className="text-sm text-muted-foreground">{t('siteDetail.noEnergyData')}</p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={200}>
@@ -270,10 +272,10 @@ export default function SiteDetail() {
           {site.latestEnergy && (
             <div className="grid grid-cols-4 gap-3 mt-5 pt-4 border-t border-border/50">
               {[
-                { label: 'Battery', value: `${site.latestEnergy.batteryLevel.toFixed(1)}%`, icon: Battery, color: 'text-primary' },
-                { label: 'Solar', value: `${site.latestEnergy.solarGeneration.toFixed(1)}%`, icon: Sun, color: 'text-yellow-400' },
-                { label: 'Load', value: `${site.latestEnergy.communityLoad.toFixed(1)}%`, icon: Zap, color: 'text-blue-400' },
-                { label: 'Grid', value: site.latestEnergy.gridStatus, icon: Wifi, color: site.latestEnergy.gridStatus === 'stable' ? 'text-green-400' : 'text-amber-500' },
+                { label: t('sites.battery'), value: `${site.latestEnergy.batteryLevel.toFixed(1)}%`, icon: Battery, color: 'text-primary' },
+                { label: t('sites.solar'), value: `${site.latestEnergy.solarGeneration.toFixed(1)}%`, icon: Sun, color: 'text-yellow-400' },
+                { label: t('energy.storage'), value: `${site.latestEnergy.communityLoad.toFixed(1)}%`, icon: Zap, color: 'text-blue-400' },
+                { label: t('sites.grid'), value: site.latestEnergy.gridStatus, icon: Wifi, color: site.latestEnergy.gridStatus === 'stable' ? 'text-green-400' : 'text-amber-500' },
               ].map(({ label, value, icon: Icon, color }) => (
                 <div key={label} className="text-center">
                   <Icon className={cn("w-4 h-4 mx-auto mb-1", color)} />
@@ -288,25 +290,25 @@ export default function SiteDetail() {
         {/* Risk Summary */}
         <Card className="p-6">
           <h2 className="font-display font-bold text-white flex items-center gap-2 mb-5">
-            <Shield className="w-5 h-5 text-primary" /> Risk Summary
+            <Shield className="w-5 h-5 text-primary" /> {t('siteDetail.riskSummary')}
           </h2>
 
           <div className={cn("p-4 rounded-2xl border mb-5 text-center", riskCfg.bg, riskCfg.border)}>
             <div className={cn("text-4xl font-display font-bold mb-1", riskCfg.color)}>
               {site.summary?.riskScore ?? '—'}
             </div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Risk Score / 100</div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">{t('siteDetail.riskScoreOf')}</div>
             <div className={cn("text-sm font-bold mt-2", riskCfg.color)}>{riskCfg.label}</div>
           </div>
 
           <div className="space-y-3">
             {[
-              { label: 'Current Risk Level', value: site.currentRiskLevel, badge: true },
-              { label: 'Site Status', value: site.status, badge: true },
-              { label: 'Uptime', value: `${site.uptime?.toFixed(2) ?? '—'}%` },
-              { label: 'Power Availability', value: `${site.powerAvailability?.toFixed(1) ?? '—'}%` },
-              { label: 'Grid Status', value: site.latestEnergy?.gridStatus ?? 'No data' },
-              { label: 'Coordinates', value: `${site.latitude?.toFixed(4)}, ${site.longitude?.toFixed(4)}` },
+              { label: t('siteDetail.currentRiskLevel'), value: site.currentRiskLevel, badge: true },
+              { label: t('siteDetail.siteStatus'), value: site.status, badge: true },
+              { label: t('siteDetail.uptime'), value: `${site.uptime?.toFixed(2) ?? '—'}%` },
+              { label: t('siteDetail.powerAvailability'), value: `${site.powerAvailability?.toFixed(1) ?? '—'}%` },
+              { label: t('siteDetail.gridStatus'), value: site.latestEnergy?.gridStatus ?? t('siteDetail.noData') },
+              { label: t('siteDetail.coordinates'), value: `${site.latitude?.toFixed(4)}, ${site.longitude?.toFixed(4)}` },
             ].map(({ label, value, badge }) => (
               <div key={label} className="flex items-center justify-between text-sm gap-4">
                 <span className="text-muted-foreground shrink-0">{label}</span>
@@ -325,12 +327,12 @@ export default function SiteDetail() {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-display font-bold text-white flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" /> Protected Persons
+              <Users className="w-5 h-5 text-primary" /> {t('siteDetail.protectedPersons')}
             </h2>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[10px]">{site.persons?.length ?? 0} total</Badge>
+              <Badge variant="outline" className="text-[10px]">{site.persons?.length ?? 0} {t('siteDetail.total')}</Badge>
               {site.summary?.atRiskPersons > 0 && (
-                <Badge variant="critical" className="text-[10px]">{site.summary.atRiskPersons} at risk</Badge>
+                <Badge variant="critical" className="text-[10px]">{site.summary.atRiskPersons} {t('siteDetail.atRisk')}</Badge>
               )}
             </div>
           </div>
@@ -338,7 +340,7 @@ export default function SiteDetail() {
           {!site.persons?.length ? (
             <div className="flex flex-col items-center py-10 text-center">
               <Users className="w-8 h-8 text-muted-foreground/30 mb-2" />
-              <p className="text-sm text-muted-foreground">No persons registered at this site.</p>
+              <p className="text-sm text-muted-foreground">{t('siteDetail.noPersons')}</p>
             </div>
           ) : (
             <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
@@ -378,16 +380,16 @@ export default function SiteDetail() {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-display font-bold text-white flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-primary" /> Active Alerts
+              <AlertTriangle className="w-5 h-5 text-primary" /> {t('siteDetail.activeAlerts')}
             </h2>
-            <Badge variant="outline" className="text-[10px]">{site.activeAlerts?.length ?? 0} active</Badge>
+            <Badge variant="outline" className="text-[10px]">{site.activeAlerts?.length ?? 0} {t('siteDetail.active')}</Badge>
           </div>
 
           {!site.activeAlerts?.length ? (
             <div className="flex flex-col items-center py-10 text-center">
               <CheckCircle2 className="w-8 h-8 text-green-500/40 mb-2" />
-              <p className="text-sm text-muted-foreground">No active alerts for this site.</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">All systems nominal.</p>
+              <p className="text-sm text-muted-foreground">{t('siteDetail.noAlerts')}</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">{t('siteDetail.allNominal')}</p>
             </div>
           ) : (
             <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
@@ -429,7 +431,7 @@ export default function SiteDetail() {
       {site.persons?.some((p: any) => p.contactPhone) && (
         <Card className="p-6">
           <h2 className="font-display font-bold text-white flex items-center gap-2 mb-5">
-            <Phone className="w-5 h-5 text-primary" /> Emergency Contacts
+            <Phone className="w-5 h-5 text-primary" /> {t('siteDetail.emergencyContacts')}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {site.persons
@@ -442,7 +444,7 @@ export default function SiteDetail() {
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm font-semibold text-white truncate">{person.contactName}</div>
-                    <div className="text-[10px] text-muted-foreground truncate">For: {person.name}</div>
+                    <div className="text-[10px] text-muted-foreground truncate">{t('siteDetail.contactFor')} {person.name}</div>
                     <div className="text-[10px] text-primary font-mono">{person.contactPhone}</div>
                   </div>
                 </div>
