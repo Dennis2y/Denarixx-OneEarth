@@ -1,8 +1,17 @@
-# Workspace
+# Denarixx OneEarth — AI Infrastructure Command Platform
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+Premium MVP web platform serving as a unified AI infrastructure command center for Africa. Three modules: Denarixx Energy (solar microgrid monitoring), LifeMesh (person safety tracking + SOS), and EarthShield (disaster alerts). pnpm workspace monorepo using TypeScript.
+
+## Key Features
+- Dark luxury gold/black command-center UI
+- Full multilingual support (EN, FR, SW, AR, PT) — auto-detects browser language via i18next
+- AI-generated cinematic background: Africa-from-space hero image + looping city-night video on login
+- Gold circuit board tech-grid texture on sidebar; Africa ambient on all content pages
+- Real satellite image in dashboard operations map
+- Live UTC clock, animated alert feed, sparkline stat cards
+- 9 pages: Login, Dashboard, Energy Grid, LifeMesh, EarthShield Intel, Unified Alerts, Sites & Nodes, Personnel, Settings
 
 ## Stack
 

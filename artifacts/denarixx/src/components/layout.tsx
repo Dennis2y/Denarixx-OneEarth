@@ -116,7 +116,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed md:relative top-0 left-0 h-full w-[280px] bg-sidebar data-grid border-r border-sidebar-border flex flex-col z-50 transition-all duration-300 ease-in-out group/sidebar",
+        "fixed md:relative top-0 left-0 h-full w-[280px] bg-sidebar data-grid bg-tech-grid border-r border-sidebar-border flex flex-col z-50 transition-all duration-300 ease-in-out group/sidebar",
         !sidebarOpen && "-translate-x-full md:translate-x-0 md:w-[72px]"
       )}>
         <div className="h-24 flex items-center px-4 border-b border-sidebar-border bg-background/50">
@@ -259,7 +259,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </header>
         
         {/* Scrollable Page Content */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar relative">
+        <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-africa-ambient">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-background to-background pointer-events-none -z-10" />
           <div className="p-4 md:p-8 lg:p-10 max-w-[1600px] mx-auto min-h-full">
             {children}

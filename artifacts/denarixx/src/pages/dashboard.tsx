@@ -115,12 +115,17 @@ export default function Dashboard() {
             <p className="text-xs font-semibold text-primary tracking-widest uppercase mt-1">{t('dashboard.liveNodeStatus')}</p>
           </div>
           
-          <div className="w-full h-[400px] bg-secondary/20 relative flex items-center justify-center overflow-hidden">
+          <div className="w-full h-[400px] relative overflow-hidden">
+            {/* Real Africa satellite image as map background */}
+            <img
+              src={`${import.meta.env.BASE_URL}africa-night-hero.png`}
+              alt="Africa Operations Map"
+              className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-[8000ms] ease-out"
+            />
+            {/* Dark overlay to keep readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-card/90 via-black/30 to-black/20 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/20 pointer-events-none" />
             <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent pointer-events-none" />
-            
-            <svg viewBox="0 0 100 100" className="w-[80%] h-full opacity-30 text-primary group-hover:opacity-40 transition-opacity duration-1000">
-              <path fill="currentColor" d="M10,30 Q30,20 40,10 T70,20 Q80,40 90,50 T70,90 Q40,100 30,80 T10,30 Z" />
-            </svg>
 
             {AFRICAN_SITES.map(site => (
               <div 

@@ -204,4 +204,52 @@
   .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: hsl(43 65% 52% / 0.6); }
   .text-gold { color: hsl(43 65% 52%); }
   .border-gold { border-color: hsl(43 65% 52%); }
+
+  /* ── Background Image Layers ── */
+  .bg-tech-grid {
+    position: relative;
+  }
+  .bg-tech-grid::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('/tech-grid-bg.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .bg-tech-grid > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .bg-africa-ambient {
+    position: relative;
+  }
+  .bg-africa-ambient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('/africa-night-hero.png');
+    background-size: cover;
+    background-position: center top;
+    opacity: 0.06;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .bg-africa-ambient > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Atmospheric glow behind page content ── */
+  @keyframes float-slow {
+    0%, 100% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-12px) scale(1.02); }
+  }
+  .float-slow {
+    animation: float-slow 12s ease-in-out infinite;
+  }
 }
