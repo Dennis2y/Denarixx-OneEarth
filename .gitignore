@@ -55,3 +55,13 @@ artifacts/denarixx/cookies.txt
 .env
 cookies.txt
 artifacts/denarixx/cookies.txt
+
+.env
+cookies.txt
+artifacts/denarixx/cookies.txt
+node_modules/
+.pnpm-store/
+dist/
+artifacts/denarixx/dist/
+.vite/
+.turbo/
