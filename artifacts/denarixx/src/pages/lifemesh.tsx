@@ -48,11 +48,14 @@ export default function LifeMesh() {
     emergency: { label: 'CRITICAL STATE', color: 'text-destructive', bg: 'bg-destructive/10', border: 'border-destructive/20' },
   }[status] ?? { label: status.toUpperCase(), color: 'text-muted-foreground', bg: 'bg-secondary/30', border: 'border-border/40' });
 
-  const safeCount = persons?.filter(p => p.status === 'safe').length ?? 0;
-  const riskCount = persons?.filter(p => p.status === 'at-risk').length ?? 0;
-  const emergencyCount = persons?.filter(p => p.status === 'emergency').length ?? 0;
+  const personsList = Array.isArray(persons) ? persons : [];
+  const incidentsList = Array.isArray(incidents) ? incidents : [];
 
-  const filteredPersons = persons?.filter(p => {
+  const safeCount = personsList.filter(p => p.status === 'safe').length;
+  const riskCount = personsList.filter(p => p.status === 'at-risk').length;
+  const emergencyCount = personsList.filter(p => p.status === 'emergency').length;
+
+  const filteredPersons = personsList.filter(p => {
     const matchesSearch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.lastKnownLocation?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = filterStatus === 'all' || p.status === filterStatus;
     return matchesSearch && matchesFilter;
@@ -231,7 +234,7 @@ export default function LifeMesh() {
             </div>
 
             <div className="relative border-l-2 border-border/30 ml-2 pl-5 space-y-5">
-              {incidents?.slice(0, 5).map((incident) => (
+              {incidentsList.slice(0, 5).map((incident) => (
                 <div key={incident.id} className="relative">
                   <div className={cn(
                     'absolute -left-[27px] w-3 h-3 rounded-full border-2 border-background',
@@ -331,7 +334,7 @@ export default function LifeMesh() {
             <Select
               value={sosData.personId}
               onChange={e => setSosData({ ...sosData, personId: e.target.value })}
-              options={persons?.map(p => ({ label: `${entityId(p.id)} — ${p.name} · ${p.lastKnownLocation}`, value: p.id.toString() })) ?? []}
+              options={personsList.map(p => ({ label: `${entityId(p.id)} — ${p.name} · ${p.lastKnownLocation}`, value: p.id.toString() }))}
               className="bg-background border-border/80 font-mono text-sm"
               required
             />

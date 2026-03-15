@@ -55,6 +55,8 @@ export default function Alerts() {
     status: status || undefined,
   } as any);
 
+  const alertsList = Array.isArray(alerts) ? alerts : [];
+
   const getModuleIcon = (mod: string) => {
     switch(mod) {
       case 'energy': return <Zap className="w-4 h-4 mr-1.5" />;
@@ -105,8 +107,8 @@ export default function Alerts() {
     } catch {}
   };
 
-  const activeCount = alerts?.filter(a => a.status === 'active').length ?? 0;
-  const criticalCount = alerts?.filter(a => a.severity === 'critical').length ?? 0;
+  const activeCount = alertsList.filter(a => a.status === 'active').length;
+  const criticalCount = alertsList.filter(a => a.severity === 'critical').length;
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex relative" style={{ minHeight: 'calc(100dvh - 180px)' }}>
@@ -213,7 +215,7 @@ export default function Alerts() {
               </Card>
             ))}
           </div>
-        ) : !alerts?.length ? (
+        ) : !alertsList.length ? (
           <Card className="border-dashed border-2 border-border/50 bg-transparent">
             <EmptyState 
               icon={Search} 
@@ -224,7 +226,7 @@ export default function Alerts() {
           </Card>
         ) : (
           <div className="space-y-2.5 pb-10">
-            {alerts?.map((alert) => (
+            {alertsList.map((alert) => (
               <motion.div key={alert.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                 <Card 
                   className={cn(

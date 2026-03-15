@@ -14,9 +14,12 @@ export default function Energy() {
 
   if (metricsLoading || chartLoading) return <LoadingScreen />;
 
-  const criticalSites = metrics?.filter(m => m.gridStatus === 'unstable' || m.batteryLevel < 30) || [];
+  const metricsList = Array.isArray(metrics) ? metrics : [];
+  const chartDataList = Array.isArray(chartData) ? chartData : [];
+
+  const criticalSites = metricsList.filter(m => m.gridStatus === 'unstable' || m.batteryLevel < 30);
   
-  const batteryData = metrics?.slice(0, 5).map((m, i) => ({
+  const batteryData = metricsList.slice(0, 5).map((m, i) => ({
     name: m.siteName,
     value: m.batteryLevel,
     fill: m.batteryLevel > 60 ? 'hsl(var(--chart-2))' : m.batteryLevel > 20 ? 'hsl(var(--chart-4))' : 'hsl(var(--destructive))'
@@ -72,7 +75,7 @@ export default function Energy() {
           
           <div className="h-[420px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={chartDataList} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorSolar" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.5}/>
@@ -153,7 +156,7 @@ export default function Energy() {
 
       <h3 className="text-xl font-display font-bold text-white mb-4 ml-1">{t('energy.nodeMatrix')}</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {metrics?.map((metric) => (
+        {metricsList.map((metric) => (
           <Card key={metric.id} className="p-5 hover:-translate-y-1 transition-transform border-border/50 bg-secondary/20 hover:bg-secondary/40">
             <div className="flex justify-between items-start mb-4">
               <h4 className="font-bold text-white text-lg truncate pr-2">{metric.siteName}</h4>

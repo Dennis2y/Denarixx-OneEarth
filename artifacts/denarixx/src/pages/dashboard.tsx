@@ -268,6 +268,11 @@ export default function Dashboard() {
   if (statsLoading || alertsLoading) return <LoadingScreen />;
   if (!stats) return <div className="text-destructive p-8">Failed to load command center data.</div>;
 
+  const liveAlertsList = Array.isArray(liveAlerts) ? liveAlerts : [];
+  const recentActivitiesList = Array.isArray(auditLog) ? auditLog : [];
+  const scenarioRunsList = Array.isArray(recentScenarios) ? recentScenarios : [];
+
+
   const systemOk = (stats?.criticalAlerts ?? 0) < 5;
 
   return (
@@ -331,11 +336,11 @@ export default function Dashboard() {
 
       {/* KPI Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
-        <StatCard title={t('dashboard.activeSites')} value={stats.activeSites} icon={MapPin} colorClass="hsl(var(--primary))" trend="+3 New" sparklineData={mockSparklines[0]} />
-        <StatCard title={t('dashboard.criticalAlerts')} value={stats.criticalAlerts} icon={AlertTriangle} colorClass="hsl(var(--destructive))" sparklineData={mockSparklines[1]} />
-        <StatCard title={t('dashboard.protectedLives')} value={stats.protectedPeople.toLocaleString()} icon={Users} colorClass="hsl(var(--chart-3))" sparklineData={mockSparklines[2]} />
-        <StatCard title={t('dashboard.riskZones')} value={stats.disasterRiskZones} icon={Globe} colorClass="hsl(var(--chart-4))" sparklineData={mockSparklines[3]} />
-        <StatCard title={t('dashboard.energyAvail')} value={`${stats.energyAvailability}%`} icon={Zap} colorClass="hsl(var(--chart-2))" sparklineData={mockSparklines[4]} />
+        <StatCard title={t('dashboard.activeSites')} value={stats?.activeSites ?? 0} icon={MapPin} colorClass="hsl(var(--primary))" trend="+3 New" sparklineData={mockSparklines[0]} />
+        <StatCard title={t('dashboard.criticalAlerts')} value={stats?.criticalAlerts ?? 0} icon={AlertTriangle} colorClass="hsl(var(--destructive))" sparklineData={mockSparklines[1]} />
+        <StatCard title={t('dashboard.protectedLives')} value={(stats?.protectedPeople ?? 0).toLocaleString()} icon={Users} colorClass="hsl(var(--chart-3))" sparklineData={mockSparklines[2]} />
+        <StatCard title={t('dashboard.riskZones')} value={stats?.disasterRiskZones ?? 0} icon={Globe} colorClass="hsl(var(--chart-4))" sparklineData={mockSparklines[3]} />
+        <StatCard title={t('dashboard.energyAvail')} value={`${stats?.energyAvailability ?? 0}%`} icon={Zap} colorClass="hsl(var(--chart-2))" sparklineData={mockSparklines[4]} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -453,9 +458,9 @@ export default function Dashboard() {
           </div>
           <div className="space-y-3">
             {[
-              { name: 'Denarixx Energy', icon: Zap, color: 'hsl(var(--primary))', status: 'operational', uptime: 98.7, detail: `${stats.activeSites} sites · ${stats.energyAvailability}% availability` },
-              { name: 'Denarixx LifeMesh', icon: Shield, color: '#4ade80', status: stats.criticalAlerts > 3 ? 'warning' : 'operational', uptime: 97.2, detail: `${stats.protectedPeople.toLocaleString()} persons protected` },
-              { name: 'EarthShield Intel', icon: Globe, color: '#60a5fa', status: stats.criticalAlerts > 5 ? 'critical' : 'operational', uptime: 99.1, detail: `${stats.disasterRiskZones} risk zones active` },
+              { name: 'Denarixx Energy', icon: Zap, color: 'hsl(var(--primary))', status: 'operational', uptime: 98.7, detail: `${stats?.activeSites ?? 0} sites · ${stats?.energyAvailability ?? 0}% availability` },
+              { name: 'Denarixx LifeMesh', icon: Shield, color: '#4ade80', status: (stats?.criticalAlerts ?? 0) > 3 ? 'warning' : 'operational', uptime: 97.2, detail: `${(stats?.protectedPeople ?? 0).toLocaleString()} persons protected` },
+              { name: 'EarthShield Intel', icon: Globe, color: '#60a5fa', status: (stats?.criticalAlerts ?? 0) > 5 ? 'critical' : 'operational', uptime: 99.1, detail: `${stats?.disasterRiskZones ?? 0} risk zones active` },
             ].map(({ name, icon: Icon, color, status, uptime, detail }) => (
               <Card key={name} className="p-4 flex items-center gap-4 hover:bg-secondary/40 transition-colors">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border" style={{ backgroundColor: `${color}15`, borderColor: `${color}35` }}>
@@ -504,7 +509,7 @@ export default function Dashboard() {
             </Card>
           ) : (
             <div className="space-y-2.5">
-              {recentScenarios.slice(0, 4).map((sim: any) => {
+              {scenarioRunsList.slice(0, 4).map((sim: any) => {
                 const scoreColor = sim.readinessScore >= 70 ? 'text-green-400' : sim.readinessScore >= 50 ? 'text-amber-400' : 'text-destructive';
                 const scoreBar = sim.readinessScore >= 70 ? 'bg-green-400' : sim.readinessScore >= 50 ? 'bg-amber-400' : 'bg-destructive';
                 return (
@@ -552,7 +557,7 @@ export default function Dashboard() {
           </div>
           <div className="space-y-3">
             <AnimatePresence>
-              {liveAlerts.map((alert) => (
+              {liveAlertsList.map((alert) => (
                 <motion.div key={alert.id} initial={{ opacity: 0, x: -20, height: 0 }} animate={{ opacity: 1, x: 0, height: 'auto' }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.4 }}>
                   <Card className="p-4 border-l-4 flex flex-col sm:flex-row sm:items-center gap-4 hover:bg-secondary/40 transition-colors" style={{ borderLeftColor: alert.severity === 'critical' ? 'hsl(var(--destructive))' : 'hsl(var(--chart-4))' }}>
                     <div className={cn('p-3 rounded-full shrink-0 flex items-center justify-center', alert.severity === 'critical' ? 'bg-destructive/10 text-destructive' : 'bg-amber-500/10 text-amber-500')}>
@@ -605,7 +610,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="divide-y divide-border/30 max-h-[460px] overflow-y-auto custom-scrollbar">
-                {auditLog.map((entry, idx) => (
+                {recentActivitiesList.map((entry, idx) => (
                   <div key={entry.id} className="px-3 py-2.5 hover:bg-secondary/20 transition-colors group">
                     <div className="flex items-start gap-2.5">
                       <div className="shrink-0 w-5 h-5 rounded flex items-center justify-center bg-secondary/50 border border-border/30 text-[11px] mt-0.5">

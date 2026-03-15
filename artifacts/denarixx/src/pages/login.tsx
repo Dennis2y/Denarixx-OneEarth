@@ -104,7 +104,7 @@ export default function Login() {
     const result = await login(email, password);
     setLoading(false);
     if (result.success) {
-      setLocation('/dashboard');
+      window.location.href = '/dashboard';
     } else {
       setError(result.error ?? 'Authentication failed.');
     }

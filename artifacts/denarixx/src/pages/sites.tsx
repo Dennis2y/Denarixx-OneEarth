@@ -23,6 +23,8 @@ export default function Sites() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [reportDownloading, setReportDownloading] = useState(false);
 
+  const sitesList = Array.isArray(sites) ? sites : [];
+
   const downloadSiteReport = async (site: any) => {
     setReportDownloading(true);
     try {
@@ -134,13 +136,13 @@ export default function Sites() {
             </Card>
           ))}
         </div>
-      ) : sites?.length === 0 ? (
+      ) : sitesList.length === 0 ? (
         <Card className="border-dashed border-2 border-border/50 bg-transparent">
           <EmptyState icon={Server} title={t('sites.noNodes')} description={t('sites.noNodesDesc')} action={<Button onClick={() => setModalOpen(true)}>{t('sites.deployFirstNode')}</Button>} />
         </Card>
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-          {sites?.map((site) => (
+          {sitesList.map((site) => (
             <Card key={site.id} className="flex flex-col p-0 overflow-hidden border-border/60 hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 group">
               <div className="p-6 border-b border-border/50 bg-gradient-to-b from-secondary/40 to-transparent relative">
                 <div className="absolute top-0 left-0 w-full h-1" style={{ backgroundColor: site.status === 'online' ? 'hsl(160, 70%, 45%)' : 'hsl(var(--destructive))' }} />
@@ -194,7 +196,7 @@ export default function Sites() {
               <tr><Th>{t('sites.colNode')}</Th><Th>{t('sites.colType')}</Th><Th>{t('sites.colPosition')}</Th><Th>{t('sites.colRisk')}</Th><Th>{t('sites.colStatus')}</Th><Th>{t('sites.colUptime')}</Th><Th>{t('sites.colPower')}</Th><Th>{t('sites.colAction')}</Th></tr>
             </thead>
             <tbody>
-              {sites?.map((site) => (
+              {sitesList.map((site) => (
                 <tr key={site.id} className="hover:bg-secondary/30 transition-colors">
                   <Td><div className="font-bold text-white">{site.name}</div><div className="text-xs font-mono text-muted-foreground mt-1">ID:{site.id} · Pop:{site.population}</div></Td>
                   <Td><Badge variant="outline" className="border-border text-muted-foreground uppercase">{site.type}</Badge></Td>

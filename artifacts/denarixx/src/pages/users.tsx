@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 export default function Users() {
   const { t } = useTranslation();
   const { data: users, isLoading } = useGetUsers();
+  const usersList = Array.isArray(users) ? users : [];
 
   const getRoleColor = (role: string) => {
     switch(role) {
@@ -43,21 +44,21 @@ export default function Users() {
           <Shield className="w-10 h-10 text-primary mr-4 opacity-50 shrink-0" />
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t('users.adminLevel')}</p>
-            <p className="text-2xl font-display font-bold text-white">{users?.filter(u => u.role === 'admin').length || 0}</p>
+            <p className="text-2xl font-display font-bold text-white">{usersList.filter(u => u.role === 'admin').length}</p>
           </div>
         </Card>
         <Card className="p-5 bg-secondary/30 border-l-4 border-l-blue-500 flex items-center">
           <Activity className="w-10 h-10 text-blue-500 mr-4 opacity-50 shrink-0" />
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t('users.activeOperators')}</p>
-            <p className="text-2xl font-display font-bold text-white">{users?.filter(u => u.status === 'active').length || 0}</p>
+            <p className="text-2xl font-display font-bold text-white">{usersList.filter(u => u.status === 'active').length}</p>
           </div>
         </Card>
         <Card className="p-5 bg-secondary/30 border-l-4 border-l-destructive flex items-center">
           <Lock className="w-10 h-10 text-destructive mr-4 opacity-50 shrink-0" />
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t('users.suspendedAccounts')}</p>
-            <p className="text-2xl font-display font-bold text-white">{users?.filter(u => u.status === 'suspended').length || 0}</p>
+            <p className="text-2xl font-display font-bold text-white">{usersList.filter(u => u.status === 'suspended').length}</p>
           </div>
         </Card>
       </div>
@@ -71,7 +72,7 @@ export default function Users() {
           <>
             {/* Mobile card list — visible on xs/sm only */}
             <div className="sm:hidden divide-y divide-border/50">
-              {users?.map((user) => (
+              {usersList.map((user) => (
                 <div key={user.id} className="p-4 space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center text-foreground font-display font-bold shrink-0">
@@ -125,7 +126,7 @@ export default function Users() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users?.map((user) => (
+                  {usersList.map((user) => (
                     <tr key={user.id} className="hover:bg-secondary/40 transition-colors group">
                       <Td>
                         <div className="flex items-center">

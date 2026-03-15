@@ -38,6 +38,11 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 };
 
 const AUTH_STORAGE_KEY = 'denarixx_auth_user';
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+
+function apiUrl(path: string) {
+  return API_BASE ? `${API_BASE}${path}` : path;
+}
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -48,13 +53,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const resp = await fetch('/api/auth/me', { credentials: 'include' });
+        const resp = await fetch(apiUrl('/api/auth/me'), { credentials: 'include' });
         if (resp.ok) {
           const data = await resp.json() as AuthUser;
           setUser(data);
           localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
         } else {
-          // Fall back to localStorage session
           const stored = localStorage.getItem(AUTH_STORAGE_KEY);
           if (stored) {
             setUser(JSON.parse(stored) as AuthUser);
@@ -63,7 +67,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch {
         const stored = localStorage.getItem(AUTH_STORAGE_KEY);
         if (stored) {
-          try { setUser(JSON.parse(stored) as AuthUser); } catch { /* ignore */ }
+          try {
+            setUser(JSON.parse(stored) as AuthUser);
+          } catch {}
         }
       } finally {
         setIsLoading(false);
@@ -72,12 +78,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
+
     try {
-      const resp = await fetch('/api/auth/login', {
+      const resp = await fetch(apiUrl('/api/auth/login'), {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: cleanEmail, password: cleanPassword }),
       });
 
       if (resp.ok) {
@@ -90,15 +99,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const err = await resp.json().catch(() => ({})) as { error?: string };
       return { success: false, error: err.error ?? 'Invalid credentials. Access denied.' };
     } catch {
-      // Fallback: offline demo mode
       const DEMO: Array<AuthUser & { password: string }> = [
         { id: 1, name: 'Cmdr. Prime', email: 'commander@denarixx.io', password: 'denarixx2026', role: 'admin', organization: 'Denarixx HQ', clearanceLevel: 5 },
         { id: 2, name: 'Adaeze Okonkwo', email: 'adaeze@denarixx.io', password: 'operator123', role: 'operator', organization: 'Lagos Grid Ops', clearanceLevel: 3 },
         { id: 3, name: 'Dr. Kofi Mensah', email: 'kofi@gov.gh', password: 'gov2026', role: 'government', organization: 'Ghana Disaster Authority', clearanceLevel: 4 },
         { id: 4, name: 'Fatuma Wanjiru', email: 'fatuma@community.ke', password: 'community1', role: 'community', organization: 'Kibera Community Watch', clearanceLevel: 1 },
       ];
-      const match = DEMO.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
-      if (!match) return { success: false, error: 'Invalid credentials. Access denied.' };
+
+      const match = DEMO.find(
+        u => u.email.toLowerCase() === cleanEmail.toLowerCase() && u.password === cleanPassword
+      );
+
+      if (!match) {
+        return { success: false, error: 'Invalid credentials. Access denied.' };
+      }
+
       const { password: _, ...authUser } = match;
       setUser(authUser);
       localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));
@@ -108,8 +123,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-    } catch { /* ignore */ }
+      await fetch(apiUrl('/api/auth/logout'), {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch {}
     setUser(null);
     localStorage.removeItem(AUTH_STORAGE_KEY);
   }, []);

@@ -85,17 +85,21 @@ export default function EarthShield() {
 
   if (aLoading || rLoading) return <LoadingScreen />;
 
-  const critical = filteredAlerts.filter(a => a.severity === 'critical');
-  const warning = filteredAlerts.filter(a => a.severity === 'warning');
-  const monitoring = filteredAlerts.filter(a => a.severity === 'info');
+  const alertsList = Array.isArray(alerts) ? alerts : [];
+  const zonesList = Array.isArray(risks) ? risks : [];
+  const filteredAlertsList = Array.isArray(filteredAlerts) ? filteredAlerts : [];
 
-  const floodCount = alerts?.filter(a => a.type === 'flood').length ?? 0;
-  const fireCount = alerts?.filter(a => a.type === 'wildfire').length ?? 0;
-  const stormCount = alerts?.filter(a => a.type === 'storm').length ?? 0;
-  const infraCount = alerts?.filter(a => a.type === 'infrastructure').length ?? 0;
-  const totalAffected = alerts?.reduce((s, a) => s + a.affectedPopulation, 0) ?? 0;
+  const critical = filteredAlertsList.filter(a => a.severity === 'critical');
+  const warning = filteredAlertsList.filter(a => a.severity === 'warning');
+  const monitoring = filteredAlertsList.filter(a => a.severity === 'info');
 
-  const availableTypes: DisasterType[] = ['all', ...Array.from(new Set(alerts?.map(a => a.type as DisasterType) ?? []))];
+  const floodCount = alertsList.filter(a => a.type === 'flood').length;
+  const fireCount = alertsList.filter(a => a.type === 'wildfire').length;
+  const stormCount = alertsList.filter(a => a.type === 'storm').length;
+  const infraCount = alertsList.filter(a => a.type === 'infrastructure').length;
+  const totalAffected = alertsList.reduce((s, a) => s + (a.affectedPopulation ?? 0), 0);
+
+  const availableTypes: DisasterType[] = ['all', ...Array.from(new Set(alertsList.map(a => a.type as DisasterType)))];
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -209,7 +213,7 @@ export default function EarthShield() {
               <Shield className="w-4 h-4 text-primary" /> {t('earthshield.readinessIndex')}
             </h3>
             <div className="space-y-5">
-              {risks?.map((risk) => {
+              {zonesList.map((risk) => {
                 const meta = TYPE_META[risk.type];
                 const score = risk.preparednessScore;
                 const scoreClass = score < 50 ? 'text-destructive' : score < 80 ? 'text-amber-500' : 'text-primary';
@@ -245,7 +249,7 @@ export default function EarthShield() {
               <Globe className="w-4 h-4 text-primary" /> {t('earthshield.spatialRisk')}
             </h3>
             <div className="space-y-3">
-              {risks?.slice(0, 6).map((risk) => {
+              {zonesList.slice(0, 6).map((risk) => {
                 const meta = TYPE_META[risk.type];
                 const score = risk.preparednessScore;
                 const severity = score < 40 ? 'critical' : score < 70 ? 'warning' : 'safe';
@@ -276,7 +280,7 @@ export default function EarthShield() {
               <AlertTriangle className="w-4 h-4 text-primary" /> {t('earthshield.incidentTimeline')}
             </h3>
             <div className="relative border-l border-border ml-2 pl-4 space-y-5">
-              {alerts?.slice(0, 5).map((alert) => (
+              {alertsList.slice(0, 5).map((alert) => (
                 <div key={`log-${alert.id}`} className="relative">
                   <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full border-2 border-card" style={{ backgroundColor: getSeverityColor(alert.severity) }} />
                   <p className="text-[10px] font-mono text-muted-foreground mb-0.5">{format(new Date(alert.issuedAt), 'MMM dd, HH:mm')} UTC</p>
