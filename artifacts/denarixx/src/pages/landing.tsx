@@ -222,12 +222,12 @@ export default function Landing() {
 
       {/* ── HERO ── */}
       <section className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden pt-14 sm:pt-16">
-        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-25"
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-55"
           style={{ backgroundImage: `url(${import.meta.env.BASE_URL}africa-night-hero.png)` }} />
-        <video className="absolute inset-0 w-full h-full object-cover opacity-20" autoPlay loop muted playsInline
+        <video className="absolute inset-0 w-full h-full object-cover opacity-50" autoPlay loop muted playsInline
           src={`${import.meta.env.BASE_URL}africa-city-night.mp4`} />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[hsl(220,18%,6%)]/60 to-[hsl(220,18%,6%)]" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(220,18%,6%)]/60 via-transparent to-[hsl(220,18%,6%)]/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[hsl(220,18%,6%)]/25 to-[hsl(220,18%,6%)]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(220,18%,6%)]/30 via-transparent to-[hsl(220,18%,6%)]/30" />
         <div className="absolute top-1/3 left-1/4 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-primary/8 rounded-full blur-[120px] sm:blur-[160px] pointer-events-none animate-pulse" style={{ animationDuration: '8s' }} />
         <div className="absolute bottom-1/3 right-1/4 w-[200px] sm:w-[400px] h-[200px] sm:h-[400px] bg-blue-600/8 rounded-full blur-[80px] sm:blur-[120px] pointer-events-none animate-pulse" style={{ animationDuration: '12s' }} />
         <div className="absolute inset-0 pointer-events-none opacity-[0.025]"
