@@ -4,3 +4,4 @@ export * from "./lifemesh";
 export * from "./earthshield";
 export * from "./alerts";
 export * from "./users";
+export * from "./audit";

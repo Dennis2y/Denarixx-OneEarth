@@ -14,28 +14,28 @@ export interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
+  can: (action: Permission) => boolean;
 }
 
-const DEMO_USERS: Array<AuthUser & { password: string }> = [
-  {
-    id: 1, name: 'Cmdr. Prime', email: 'commander@denarixx.io', password: 'denarixx2026',
-    role: 'admin', organization: 'Denarixx HQ', clearanceLevel: 5,
-  },
-  {
-    id: 2, name: 'Adaeze Okonkwo', email: 'adaeze@denarixx.io', password: 'operator123',
-    role: 'operator', organization: 'Lagos Grid Ops', clearanceLevel: 3,
-  },
-  {
-    id: 3, name: 'Dr. Kofi Mensah', email: 'kofi@gov.gh', password: 'gov2026',
-    role: 'government', organization: 'Ghana Disaster Authority', clearanceLevel: 4,
-  },
-  {
-    id: 4, name: 'Fatuma Wanjiru', email: 'fatuma@community.ke', password: 'community1',
-    role: 'community', organization: 'Kibera Community Watch', clearanceLevel: 1,
-  },
-];
+export type Permission =
+  | 'alerts.acknowledge'
+  | 'alerts.broadcast'
+  | 'scenarios.run'
+  | 'users.manage'
+  | 'settings.edit'
+  | 'nodes.deploy'
+  | 'reports.generate'
+  | 'drills.run';
+
+const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
+  admin: ['alerts.acknowledge', 'alerts.broadcast', 'scenarios.run', 'users.manage', 'settings.edit', 'nodes.deploy', 'reports.generate', 'drills.run'],
+  operator: ['alerts.acknowledge', 'alerts.broadcast', 'scenarios.run', 'nodes.deploy', 'reports.generate', 'drills.run'],
+  government: ['reports.generate'],
+  community: [],
+};
 
 const AUTH_STORAGE_KEY = 'denarixx_auth_user';
 
@@ -43,38 +43,84 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored) as AuthUser;
-        setUser(parsed);
+    (async () => {
+      try {
+        const resp = await fetch('/api/auth/me', { credentials: 'include' });
+        if (resp.ok) {
+          const data = await resp.json() as AuthUser;
+          setUser(data);
+          localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
+        } else {
+          // Fall back to localStorage session
+          const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+          if (stored) {
+            setUser(JSON.parse(stored) as AuthUser);
+          }
+        }
+      } catch {
+        const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (stored) {
+          try { setUser(JSON.parse(stored) as AuthUser); } catch { /* ignore */ }
+        }
+      } finally {
+        setIsLoading(false);
       }
-    } catch {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-    }
+    })();
   }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    await new Promise(r => setTimeout(r, 800));
-    const match = DEMO_USERS.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
-    if (!match) {
-      return { success: false, error: 'Invalid credentials. Access denied.' };
+    try {
+      const resp = await fetch('/api/auth/login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (resp.ok) {
+        const data = await resp.json() as AuthUser;
+        setUser(data);
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
+        return { success: true };
+      }
+
+      const err = await resp.json().catch(() => ({})) as { error?: string };
+      return { success: false, error: err.error ?? 'Invalid credentials. Access denied.' };
+    } catch {
+      // Fallback: offline demo mode
+      const DEMO: Array<AuthUser & { password: string }> = [
+        { id: 1, name: 'Cmdr. Prime', email: 'commander@denarixx.io', password: 'denarixx2026', role: 'admin', organization: 'Denarixx HQ', clearanceLevel: 5 },
+        { id: 2, name: 'Adaeze Okonkwo', email: 'adaeze@denarixx.io', password: 'operator123', role: 'operator', organization: 'Lagos Grid Ops', clearanceLevel: 3 },
+        { id: 3, name: 'Dr. Kofi Mensah', email: 'kofi@gov.gh', password: 'gov2026', role: 'government', organization: 'Ghana Disaster Authority', clearanceLevel: 4 },
+        { id: 4, name: 'Fatuma Wanjiru', email: 'fatuma@community.ke', password: 'community1', role: 'community', organization: 'Kibera Community Watch', clearanceLevel: 1 },
+      ];
+      const match = DEMO.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+      if (!match) return { success: false, error: 'Invalid credentials. Access denied.' };
+      const { password: _, ...authUser } = match;
+      setUser(authUser);
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));
+      return { success: true };
     }
-    const { password: _, ...authUser } = match;
-    setUser(authUser);
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));
-    return { success: true };
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch { /* ignore */ }
     setUser(null);
     localStorage.removeItem(AUTH_STORAGE_KEY);
   }, []);
 
+  const can = useCallback((action: Permission): boolean => {
+    if (!user) return false;
+    return ROLE_PERMISSIONS[user.role]?.includes(action) ?? false;
+  }, [user]);
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout, can }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,17 +1,20 @@
 import { Router, type IRouter } from "express";
-import healthRouter from "./health";
-import dashboardRouter from "./dashboard";
-import sitesRouter from "./sites";
-import energyRouter from "./energy";
-import lifemeshRouter from "./lifemesh";
-import earthshieldRouter from "./earthshield";
-import alertsRouter from "./alerts";
-import usersRouter from "./users";
-import commandCenterRouter from "./command-center";
+import healthRouter from "./health.js";
+import authRouter from "./auth.js";
+import dashboardRouter from "./dashboard.js";
+import sitesRouter from "./sites.js";
+import energyRouter from "./energy.js";
+import lifemeshRouter from "./lifemesh.js";
+import earthshieldRouter from "./earthshield.js";
+import alertsRouter from "./alerts.js";
+import usersRouter from "./users.js";
+import commandCenterRouter from "./command-center.js";
+import auditRouter from "./audit.js";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(authRouter);
 router.use(dashboardRouter);
 router.use(sitesRouter);
 router.use(energyRouter);
@@ -20,5 +23,6 @@ router.use(earthshieldRouter);
 router.use(alertsRouter);
 router.use(usersRouter);
 router.use(commandCenterRouter);
+router.use(auditRouter);
 
 export default router;

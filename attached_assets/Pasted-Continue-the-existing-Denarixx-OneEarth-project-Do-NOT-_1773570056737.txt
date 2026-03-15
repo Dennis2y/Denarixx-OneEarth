@@ -1,0 +1,107 @@
+Continue the existing Denarixx OneEarth project. Do NOT rewrite from scratch. Keep the current stack and improve the platform into a more operational, enterprise-grade MVP.
+
+Focus on these next upgrades:
+
+1. BACKEND AUTH
+- Add real backend auth routes:
+  - POST /auth/login
+  - GET /auth/me
+  - POST /auth/logout
+- Move demo auth logic from frontend-only localStorage into backend-supported session or token flow
+- Protect API routes server-side
+- Enforce roles on protected actions
+
+2. ROLE-BASED ACCESS CONTROL
+- Add role-based route and action permissions for:
+  - admin
+  - operator
+  - government
+  - community
+- Government role should be mostly read-only
+- Admin can manage users/settings
+- Operators can acknowledge alerts and run simulations
+- Community users have limited access
+
+3. AUDIT LOG / ACTIVITY FEED
+- Add audit log table/schema
+- Track actions such as:
+  - login/logout
+  - alert status changes
+  - scenario runs
+  - site updates
+  - user changes
+- Add an activity feed panel on dashboard or a new reusable component
+- Include actor, action, target, timestamp
+
+4. SITE DETAIL EXPERIENCE
+- Add real site detail page or drawer/modal
+- Show:
+  - site metadata
+  - energy history
+  - active alerts
+  - linked protected persons
+  - risk summary
+  - emergency contacts
+  - uptime metrics
+  - scenario impact history
+
+5. COMMAND CENTER IMPROVEMENT
+- Add scenario history
+- Add saved simulation records
+- Add action status tracking: pending / in_progress / completed
+- Link scenario outputs to real site IDs and alert IDs where possible
+- Add compare previous simulation option
+- Add “last simulated at” and “operator responsible”
+
+6. EARTHSHIELD GEO INTELLIGENCE UPGRADE
+- Improve geospatial intelligence UI
+- Add structured risk zones with coordinates
+- Add affected population estimates
+- Add risk legend
+- Add zone/site grouping by severity
+- If not using a real map yet, build a polished intelligence map panel with overlays and spatial cards
+
+7. REPORT GENERATION
+- Add report generation flows for:
+  - scenario report
+  - alert report
+  - site resilience report
+- Export can be simple MVP JSON/PDF-ready payload or downloadable text/CSV structure
+- Add buttons that actually perform actions
+
+8. STANDARDIZED VALIDATION
+- Use shared zod validation for request payloads and query params
+- Apply to auth, alerts, sites, command center, and user actions
+- Return clean typed error responses
+
+9. DASHBOARD ACTIONS
+- Make quick actions functional:
+  - emergency drill
+  - generate report
+  - broadcast alert
+  - deploy node
+- Use modals, forms, or backend calls
+- Do not leave these as decorative buttons
+
+10. PERMISSION-AWARE UI POLISH
+- Show role badges
+- Hide unauthorized actions
+- Add clearer state handling
+- Improve loading, empty, and success states
+- Keep premium dark luxury-tech style
+
+Deliver:
+- updated backend routes
+- new/updated schema tables
+- improved auth flow
+- audit log support
+- better site detail experience
+- improved command center depth
+- stronger EarthShield intelligence layer
+- working report generation actions
+- cleaner validation and permission handling
+
+After changes, summarize:
+1. files changed
+2. features added
+3. remaining gaps

@@ -12,10 +12,16 @@ Premium MVP web platform serving as a unified AI infrastructure command center f
 - Real satellite image in dashboard operations map
 - Live UTC clock, animated alert feed, sparkline stat cards
 - **10 pages**: Login, Dashboard, Command Center, Energy Grid, LifeMesh, EarthShield Intel, Unified Alerts, Sites & Nodes, Personnel, Settings
-- **Auth system**: localStorage-based session auth with 4 demo roles (admin, operator, government, community); protected routes redirect unauthenticated users to /login; logout clears session
-- **Command Center** (`/command-center`): 6 scenario simulation engine (flood, storm, wildfire, clinic outage, multi-site outage, child SOS); live readiness score, affected sites/persons, energy status, 6 recommended actions, escalation timeline per scenario — all driven by real DB data
-- **Alert fixes**: ordered newest-first (DESC), status filter added (active/acknowledged/resolved), Acknowledge + Mark Resolved actions from the detail drawer, `PATCH /api/alerts/:id/status` endpoint
-- **File cleanup**: duplicate `use-mobile.tsx` removed (kept `use-mobile.ts`); `Activity` import fixed in settings.tsx
+- **Backend Auth** (`POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`): in-memory session store, signed cookie (`den_session`, 8h), SHA-256 password hashing, audit log on login/logout
+- **Auth Context** (`src/context/auth.tsx`): calls backend first, falls back to localStorage; exports `can(permission)` for role-gated UI; logout calls backend then clears storage
+- **RBAC Permissions**: `Permission` type with 8 actions mapped to roles. Admin gets all. Operator can run scenarios, drills, broadcast, deploy. Government can generate reports. Community has no actions.
+- **Audit Log**: `audit_log` DB table (actor, actorRole, action, target, details, createdAt). Entries written on login, logout, alert status change, broadcast alert. `GET /api/audit/log` endpoint with limit param.
+- **Dashboard Actions** (all functional): Emergency Drill modal → broadcasts drill alert to DB; Broadcast Alert modal → `POST /api/alerts/broadcast`; Generate Report → downloads JSON report; Deploy Node → routes to Sites page. All permission-gated (hidden/disabled for insufficient roles).
+- **Activity Feed** on dashboard right column: live-pulls from `GET /api/audit/log` with emoji-coded actions per type.
+- **EarthShield Geo Intelligence**: filter tabs by disaster type (All/Flood/Wildfire/Storm etc.), alerts grouped by severity (CRITICAL/WARNING/MONITORING bands), Spatial Risk Distribution panel with zone coordinates, Incident Timeline, Risk Legend.
+- **Site Detail Modal**: enriched with real energy telemetry (solar/battery/grid), protected persons list (status + contact), active alerts linked by location match.
+- **Command Center** (`/command-center`): 6 scenario simulation engine — readiness score, affected sites/persons, energy status, 6 recommended actions, escalation timeline per scenario.
+- **Alert Routes**: ordered DESC, status filter, `PATCH /api/alerts/:id/status` (writes audit), `POST /api/alerts/broadcast` (writes audit).
 
 ## Stack
 

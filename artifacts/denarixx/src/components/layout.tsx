@@ -98,8 +98,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     if (isMobile) setSidebarOpen(false);
   }, [location, isMobile]);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setLocation('/login');
   };
 
