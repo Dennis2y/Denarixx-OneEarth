@@ -20,21 +20,21 @@ const mockSparklines = [
 function StatCard({ title, value, icon: Icon, trend, colorClass, sparklineData }: any) {
   const chartData = sparklineData.map((v: number, i: number) => ({ val: v, i }));
   return (
-    <Card className="p-5 border-t-4 hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition-all duration-300 relative overflow-hidden group" style={{ borderTopColor: colorClass }}>
+    <Card className="p-3 sm:p-5 border-t-4 hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition-all duration-300 relative overflow-hidden group" style={{ borderTopColor: colorClass }}>
       <div className="absolute -right-4 -top-4 opacity-5 group-hover:scale-110 transition-transform duration-500 pointer-events-none">
-        <Icon className="w-32 h-32" />
+        <Icon className="w-24 h-24 sm:w-32 sm:h-32" />
       </div>
-      <div className="flex justify-between items-start mb-4 relative z-10">
-        <div className="p-2.5 rounded-xl bg-secondary/50 border border-border/50 shadow-inner">
-          <Icon className="w-5 h-5" style={{ color: colorClass }} />
+      <div className="flex justify-between items-start mb-2 sm:mb-4 relative z-10">
+        <div className="p-2 sm:p-2.5 rounded-xl bg-secondary/50 border border-border/50 shadow-inner">
+          <Icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: colorClass }} />
         </div>
-        {trend && <Badge variant="safe" className="bg-green-500/20 text-green-400 border-green-500/30">{trend}</Badge>}
+        {trend && <Badge variant="safe" className="bg-green-500/20 text-green-400 border-green-500/30 text-[9px] sm:text-xs">{trend}</Badge>}
       </div>
       <div className="relative z-10">
-        <h3 className="text-3xl font-display font-bold text-white tracking-tight">{value}</h3>
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-1">{title}</p>
+        <h3 className="text-xl sm:text-3xl font-display font-bold text-white tracking-tight">{value}</h3>
+        <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-0.5 sm:mt-1 truncate">{title}</p>
       </div>
-      <div className="h-12 w-full mt-4 -mx-2 mb-[-10px] relative z-10 opacity-70 group-hover:opacity-100 transition-opacity">
+      <div className="h-10 sm:h-12 w-full mt-2 sm:mt-4 -mx-2 mb-[-10px] relative z-10 opacity-70 group-hover:opacity-100 transition-opacity">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData}>
             <Line type="monotone" dataKey="val" stroke={colorClass} strokeWidth={2} dot={false} isAnimationActive={false} />
@@ -292,7 +292,7 @@ export default function Dashboard() {
             <p className="text-[10px] text-muted-foreground font-mono">{format(new Date(), 'yyyy-MM-dd HH:mm')} UTC · Platform V2.4.1</p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-5 sm:ml-6 text-xs">
+        <div className="flex flex-wrap gap-3 sm:gap-5 sm:ml-6 text-xs">
           {[
             { label: 'Sites', value: stats?.activeSites ?? '—', color: 'text-primary' },
             { label: 'Alerts', value: stats?.criticalAlerts ?? '—', color: systemOk ? 'text-amber-400' : 'text-destructive' },
@@ -315,7 +315,7 @@ export default function Dashboard() {
       <PageHeader title={t('dashboard.title')} description={t('dashboard.description')} />
 
       {/* KPI Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <StatCard title={t('dashboard.activeSites')} value={stats.activeSites} icon={MapPin} colorClass="hsl(var(--primary))" trend="+3 New" sparklineData={mockSparklines[0]} />
         <StatCard title={t('dashboard.criticalAlerts')} value={stats.criticalAlerts} icon={AlertTriangle} colorClass="hsl(var(--destructive))" sparklineData={mockSparklines[1]} />
         <StatCard title={t('dashboard.protectedLives')} value={stats.protectedPeople.toLocaleString()} icon={Users} colorClass="hsl(var(--chart-3))" sparklineData={mockSparklines[2]} />
@@ -330,7 +330,7 @@ export default function Dashboard() {
             <h3 className="text-xl font-display font-bold text-white drop-shadow-md">{t('dashboard.globalOps')}</h3>
             <p className="text-xs font-semibold text-primary tracking-widest uppercase mt-1">{t('dashboard.liveNodeStatus')}</p>
           </div>
-          <div className="w-full h-[400px] relative overflow-hidden">
+          <div className="w-full h-[200px] sm:h-[300px] md:h-[400px] relative overflow-hidden">
             <img src={`${import.meta.env.BASE_URL}africa-night-hero.png`} alt="Global Operations Map" className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-[8000ms] ease-out" />
             <div className="absolute inset-0 bg-gradient-to-t from-card/90 via-black/30 to-black/20 pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/20 pointer-events-none" />
@@ -357,67 +357,69 @@ export default function Dashboard() {
         </Card>
 
         {/* Quick Actions — now functional */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 sm:gap-4">
           <h3 className="text-sm font-display font-bold text-muted-foreground uppercase tracking-widest px-1">{t('dashboard.rapidDeploy')}</h3>
 
-          <button
-            disabled={!can('drills.run')}
-            onClick={() => { setDrillResult(null); setDrillModal(true); }}
-            className={cn(
-              'flex-1 text-left border p-5 rounded-2xl transition-all group',
-              can('drills.run')
-                ? 'bg-destructive/10 hover:bg-destructive/20 border-destructive/30 hover:border-destructive/60 hover:shadow-[0_0_20px_rgba(220,38,38,0.2)] cursor-pointer'
-                : 'bg-secondary/30 border-border/30 opacity-50 cursor-not-allowed'
-            )}
-          >
-            <AlertTriangle className="w-8 h-8 text-destructive mb-3 group-hover:scale-110 transition-transform" />
-            <h4 className="font-bold text-white text-lg">{t('dashboard.emergencyDrill')}</h4>
-            <p className="text-xs text-muted-foreground mt-1">{can('drills.run') ? t('dashboard.emergencyDrillDesc') : 'Insufficient clearance'}</p>
-          </button>
+          {/* Mobile: 2×2 compact grid. Desktop: tall vertical stack */}
+          <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 lg:gap-4 flex-1">
+            <button
+              disabled={!can('drills.run')}
+              onClick={() => { setDrillResult(null); setDrillModal(true); }}
+              className={cn(
+                'text-left border p-4 lg:p-5 rounded-2xl transition-all group',
+                can('drills.run')
+                  ? 'bg-destructive/10 hover:bg-destructive/20 border-destructive/30 hover:border-destructive/60 hover:shadow-[0_0_20px_rgba(220,38,38,0.2)] cursor-pointer'
+                  : 'bg-secondary/30 border-border/30 opacity-50 cursor-not-allowed'
+              )}
+            >
+              <AlertTriangle className="w-6 h-6 lg:w-8 lg:h-8 text-destructive mb-2 lg:mb-3 group-hover:scale-110 transition-transform" />
+              <h4 className="font-bold text-white text-sm lg:text-lg leading-tight">{t('dashboard.emergencyDrill')}</h4>
+              <p className="text-[10px] lg:text-xs text-muted-foreground mt-1 hidden sm:block">{can('drills.run') ? t('dashboard.emergencyDrillDesc') : 'Insufficient clearance'}</p>
+            </button>
 
-          <button
-            disabled={!can('nodes.deploy')}
-            onClick={() => { setDeployResult(null); setDeployModal(true); }}
-            className={cn(
-              'flex-1 text-left p-5 rounded-2xl transition-all group border',
-              can('nodes.deploy')
-                ? 'bg-secondary hover:bg-secondary/80 border-border hover:border-primary/50 cursor-pointer'
-                : 'bg-secondary/30 border-border/30 opacity-50 cursor-not-allowed'
-            )}
-          >
-            <MapPin className="w-8 h-8 text-primary mb-3 group-hover:scale-110 transition-transform" />
-            <h4 className="font-bold text-white text-lg">{t('dashboard.deployNode')}</h4>
-            <p className="text-xs text-muted-foreground mt-1">{can('nodes.deploy') ? t('dashboard.deployNodeDesc') : 'Insufficient clearance'}</p>
-          </button>
+            <button
+              disabled={!can('nodes.deploy')}
+              onClick={() => { setDeployResult(null); setDeployModal(true); }}
+              className={cn(
+                'text-left p-4 lg:p-5 rounded-2xl transition-all group border',
+                can('nodes.deploy')
+                  ? 'bg-secondary hover:bg-secondary/80 border-border hover:border-primary/50 cursor-pointer'
+                  : 'bg-secondary/30 border-border/30 opacity-50 cursor-not-allowed'
+              )}
+            >
+              <MapPin className="w-6 h-6 lg:w-8 lg:h-8 text-primary mb-2 lg:mb-3 group-hover:scale-110 transition-transform" />
+              <h4 className="font-bold text-white text-sm lg:text-lg leading-tight">{t('dashboard.deployNode')}</h4>
+              <p className="text-[10px] lg:text-xs text-muted-foreground mt-1 hidden sm:block">{can('nodes.deploy') ? t('dashboard.deployNodeDesc') : 'Insufficient clearance'}</p>
+            </button>
 
-          <div className="flex gap-4 flex-1">
             <button
               disabled={!can('reports.generate') || reportLoading}
               onClick={generateReport}
               className={cn(
-                'flex-1 text-left p-4 rounded-2xl transition-all group border',
+                'text-left p-4 rounded-2xl transition-all group border',
                 can('reports.generate')
                   ? 'bg-secondary hover:bg-secondary/80 border-border hover:border-blue-500/50 cursor-pointer'
                   : 'bg-secondary/30 border-border/30 opacity-50 cursor-not-allowed'
               )}
             >
               {reportLoading
-                ? <div className="w-6 h-6 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin mb-2" />
-                : <FileText className="w-6 h-6 text-blue-400 mb-2 group-hover:scale-110 transition-transform" />}
-              <h4 className="font-bold text-white text-sm">{reportLoading ? 'Generating...' : t('dashboard.generateReport')}</h4>
+                ? <div className="w-5 h-5 lg:w-6 lg:h-6 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin mb-2" />
+                : <FileText className="w-5 h-5 lg:w-6 lg:h-6 text-blue-400 mb-2 group-hover:scale-110 transition-transform" />}
+              <h4 className="font-bold text-white text-sm leading-tight">{reportLoading ? 'Generating...' : t('dashboard.generateReport')}</h4>
             </button>
+
             <button
               disabled={!can('alerts.broadcast')}
               onClick={() => { setBroadcastSuccess(false); setBroadcastModal(true); }}
               className={cn(
-                'flex-1 text-left p-4 rounded-2xl transition-all group border',
+                'text-left p-4 rounded-2xl transition-all group border',
                 can('alerts.broadcast')
                   ? 'bg-secondary hover:bg-secondary/80 border-border hover:border-amber-500/50 cursor-pointer'
                   : 'bg-secondary/30 border-border/30 opacity-50 cursor-not-allowed'
               )}
             >
-              <Radio className="w-6 h-6 text-amber-500 mb-2 group-hover:scale-110 transition-transform" />
-              <h4 className="font-bold text-white text-sm">{t('dashboard.broadcastAlert')}</h4>
+              <Radio className="w-5 h-5 lg:w-6 lg:h-6 text-amber-500 mb-2 group-hover:scale-110 transition-transform" />
+              <h4 className="font-bold text-white text-sm leading-tight">{t('dashboard.broadcastAlert')}</h4>
             </button>
           </div>
         </div>

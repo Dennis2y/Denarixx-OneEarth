@@ -195,12 +195,12 @@ export function EmptyState({ icon: Icon, title, description, action }: { icon: a
 // --- Page Header ---
 export function PageHeader({ title, description, actions }: { title: string, description?: string, actions?: React.ReactNode }) {
   return (
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-       <div>
-         <h1 className="text-3xl md:text-4xl font-display font-bold text-white tracking-tight drop-shadow-md">{title}</h1>
-         {description && <p className="text-muted-foreground mt-2 text-lg">{description}</p>}
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 sm:mb-8 gap-3 sm:gap-4">
+       <div className="min-w-0">
+         <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-white tracking-tight drop-shadow-md leading-tight">{title}</h1>
+         {description && <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base md:text-lg">{description}</p>}
        </div>
-       {actions && <div className="flex items-center gap-3">{actions}</div>}
+       {actions && <div className="flex items-center gap-2 sm:gap-3 shrink-0 flex-wrap">{actions}</div>}
     </div>
   );
 }

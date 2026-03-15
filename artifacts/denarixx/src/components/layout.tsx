@@ -6,6 +6,13 @@ import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useAuth, roleLabel } from '@/context/auth';
 
+const BOTTOM_NAV = [
+  { href: '/dashboard', icon: Home, label: 'Home' },
+  { href: '/alerts', icon: Bell, label: 'Alerts' },
+  { href: '/sites', icon: MapPin, label: 'Sites' },
+  { href: '/command-center', icon: Cpu, label: 'Command' },
+];
+
 const RTL_LANGS = new Set(['ar', 'fa', 'he']);
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -193,7 +200,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 relative custom-scrollbar">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 pb-20 md:pb-6 relative custom-scrollbar">
           <div
             className="absolute inset-0 pointer-events-none opacity-[0.03]"
             style={{ backgroundImage: `url(${import.meta.env.BASE_URL}africa-night-hero.png)`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'grayscale(100%)' }}
@@ -203,6 +210,34 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </main>
       </div>
+
+      {/* Mobile bottom navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 h-16 bg-sidebar border-t border-sidebar-border flex md:hidden z-30 backdrop-blur-md">
+        {BOTTOM_NAV.map(({ href, icon: Icon, label }) => {
+          const isActive = location === href;
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "flex-1 flex flex-col items-center justify-center gap-1 transition-all",
+                isActive ? "text-primary" : "text-muted-foreground hover:text-white"
+              )}
+            >
+              <Icon className={cn("w-5 h-5", isActive && "drop-shadow-[0_0_6px_hsl(43,65%,52%)]")} />
+              <span className="text-[9px] font-bold uppercase tracking-widest">{label}</span>
+              {isActive && <div className="absolute bottom-0 w-8 h-0.5 bg-primary rounded-full" />}
+            </Link>
+          );
+        })}
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="flex-1 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-white transition-all"
+        >
+          <Menu className="w-5 h-5" />
+          <span className="text-[9px] font-bold uppercase tracking-widest">More</span>
+        </button>
+      </nav>
     </div>
   );
 }

@@ -109,9 +109,9 @@ export default function Alerts() {
   const criticalCount = alerts?.filter(a => a.severity === 'critical').length ?? 0;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex relative min-h-[calc(100vh-140px)]">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex relative" style={{ minHeight: 'calc(100dvh - 180px)' }}>
       
-      <div className={cn("flex-1 transition-all duration-300", selectedAlert ? "pr-[420px]" : "")}>
+      <div className={cn("flex-1 transition-all duration-300", selectedAlert ? "md:pr-[420px]" : "")}>
         <PageHeader 
           title={t('alerts.title')}
           description={t('alerts.description')}
@@ -272,7 +272,7 @@ export default function Alerts() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 420, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 w-[400px] h-full bg-sidebar border-l border-border/50 shadow-[-20px_0_60px_rgba(0,0,0,0.6)] z-40 flex flex-col"
+            className="fixed top-0 right-0 w-full md:w-[400px] h-full bg-sidebar border-l border-border/50 shadow-[-20px_0_60px_rgba(0,0,0,0.6)] z-50 flex flex-col"
           >
             <div className="h-16 flex items-center justify-between px-6 border-b border-border/50 bg-background/50 backdrop-blur shrink-0">
               <div className="flex items-center gap-3">

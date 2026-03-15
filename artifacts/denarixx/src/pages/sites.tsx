@@ -105,8 +105,8 @@ export default function Sites() {
         title={t('sites.title')}
         description={t('sites.description')}
         actions={
-          <div className="flex items-center gap-4">
-            <div className="bg-secondary/50 p-1 rounded-xl border border-border/50 flex">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="hidden sm:flex bg-secondary/50 p-1 rounded-xl border border-border/50">
               <button onClick={() => setViewMode('grid')} className={cn('p-2 rounded-lg transition-colors', viewMode === 'grid' ? 'bg-card text-primary shadow' : 'text-muted-foreground hover:text-white')}>
                 <LayoutGrid className="w-4 h-4" />
               </button>
@@ -115,14 +115,14 @@ export default function Sites() {
               </button>
             </div>
             <Button onClick={() => setModalOpen(true)} className="shadow-[0_0_15px_rgba(201,168,76,0.3)]">
-              <Plus className="w-5 h-5 mr-2" /> {t('sites.deployNode')}
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" /> <span className="hidden sm:inline">{t('sites.deployNode')}</span><span className="sm:hidden">Deploy</span>
             </Button>
           </div>
         }
       />
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           {[1,2,3,4,5,6].map(i => (
             <Card key={i} className="p-6 border-border/50">
               <Skeleton className="h-6 w-1/2 mb-4" />
@@ -136,7 +136,7 @@ export default function Sites() {
           <EmptyState icon={Server} title={t('sites.noNodes')} description={t('sites.noNodesDesc')} action={<Button onClick={() => setModalOpen(true)}>{t('sites.deployFirstNode')}</Button>} />
         </Card>
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           {sites?.map((site) => (
             <Card key={site.id} className="flex flex-col p-0 overflow-hidden border-border/60 hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 group">
               <div className="p-6 border-b border-border/50 bg-gradient-to-b from-secondary/40 to-transparent relative">
@@ -235,7 +235,7 @@ export default function Sites() {
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
                 { icon: Users, labelKey: 'sites.population', value: selectedSite.population.toLocaleString(), color: 'text-blue-400' },
                 { icon: Zap, labelKey: 'sites.power', value: `${selectedSite.powerAvailability}%`, color: 'text-primary' },
