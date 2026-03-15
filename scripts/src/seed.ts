@@ -113,10 +113,10 @@ async function seed() {
 
   await db.insert(usersTable).values([
     { name: "Dr. Amara Diallo", email: "a.diallo@denarixx.org", role: "admin", organization: "Denarixx OneEarth Global", status: "active", lastLogin: new Date(Date.now() - 2 * 60 * 60 * 1000) },
-    { name: "Kwame Asante-Mensah", email: "k.asante@denarixx.org", role: "admin", organization: "Denarixx OneEarth Africa", status: "active", lastLogin: new Date(Date.now() - 30 * 60 * 1000) },
-    { name: "Fatima Al-Rashid", email: "f.rashid@denarixx.org", role: "operator", organization: "Denarixx Energy - East Africa", status: "active", lastLogin: new Date(Date.now() - 4 * 60 * 60 * 1000) },
+    { name: "Kwame Asante-Mensah", email: "k.asante@denarixx.org", role: "admin", organization: "Denarixx OneEarth Global Operations", status: "active", lastLogin: new Date(Date.now() - 30 * 60 * 1000) },
+    { name: "Fatima Al-Rashid", email: "f.rashid@denarixx.org", role: "operator", organization: "Denarixx Energy - East Africa Hub", status: "active", lastLogin: new Date(Date.now() - 4 * 60 * 60 * 1000) },
     { name: "Emmanuel Okonkwo", email: "e.okonkwo@denarixx.org", role: "operator", organization: "Denarixx LifeMesh - Nigeria", status: "active", lastLogin: new Date(Date.now() - 1 * 60 * 60 * 1000) },
-    { name: "Aissatou Balde", email: "a.balde@denarixx.org", role: "operator", organization: "Denarixx EarthShield - West Africa", status: "active", lastLogin: new Date(Date.now() - 6 * 60 * 60 * 1000) },
+    { name: "Aissatou Balde", email: "a.balde@denarixx.org", role: "operator", organization: "Denarixx EarthShield - West Africa Hub", status: "active", lastLogin: new Date(Date.now() - 6 * 60 * 60 * 1000) },
     { name: "Grace Nakato-Ssemanda", email: "g.nakato@family.ug", role: "family", organization: "Private - Kampala", status: "active", lastLogin: new Date(Date.now() - 12 * 60 * 60 * 1000) },
     { name: "Kofi Boateng", email: "k.boateng@family.gh", role: "family", organization: "Private - Accra", status: "active", lastLogin: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) },
     { name: "Commissioner James Otieno", email: "j.otieno@gov.ke", role: "government", organization: "Kenya National Emergency Management", status: "active", lastLogin: new Date(Date.now() - 3 * 60 * 60 * 1000) },

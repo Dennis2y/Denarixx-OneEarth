@@ -16,7 +16,7 @@ type RegionGroup = {
 
 const LANGUAGE_GROUPS: RegionGroup[] = [
   {
-    region: 'Africa',
+    region: 'Global',
     languages: [
       { code: 'en', label: 'EN', name: 'English', nativeName: 'English', dir: 'ltr' },
       { code: 'fr', label: 'FR', name: 'Français', nativeName: 'Français', dir: 'ltr' },

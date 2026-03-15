@@ -45,7 +45,7 @@ function StatCard({ title, value, icon: Icon, trend, colorClass, sparklineData }
   );
 }
 
-const AFRICAN_SITES = [
+const GLOBAL_SITES = [
   { id: 1, name: 'Nairobi Hub', cx: '68%', cy: '58%', status: 'online' },
   { id: 2, name: 'Accra Node', cx: '35%', cy: '45%', status: 'online' },
   { id: 3, name: 'Dakar Station', cx: '18%', cy: '35%', status: 'critical' },
@@ -270,7 +270,7 @@ export default function Dashboard() {
             <img src={`${import.meta.env.BASE_URL}africa-night-hero.png`} alt="Global Operations Map" className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-[8000ms] ease-out" />
             <div className="absolute inset-0 bg-gradient-to-t from-card/90 via-black/30 to-black/20 pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/20 pointer-events-none" />
-            {AFRICAN_SITES.map(site => (
+            {GLOBAL_SITES.map(site => (
               <div key={site.id} className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group/node cursor-pointer" style={{ left: site.cx, top: site.cy }}>
                 <div className={cn('w-3 h-3 rounded-full border-2 border-background shadow-lg', site.status === 'online' ? 'bg-primary animate-pulse shadow-[0_0_10px_rgba(201,168,76,0.8)]' : 'bg-destructive animate-ping shadow-[0_0_15px_rgba(220,38,38,1)]')} />
                 <div className="absolute top-4 opacity-0 group-hover/node:opacity-100 transition-opacity bg-black/80 backdrop-blur text-xs px-2 py-1 rounded border border-border whitespace-nowrap z-30">

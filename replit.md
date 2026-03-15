@@ -2,21 +2,21 @@
 
 ## Overview
 
-Premium MVP web platform serving as a unified AI infrastructure command center for Africa. Three modules: Denarixx Energy (solar microgrid monitoring), LifeMesh (person safety tracking + SOS), and EarthShield (disaster alerts). pnpm workspace monorepo using TypeScript.
+Premium MVP web platform serving as a unified AI infrastructure command center worldwide. Three modules: Denarixx Energy (solar microgrid monitoring), LifeMesh (person safety tracking + SOS), and EarthShield (disaster alerts). pnpm workspace monorepo using TypeScript.
 
 ## Key Features
 - Dark luxury gold/black command-center UI
 - Full multilingual support (18 languages including EN, FR, AR, SW, PT, AM, ZH, HI, etc.) — auto-detects browser language via i18next
-- AI-generated cinematic background: Africa-from-space hero image + looping city-night video on login
-- Gold circuit board tech-grid texture on sidebar; Africa ambient on all content pages
+- AI-generated cinematic background: satellite-view hero image + looping city-night video on login
+- Gold circuit board tech-grid texture on sidebar; cinematic background on all content pages
 - Real satellite image in dashboard operations map
 - Live UTC clock, animated alert feed, sparkline stat cards
 - **12 pages**: Landing (/), Login (/login), Dashboard, Command Center, Energy Grid, LifeMesh, EarthShield Intel, Unified Alerts, Sites & Nodes, Site Detail (/sites/:id), Personnel, Settings
 
 ### Public Landing Page (/)
-- Premium hero with Africa-from-space background + cinematic video
+- Premium hero with satellite-view background + cinematic video
 - Module badges (Energy, LifeMesh, EarthShield) with pulsing indicators
-- Animated headline: "Resilience Infrastructure for Africa."
+- Animated headline: "Infrastructure Intelligence for a Resilient World."
 - Impact metrics section with CountUp animation: Sites (248), Protected People (184,700+), Regions (31), Active Alerts (17)
 - Platform Resilience Score bar (87/100)
 - Three module cards: Denarixx Energy, LifeMesh, EarthShield — each with feature lists

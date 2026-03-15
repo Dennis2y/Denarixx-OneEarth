@@ -516,7 +516,7 @@ export default function Landing() {
               <Globe className="w-5 h-5 text-blue-400 shrink-0" />
               <div>
                 <p className="font-bold text-white text-sm">18 Languages</p>
-                <p className="text-white/40 text-xs">Africa, Europe, Asia, Middle East — fully localized</p>
+                <p className="text-white/40 text-xs">18 languages — localized for global reach</p>
               </div>
             </div>
             <div className="w-px h-10 bg-white/10 hidden md:block" />
