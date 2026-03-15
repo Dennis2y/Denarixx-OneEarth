@@ -1,22 +1,34 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Denarixx OneEarth API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: dashboard
+    description: Dashboard stats
+  - name: sites
+    description: Site management
+  - name: energy
+    description: Energy metrics
+  - name: lifemesh
+    description: LifeMesh - protected persons and safety incidents
+  - name: earthshield
+    description: EarthShield - disaster alerts
+  - name: alerts
+    description: Unified alerts
+  - name: users
+    description: User management
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +36,231 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard overview stats
+      responses:
+        "200":
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /sites:
+    get:
+      operationId: getSites
+      tags: [sites]
+      summary: List all sites
+      responses:
+        "200":
+          description: List of sites
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Site"
+    post:
+      operationId: createSite
+      tags: [sites]
+      summary: Create a site
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSiteInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Site"
+
+  /sites/{id}:
+    get:
+      operationId: getSite
+      tags: [sites]
+      summary: Get a site by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Site detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Site"
+
+  /energy/metrics:
+    get:
+      operationId: getEnergyMetrics
+      tags: [energy]
+      summary: List energy metrics
+      parameters:
+        - name: siteId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Energy metrics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EnergyMetric"
+
+  /energy/chart:
+    get:
+      operationId: getEnergyChart
+      tags: [energy]
+      summary: Get energy chart data for a site
+      parameters:
+        - name: siteId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Chart data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EnergyChartPoint"
+
+  /lifemesh/persons:
+    get:
+      operationId: getProtectedPersons
+      tags: [lifemesh]
+      summary: List protected persons
+      responses:
+        "200":
+          description: Protected persons
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProtectedPerson"
+
+  /lifemesh/incidents:
+    get:
+      operationId: getSafetyIncidents
+      tags: [lifemesh]
+      summary: List safety incidents
+      responses:
+        "200":
+          description: Safety incidents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SafetyIncident"
+
+  /lifemesh/sos:
+    post:
+      operationId: triggerSOS
+      tags: [lifemesh]
+      summary: Trigger SOS alert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SOSInput"
+      responses:
+        "200":
+          description: SOS triggered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SOSResponse"
+
+  /earthshield/alerts:
+    get:
+      operationId: getDisasterAlerts
+      tags: [earthshield]
+      summary: List disaster alerts
+      responses:
+        "200":
+          description: Disaster alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DisasterAlert"
+
+  /earthshield/risks:
+    get:
+      operationId: getRiskZones
+      tags: [earthshield]
+      summary: Get regional risk zones
+      responses:
+        "200":
+          description: Risk zones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RiskZone"
+
+  /alerts:
+    get:
+      operationId: getUnifiedAlerts
+      tags: [alerts]
+      summary: Get unified alerts feed
+      parameters:
+        - name: module
+          in: query
+          schema:
+            type: string
+            enum: [energy, lifemesh, earthshield]
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [critical, warning, info]
+      responses:
+        "200":
+          description: Unified alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UnifiedAlert"
+
+  /users:
+    get:
+      operationId: getUsers
+      tags: [users]
+      summary: List users
+      responses:
+        "200":
+          description: Users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +271,410 @@ components:
       required:
         - status
 
+    DashboardStats:
+      type: object
+      properties:
+        activeSites:
+          type: integer
+        criticalAlerts:
+          type: integer
+        protectedPeople:
+          type: integer
+        disasterRiskZones:
+          type: integer
+        energyAvailability:
+          type: number
+        recentAlerts:
+          type: array
+          items:
+            $ref: "#/components/schemas/UnifiedAlert"
+      required:
+        - activeSites
+        - criticalAlerts
+        - protectedPeople
+        - disasterRiskZones
+        - energyAvailability
+        - recentAlerts
+
+    Site:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [village, clinic, school, district, shelter]
+        location:
+          type: string
+        country:
+          type: string
+        status:
+          type: string
+          enum: [online, offline, warning, critical]
+        uptime:
+          type: number
+        powerAvailability:
+          type: number
+        currentRiskLevel:
+          type: string
+          enum: [low, medium, high, critical]
+        population:
+          type: integer
+        latitude:
+          type: number
+        longitude:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - type
+        - location
+        - country
+        - status
+        - uptime
+        - powerAvailability
+        - currentRiskLevel
+        - population
+        - latitude
+        - longitude
+        - createdAt
+
+    CreateSiteInput:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [village, clinic, school, district, shelter]
+        location:
+          type: string
+        country:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        population:
+          type: integer
+      required:
+        - name
+        - type
+        - location
+        - country
+        - latitude
+        - longitude
+        - population
+
+    EnergyMetric:
+      type: object
+      properties:
+        id:
+          type: integer
+        siteId:
+          type: integer
+        siteName:
+          type: string
+        solarGeneration:
+          type: number
+        batteryLevel:
+          type: number
+        communityLoad:
+          type: number
+        gridStatus:
+          type: string
+          enum: [stable, unstable, offline]
+        alerts:
+          type: array
+          items:
+            type: string
+        uptime:
+          type: number
+        recordedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - siteId
+        - siteName
+        - solarGeneration
+        - batteryLevel
+        - communityLoad
+        - gridStatus
+        - alerts
+        - uptime
+        - recordedAt
+
+    EnergyChartPoint:
+      type: object
+      properties:
+        time:
+          type: string
+        solar:
+          type: number
+        battery:
+          type: number
+        load:
+          type: number
+      required:
+        - time
+        - solar
+        - battery
+        - load
+
+    ProtectedPerson:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        age:
+          type: integer
+        category:
+          type: string
+          enum: [child, elderly, family, vulnerable]
+        status:
+          type: string
+          enum: [safe, at-risk, emergency, unknown]
+        lastKnownLocation:
+          type: string
+        contactName:
+          type: string
+        contactPhone:
+          type: string
+        siteId:
+          type: integer
+        siteName:
+          type: string
+        notes:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - age
+        - category
+        - status
+        - lastKnownLocation
+        - contactName
+        - contactPhone
+        - siteId
+        - siteName
+        - updatedAt
+
+    SafetyIncident:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        severity:
+          type: string
+          enum: [critical, warning, info]
+        location:
+          type: string
+        involvedPersons:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [open, in-progress, resolved]
+        responseChain:
+          type: array
+          items:
+            type: string
+        occurredAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - description
+        - severity
+        - location
+        - involvedPersons
+        - status
+        - responseChain
+        - occurredAt
+
+    SOSInput:
+      type: object
+      properties:
+        personId:
+          type: integer
+        location:
+          type: string
+        message:
+          type: string
+      required:
+        - personId
+        - location
+
+    SOSResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        incidentId:
+          type: integer
+        message:
+          type: string
+        responseTeam:
+          type: array
+          items:
+            type: string
+      required:
+        - success
+        - incidentId
+        - message
+        - responseTeam
+
+    DisasterAlert:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        type:
+          type: string
+          enum: [flood, wildfire, storm, earthquake, infrastructure, drought]
+        severity:
+          type: string
+          enum: [critical, warning, info]
+        region:
+          type: string
+        country:
+          type: string
+        description:
+          type: string
+        affectedPopulation:
+          type: integer
+        status:
+          type: string
+          enum: [active, monitoring, resolved]
+        issuedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - type
+        - severity
+        - region
+        - country
+        - description
+        - affectedPopulation
+        - status
+        - issuedAt
+
+    RiskZone:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [flood, wildfire, storm, earthquake, infrastructure]
+        riskLevel:
+          type: string
+          enum: [low, medium, high, critical]
+        region:
+          type: string
+        country:
+          type: string
+        preparednessScore:
+          type: integer
+        latitude:
+          type: number
+        longitude:
+          type: number
+      required:
+        - id
+        - name
+        - type
+        - riskLevel
+        - region
+        - country
+        - preparednessScore
+        - latitude
+        - longitude
+
+    UnifiedAlert:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        module:
+          type: string
+          enum: [energy, lifemesh, earthshield]
+        severity:
+          type: string
+          enum: [critical, warning, info]
+        location:
+          type: string
+        status:
+          type: string
+          enum: [active, acknowledged, resolved]
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - module
+        - severity
+        - location
+        - status
+        - description
+        - createdAt
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [admin, operator, family, government]
+        organization:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, suspended]
+        lastLogin:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - email
+        - role
+        - organization
+        - status
+        - createdAt

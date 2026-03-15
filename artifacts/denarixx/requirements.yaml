@@ -1,0 +1,18 @@
+packages:
+  "recharts": "For premium data visualization and energy charts"
+  "framer-motion": "For sophisticated layout transitions and micro-interactions"
+  "date-fns": "For formatting timestamps across all modules"
+  "clsx": "For classname merging in UI components"
+  "tailwind-merge": "For responsive classname conflict resolution"
+  "lucide-react": "For beautiful consistent iconography"
+  "@hookform/resolvers": "For form validation"
+  "react-hook-form": "For robust form state management"
+
+images:
+  - path: "artifacts/denarixx/public/images/map-bg.png"
+    description: "Dark luxury holographic global map network with glowing nodes and subtle gold connections, premium tech interface style, abstract and sophisticated"
+    aspect_ratio: "16:9"
+
+notes:
+  - "Importing all data fetching hooks directly from @workspace/api-client-react as per the workspace structure."
+  - "Enforcing a global luxury dark theme (Denarixx OneEarth standard) across all components."

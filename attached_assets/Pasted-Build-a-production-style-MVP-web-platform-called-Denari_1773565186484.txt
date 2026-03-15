@@ -1,0 +1,142 @@
+Build a production-style MVP web platform called "Denarixx OneEarth".
+
+Denarixx OneEarth is a unified AI infrastructure platform with 3 integrated modules:
+
+1. Denarixx Energy
+- Monitors solar generation, battery storage, community load, and energy alerts
+- Shows site cards for different communities or facilities
+- Includes charts for solar output, battery %, and energy demand
+- Includes alerts such as low battery, inverter fault, overload warning
+
+2. Denarixx LifeMesh
+- Human safety and emergency response module
+- Allows users to trigger SOS alerts
+- Shows family members / protected persons
+- Shows emergency incidents, safety status, last known location, and contact chain
+- Includes cards for child safety, elderly monitoring, and emergency escalation
+
+3. Denarixx EarthShield
+- Disaster intelligence and protection module
+- Shows flood risk, wildfire risk, storm risk, and infrastructure warning status
+- Includes a map view with risk zones
+- Includes regional alert cards and preparedness metrics
+
+Main requirements:
+- Use Next.js with TypeScript and Tailwind CSS
+- Use shadcn/ui for polished premium UI
+- Use Prisma with PostgreSQL
+- Create a clean luxury-tech design system using black, deep navy, white, and elegant gold accents
+- Make it feel like a serious global infrastructure platform, not a toy admin template
+
+Pages required:
+- /login
+- /dashboard
+- /energy
+- /lifemesh
+- /earthshield
+- /alerts
+- /sites
+- /users
+- /settings
+
+Layout requirements:
+- Left sidebar navigation
+- Top header with search, notifications, profile menu
+- Responsive design for desktop and tablet
+- Beautiful overview cards and charts
+- Reusable components for status badges, metric cards, alert lists, and map panels
+
+Dashboard requirements:
+- Overview cards:
+  - Active Sites
+  - Critical Alerts
+  - Protected People
+  - Disaster Risk Zones
+  - Energy Availability
+- Unified alert feed combining all 3 modules
+- Quick action buttons:
+  - Trigger emergency drill
+  - Add site
+  - View map
+  - Generate report
+
+Energy page requirements:
+- Community/site table
+- Battery and solar charts
+- Site detail cards
+- Alert status widgets
+- Mock data for solar generation, load, storage, uptime
+
+LifeMesh page requirements:
+- Protected persons list
+- Emergency status cards
+- Incident timeline
+- SOS action button
+- Emergency response chain section
+- Mock data for child, elderly, and family safety profiles
+
+EarthShield page requirements:
+- Regional risk cards
+- Flood/fire/storm/infrastructure alert widgets
+- Interactive map placeholder or simple map section
+- Preparedness score
+- Mock climate/disaster event feed
+
+Alerts page requirements:
+- Filter by module: Energy, LifeMesh, EarthShield
+- Filter by severity: critical, warning, info
+- Alert list with title, module, timestamp, location, status
+- Alert details drawer or modal
+
+Sites page requirements:
+- Table of sites/communities
+- Type: village, clinic, school, district, shelter
+- Status, uptime, power availability, current risk level
+- Site detail view or modal
+
+Users page requirements:
+- Different roles: admin, operator, family, government
+- Basic user management UI
+- Mock user table
+
+Settings page requirements:
+- Organization info
+- Notification settings
+- Risk thresholds
+- Theme preferences
+- API integration placeholders
+
+Backend requirements:
+- Create clean Prisma schema for:
+  - User
+  - Site
+  - EnergyMetric
+  - ProtectedPerson
+  - SafetyIncident
+  - DisasterAlert
+  - UnifiedAlert
+- Seed the database with realistic demo data
+- Build API routes for dashboard stats, alerts, sites, energy metrics, protected persons, and disaster alerts
+
+Code quality requirements:
+- Strong folder structure
+- Reusable components
+- Clean TypeScript types
+- Responsive UI
+- No broken placeholder text
+- No lorem ipsum
+- Use realistic African and global infrastructure use cases in mock content
+
+Branding:
+- Product name: Denarixx OneEarth
+- Modules:
+  - Denarixx Energy
+  - Denarixx LifeMesh
+  - Denarixx EarthShield
+
+Deliver:
+- Full working codebase
+- Prisma schema
+- Seed script
+- Modern UI
+- README with setup instructions
