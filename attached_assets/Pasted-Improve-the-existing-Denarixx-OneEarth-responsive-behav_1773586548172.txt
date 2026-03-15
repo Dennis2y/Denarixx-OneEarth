@@ -1,0 +1,63 @@
+Improve the existing Denarixx OneEarth responsive behavior without rewriting the project or changing the stack. Keep desktop as the primary operational experience, but polish tablet and mobile usability.
+
+Tasks:
+
+1. SIDEBAR / DESKTOP LAYOUT
+- On desktop, make the sidebar feel permanently present and integrated into the layout
+- Ensure the main content properly accounts for desktop sidebar width
+- Hide the sidebar close button on desktop
+- Keep close button only for overlay mode on smaller screens
+- Reduce unnecessary drawer-like behavior on desktop
+
+2. HEADER RESPONSIVENESS
+- Show hamburger/menu button only where appropriate
+- On desktop, the header should feel like a stable control center, not a mobile drawer app
+- Improve mobile header utility layout for small screens
+- Add compact profile/notification/system-status access where useful
+
+3. SMALL-SCREEN PAGE AUDIT
+- Review all major pages for phone usability:
+  - dashboard
+  - command-center
+  - alerts
+  - sites
+  - site-detail
+  - users
+  - settings
+- Convert dense tables into mobile-friendly cards where needed
+- If tables remain, ensure smooth horizontal scroll with good spacing
+- Prevent overflow and cramped layouts
+- Stack cards cleanly on small screens
+
+4. COMMAND CENTER RESPONSIVENESS
+- Simplify command-center layout on phone
+- Keep core metrics visible:
+  - affected sites
+  - impacted people
+  - backup energy
+  - readiness score
+- Move secondary details below primary cards on small screens
+- Ensure scenario panels remain readable on mobile
+
+5. MOBILE DASHBOARD IMPROVEMENTS
+- Keep dashboard summary cards highly readable on phone
+- Improve spacing and hierarchy on small screens
+- Make live activity feed comfortable to scroll on mobile
+- Ensure charts resize cleanly and do not become cramped
+
+6. LOGIN / LANDING VISUAL CLEANUP
+- Replace region-specific login background assets and labels if they still suggest a non-global identity
+- Use more globally neutral or international resilience/infrastructure visuals
+- Keep premium dark luxury-tech feel
+- Ensure login and landing remain polished on small screens
+
+7. RESPONSIVE POLISH
+- Improve spacing, padding, and typography scaling across breakpoints
+- Avoid awkward hidden/show behavior
+- Keep the app feeling premium and institutional on all sizes
+- Maintain desktop-first design while making phone access clean and usable
+
+After changes, summarize:
+1. responsive improvements made
+2. pages/components updated
+3. any pages that are still desktop-preferred

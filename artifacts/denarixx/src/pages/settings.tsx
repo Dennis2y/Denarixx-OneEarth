@@ -50,21 +50,21 @@ export default function Settings() {
         >
           {activeTab === 'organization' && (
             <div className="space-y-6">
-              <Card className="p-8 border-border/50">
-                <h3 className="text-xl font-display font-semibold text-white mb-6 border-b border-border/50 pb-4">{t('settings.globalInterfacePolicy')}</h3>
-                <div className="flex items-center justify-between p-5 bg-secondary/30 rounded-xl border border-border">
-                  <div>
-                    <h4 className="font-bold text-white text-lg">{t('settings.darkProtocol')}</h4>
-                    <p className="text-sm text-muted-foreground mt-1 max-w-xl">{t('settings.darkProtocolDesc')}</p>
+              <Card className="p-4 sm:p-8 border-border/50">
+                <h3 className="text-lg sm:text-xl font-display font-semibold text-white mb-5 border-b border-border/50 pb-4">{t('settings.globalInterfacePolicy')}</h3>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 sm:p-5 bg-secondary/30 rounded-xl border border-border">
+                  <div className="flex-1">
+                    <h4 className="font-bold text-white text-base sm:text-lg">{t('settings.darkProtocol')}</h4>
+                    <p className="text-sm text-muted-foreground mt-1">{t('settings.darkProtocolDesc')}</p>
                   </div>
-                  <div className="w-14 h-7 rounded-full bg-primary relative cursor-not-allowed opacity-80 shadow-[0_0_15px_rgba(201,168,76,0.5)]">
+                  <div className="w-14 h-7 rounded-full bg-primary relative cursor-not-allowed opacity-80 shadow-[0_0_15px_rgba(201,168,76,0.5)] shrink-0">
                     <div className="absolute right-1 top-1 w-5 h-5 rounded-full bg-black shadow-sm" />
                   </div>
                 </div>
               </Card>
 
-              <Card className="p-8 border-border/50">
-                <h3 className="text-xl font-display font-semibold text-white mb-6 border-b border-border/50 pb-4">{t('settings.autonomousThresholds')}</h3>
+              <Card className="p-4 sm:p-8 border-border/50">
+                <h3 className="text-lg sm:text-xl font-display font-semibold text-white mb-5 border-b border-border/50 pb-4">{t('settings.autonomousThresholds')}</h3>
                 
                 <div className="space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
@@ -122,34 +122,34 @@ export default function Settings() {
           )}
 
           {activeTab === 'security' && (
-            <Card className="p-8 border-border/50">
-               <div className="flex items-center justify-between mb-8 border-b border-border/50 pb-6">
-                 <div>
-                   <h3 className="text-xl font-display font-semibold text-white">{t('settings.masterApiKeys')}</h3>
+            <Card className="p-4 sm:p-8 border-border/50">
+               <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6 border-b border-border/50 pb-5">
+                 <div className="flex-1">
+                   <h3 className="text-lg sm:text-xl font-display font-semibold text-white">{t('settings.masterApiKeys')}</h3>
                    <p className="text-sm text-muted-foreground mt-1">{t('settings.apiKeysDesc')}</p>
                  </div>
-                 <Button><Key className="w-4 h-4 mr-2"/> {t('settings.generateKey')}</Button>
+                 <Button className="w-full sm:w-auto"><Key className="w-4 h-4 mr-2"/> {t('settings.generateKey')}</Button>
                </div>
                
                <div className="space-y-4">
-                 <div className="bg-background border border-border rounded-xl p-5 flex items-center justify-between group">
-                    <div>
-                      <div className="flex items-center gap-3 mb-1">
+                 <div className="bg-background border border-border rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 group">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-1 flex-wrap">
                         <span className="font-bold text-white">{t('settings.primaryKey')}</span>
                         <Badge variant="safe" className="text-[10px]">{t('settings.active')}</Badge>
                       </div>
-                      <code className="text-sm text-muted-foreground font-mono bg-secondary px-2 py-1 rounded">dnrx_live_9a8b7c6d5e4f3g2h1i</code>
+                      <code className="text-xs sm:text-sm text-muted-foreground font-mono bg-secondary px-2 py-1 rounded break-all">dnrx_live_9a8b7c6d5e4f3g2h1i</code>
                     </div>
-                    <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity text-primary hover:text-primary">{t('settings.copyKey')}</Button>
+                    <Button variant="ghost" size="sm" className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-primary hover:text-primary self-start sm:self-auto">{t('settings.copyKey')}</Button>
                  </div>
                  
-                 <div className="bg-background border border-border rounded-xl p-5 flex items-center justify-between group opacity-50">
-                    <div>
-                      <div className="flex items-center gap-3 mb-1">
+                 <div className="bg-background border border-border rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 opacity-50">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-1 flex-wrap">
                         <span className="font-bold text-white">{t('settings.legacyToken')}</span>
                         <Badge variant="outline" className="text-[10px] text-muted-foreground">{t('settings.revoked')}</Badge>
                       </div>
-                      <code className="text-sm text-muted-foreground font-mono bg-secondary px-2 py-1 rounded">dnrx_old_********************</code>
+                      <code className="text-xs sm:text-sm text-muted-foreground font-mono bg-secondary px-2 py-1 rounded break-all">dnrx_old_********************</code>
                     </div>
                  </div>
                </div>

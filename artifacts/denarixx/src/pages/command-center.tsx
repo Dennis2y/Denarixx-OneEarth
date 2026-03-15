@@ -307,11 +307,11 @@ export default function CommandCenter() {
           ))}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             onClick={runSimulation}
             disabled={!selectedScenario || loading}
-            className="h-12 px-8 font-bold tracking-widest shadow-[0_0_20px_rgba(201,168,76,0.3)]"
+            className="h-12 px-6 sm:px-8 font-bold tracking-widest shadow-[0_0_20px_rgba(201,168,76,0.3)] w-full sm:w-auto"
           >
             {loading
               ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> {t('commandCenter.simulating')}</>
@@ -421,30 +421,34 @@ export default function CommandCenter() {
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             
             <div className={cn(
-              "p-4 rounded-2xl border mb-6 flex flex-wrap items-center gap-4",
+              "p-4 rounded-2xl border mb-6",
               result.riskSeverity === 'critical'
                 ? "bg-destructive/10 border-destructive/30"
                 : result.riskSeverity === 'warning'
                 ? "bg-amber-500/10 border-amber-500/30"
                 : "bg-green-500/10 border-green-500/30"
             )}>
-              <div className={cn(
-                "w-2 h-2 rounded-full animate-ping",
-                result.riskSeverity === 'critical' ? 'bg-destructive' : result.riskSeverity === 'warning' ? 'bg-amber-500' : 'bg-green-500'
-              )} />
-              <h2 className="font-display font-bold text-white text-lg">{result.scenarioLabel} — {t('commandCenter.activeSimulation')}</h2>
-              <Badge variant={result.riskSeverity === 'critical' ? 'critical' : 'warning'} className="uppercase">
-                {result.riskSeverity} {t('commandCenter.risk')}
-              </Badge>
-              {result.operator && (
-                <div className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground bg-secondary/50 px-2.5 py-1 rounded-lg border border-border/50">
-                  <User className="w-3 h-3 text-primary" />
-                  <span className="text-white font-semibold">{result.operator.name}</span>
-                  <span className="uppercase text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">{result.operator.role}</span>
-                </div>
-              )}
-              <span className="text-[10px] font-mono text-muted-foreground ml-auto">SIM ID: {result.scenarioId.slice(-8)}</span>
-              <span className="text-[10px] font-mono text-muted-foreground">{format(new Date(result.simulatedAt), 'MMM d, HH:mm:ss')} UTC</span>
+              <div className="flex flex-wrap items-center gap-3 mb-2">
+                <div className={cn(
+                  "w-2 h-2 rounded-full animate-ping shrink-0",
+                  result.riskSeverity === 'critical' ? 'bg-destructive' : result.riskSeverity === 'warning' ? 'bg-amber-500' : 'bg-green-500'
+                )} />
+                <h2 className="font-display font-bold text-white text-base sm:text-lg">{result.scenarioLabel} — {t('commandCenter.activeSimulation')}</h2>
+                <Badge variant={result.riskSeverity === 'critical' ? 'critical' : 'warning'} className="uppercase">
+                  {result.riskSeverity} {t('commandCenter.risk')}
+                </Badge>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground font-mono">
+                {result.operator && (
+                  <div className="flex items-center gap-1.5 bg-secondary/50 px-2.5 py-1 rounded-lg border border-border/50">
+                    <User className="w-3 h-3 text-primary" />
+                    <span className="text-white font-semibold">{result.operator.name}</span>
+                    <span className="uppercase text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">{result.operator.role}</span>
+                  </div>
+                )}
+                <span>SIM ID: {result.scenarioId.slice(-8)}</span>
+                <span>{format(new Date(result.simulatedAt), 'MMM d, HH:mm:ss')} UTC</span>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

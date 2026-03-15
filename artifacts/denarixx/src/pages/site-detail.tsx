@@ -147,26 +147,26 @@ export default function SiteDetail() {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-6">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           <button
             onClick={() => setLocation('/sites')}
-            className="p-2 rounded-xl bg-secondary/50 hover:bg-secondary border border-border/50 hover:border-border text-muted-foreground hover:text-white transition-all"
+            className="p-2 rounded-xl bg-secondary/50 hover:bg-secondary border border-border/50 hover:border-border text-muted-foreground hover:text-white transition-all shrink-0"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
-            <TypeIcon className="w-7 h-7 text-primary" />
+          <div className="p-2.5 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
+            <TypeIcon className="w-6 h-6 text-primary" />
           </div>
-          <div>
-            <h1 className="text-2xl font-display font-bold text-white">{site.name}</h1>
-            <div className="flex items-center gap-3 mt-1 flex-wrap">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-display font-bold text-white truncate">{site.name}</h1>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <MapPin className="w-3 h-3 text-primary" />
+                <MapPin className="w-3 h-3 text-primary shrink-0" />
                 {site.location}, {site.country}
               </div>
               <div className="flex items-center gap-1.5 text-xs">
-                <div className={cn('w-2 h-2 rounded-full', statusCfg.dot, site.status === 'critical' && 'animate-ping')} />
+                <div className={cn('w-2 h-2 rounded-full shrink-0', statusCfg.dot, site.status === 'critical' && 'animate-ping')} />
                 <span className={cn('font-semibold', statusCfg.color)}>{statusCfg.label}</span>
               </div>
               <Badge variant="outline" className={cn('capitalize text-[10px]', riskCfg.color, riskCfg.border)}>
@@ -176,16 +176,17 @@ export default function SiteDetail() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 shrink-0 ml-10 sm:ml-0">
           <Button variant="outline" size="sm" onClick={load}>
-            <RefreshCw className="w-4 h-4 mr-2" /> {t('siteDetail.refresh')}
+            <RefreshCw className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">{t('siteDetail.refresh')}</span>
           </Button>
           {can('reports.generate') && (
             <Button size="sm" onClick={downloadReport} isLoading={reportLoading}
               className={cn(reportSuccess && 'bg-green-600 hover:bg-green-700')}>
               {reportSuccess
-                ? <><CheckCircle2 className="w-4 h-4 mr-2" /> {t('siteDetail.reportDownloaded')}</>
-                : <><Download className="w-4 h-4 mr-2" /> {t('siteDetail.resilienceReport')}</>}
+                ? <><CheckCircle2 className="w-4 h-4 sm:mr-2" /><span className="hidden sm:inline">{t('siteDetail.reportDownloaded')}</span></>
+                : <><Download className="w-4 h-4 sm:mr-2" /><span className="hidden sm:inline">{t('siteDetail.resilienceReport')}</span></>}
             </Button>
           )}
         </div>
@@ -270,7 +271,7 @@ export default function SiteDetail() {
           )}
 
           {site.latestEnergy && (
-            <div className="grid grid-cols-4 gap-3 mt-5 pt-4 border-t border-border/50">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-border/50">
               {[
                 { label: t('sites.battery'), value: `${site.latestEnergy.batteryLevel.toFixed(1)}%`, icon: Battery, color: 'text-primary' },
                 { label: t('sites.solar'), value: `${site.latestEnergy.solarGeneration.toFixed(1)}%`, icon: Sun, color: 'text-yellow-400' },

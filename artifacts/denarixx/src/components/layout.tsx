@@ -61,20 +61,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-[100dvh] bg-background text-foreground font-sans overflow-hidden selection:bg-primary/30 selection:text-primary-foreground">
 
-      {/* Mobile overlay */}
+      {/* Mobile-only overlay — hidden on md+ */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/80 z-40 backdrop-blur-sm"
+          className="fixed inset-0 bg-black/80 z-40 backdrop-blur-sm md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar — always slides in from left on all screen sizes */}
+      {/* Sidebar — overlay on mobile, permanently docked on desktop */}
       <aside className={cn(
-        "fixed top-0 left-0 h-full w-[72px] md:w-[280px] bg-sidebar data-grid bg-tech-grid border-r border-sidebar-border flex flex-col z-50 transition-transform duration-300 ease-in-out",
-        sidebarOpen
-          ? "translate-x-0 w-[280px]"
-          : "-translate-x-full md:translate-x-0"
+        "fixed top-0 left-0 h-full w-[280px] bg-sidebar data-grid bg-tech-grid border-r border-sidebar-border flex flex-col z-50 transition-transform duration-300 ease-in-out",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}>
         {/* Sidebar header */}
         <div className="h-14 md:h-16 flex items-center px-4 border-b border-sidebar-border bg-background/50 shrink-0 justify-between">
@@ -85,9 +83,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">OneEarth Command</span>
             </div>
           </div>
+          {/* Close button — only on mobile overlay mode */}
           <button
             onClick={() => setSidebarOpen(false)}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-secondary transition-colors shrink-0"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-secondary transition-colors shrink-0 md:hidden"
           >
             <X className="w-4 h-4" />
           </button>
@@ -160,20 +159,24 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Main content — always full width on mobile since sidebar is an overlay */}
-      <div className="flex-1 flex flex-col h-[100dvh] overflow-hidden min-w-0 w-full">
+      {/* Main content — offset by sidebar width on desktop */}
+      <div className="flex-1 flex flex-col h-[100dvh] overflow-hidden min-w-0 w-full md:pl-[280px]">
 
         {/* Top bar */}
         <header className="h-14 md:h-16 border-b border-border/50 flex items-center justify-between px-3 sm:px-6 bg-background/80 backdrop-blur-md shrink-0 z-30">
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* Hamburger always visible */}
+            {/* Hamburger — mobile only, sidebar is always open on desktop */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-xl text-muted-foreground hover:text-white hover:bg-secondary transition-colors"
+              className="p-2 rounded-xl text-muted-foreground hover:text-white hover:bg-secondary transition-colors md:hidden"
               aria-label="Open menu"
             >
               <Menu className="w-5 h-5" />
             </button>
+            {/* Desktop brand mark (visible when sidebar is always present, gives the header a title anchor) */}
+            <div className="hidden md:flex items-center gap-2 text-muted-foreground/60">
+              <div className="w-1.5 h-4 bg-primary/50 rounded-full" />
+            </div>
             <div className="relative hidden sm:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
               <input
@@ -185,6 +188,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* System status pill — desktop */}
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-green-500/10 border border-green-500/20">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">{t('header.systemOnline')}</span>
+            </div>
             {user && (
               <div className="hidden sm:flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-secondary/50 border border-border/50">
                 <div className="w-6 h-6 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-[10px] font-bold text-primary shrink-0">

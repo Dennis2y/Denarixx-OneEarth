@@ -1,7 +1,7 @@
 import React from 'react';
 import { useGetUsers } from '@workspace/api-client-react';
 import { PageHeader, LoadingScreen, Card, Badge, Table, Th, Td, Button, Skeleton, cn } from '@/components/ui-core';
-import { Users as UsersIcon, Shield, Mail, Activity, Lock, Plus } from 'lucide-react';
+import { Users as UsersIcon, Shield, Mail, Activity, Lock, Plus, Clock } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +20,12 @@ export default function Users() {
     }
   };
 
+  const getStatusDot = (status: string) => {
+    if (status === 'active') return 'bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]';
+    if (status === 'suspended') return 'bg-destructive';
+    return 'bg-muted-foreground';
+  };
+
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <PageHeader 
@@ -32,23 +38,23 @@ export default function Users() {
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="p-6 bg-secondary/30 border-l-4 border-l-primary flex items-center">
-          <Shield className="w-10 h-10 text-primary mr-4 opacity-50" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        <Card className="p-5 bg-secondary/30 border-l-4 border-l-primary flex items-center">
+          <Shield className="w-10 h-10 text-primary mr-4 opacity-50 shrink-0" />
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t('users.adminLevel')}</p>
             <p className="text-2xl font-display font-bold text-white">{users?.filter(u => u.role === 'admin').length || 0}</p>
           </div>
         </Card>
-        <Card className="p-6 bg-secondary/30 border-l-4 border-l-blue-500 flex items-center">
-          <Activity className="w-10 h-10 text-blue-500 mr-4 opacity-50" />
+        <Card className="p-5 bg-secondary/30 border-l-4 border-l-blue-500 flex items-center">
+          <Activity className="w-10 h-10 text-blue-500 mr-4 opacity-50 shrink-0" />
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t('users.activeOperators')}</p>
             <p className="text-2xl font-display font-bold text-white">{users?.filter(u => u.status === 'active').length || 0}</p>
           </div>
         </Card>
-        <Card className="p-6 bg-secondary/30 border-l-4 border-l-destructive flex items-center">
-          <Lock className="w-10 h-10 text-destructive mr-4 opacity-50" />
+        <Card className="p-5 bg-secondary/30 border-l-4 border-l-destructive flex items-center">
+          <Lock className="w-10 h-10 text-destructive mr-4 opacity-50 shrink-0" />
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t('users.suspendedAccounts')}</p>
             <p className="text-2xl font-display font-bold text-white">{users?.filter(u => u.status === 'suspended').length || 0}</p>
@@ -62,59 +68,102 @@ export default function Users() {
             {[1,2,3,4,5].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
           </div>
         ) : (
-          <Table>
-            <thead>
-              <tr>
-                <Th>{t('users.colDesignation')}</Th>
-                <Th>{t('users.colRole')}</Th>
-                <Th>{t('users.colOrganization')}</Th>
-                <Th>{t('users.colStatus')}</Th>
-                <Th>{t('users.colLastUplink')}</Th>
-                <Th className="text-right">{t('users.colActions')}</Th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            {/* Mobile card list — visible on xs/sm only */}
+            <div className="sm:hidden divide-y divide-border/50">
               {users?.map((user) => (
-                <tr key={user.id} className="hover:bg-secondary/40 transition-colors group">
-                  <Td>
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center text-foreground font-display font-bold mr-4 shadow-inner">
-                        {user.name.split(' ').map(n=>n[0]).join('').substring(0,2)}
-                      </div>
-                      <div>
-                        <div className="font-bold text-white group-hover:text-primary transition-colors">{user.name}</div>
-                        <div className="text-xs text-muted-foreground flex items-center mt-1">
-                          <Mail className="w-3 h-3 mr-1 opacity-50" /> {user.email}
-                        </div>
+                <div key={user.id} className="p-4 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center text-foreground font-display font-bold shrink-0">
+                      {user.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-bold text-white text-sm">{user.name}</div>
+                      <div className="text-xs text-muted-foreground truncate flex items-center gap-1 mt-0.5">
+                        <Mail className="w-3 h-3 opacity-50 shrink-0" /> {user.email}
                       </div>
                     </div>
-                  </Td>
-                  <Td>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <div className={cn("w-2 h-2 rounded-full", getStatusDot(user.status))} />
+                      <span className={cn("text-xs font-semibold capitalize", user.status === 'active' ? 'text-white' : 'text-muted-foreground')}>
+                        {user.status}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Badge variant="outline" className={cn("uppercase text-[10px] font-bold tracking-widest border", getRoleColor(user.role))}>
                       {user.role}
                     </Badge>
-                  </Td>
-                  <Td className="text-sm font-medium text-foreground">{user.organization}</Td>
-                  <Td>
-                    <div className="flex items-center text-xs font-bold uppercase tracking-wider">
-                      <div className={cn(
-                        "w-2 h-2 rounded-full mr-2", 
-                        user.status === 'active' ? "bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" : 
-                        user.status === 'suspended' ? "bg-destructive" : "bg-muted-foreground"
-                      )} />
-                      <span className={user.status === 'active' ? 'text-white' : 'text-muted-foreground'}>{user.status}</span>
+                    {user.organization && (
+                      <span className="text-xs text-muted-foreground">{user.organization}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                      <Clock className="w-3 h-3" />
+                      {user.lastLogin ? formatDistanceToNow(new Date(user.lastLogin), { addSuffix: true }) : t('users.never')}
                     </div>
-                  </Td>
-                  <Td className="text-sm text-muted-foreground font-mono">
-                    {user.lastLogin ? formatDistanceToNow(new Date(user.lastLogin), { addSuffix: true }) : t('users.never')}
-                  </Td>
-                  <Td className="text-right">
-                    <Button variant="ghost" size="sm" className="text-xs font-medium hover:bg-destructive/10 hover:text-destructive">{t('users.revokeAccess')}</Button>
-                  </Td>
-                </tr>
+                    <Button variant="ghost" size="sm" className="text-xs h-7 hover:bg-destructive/10 hover:text-destructive">
+                      {t('users.revokeAccess')}
+                    </Button>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </Table>
+            </div>
+
+            {/* Desktop table — hidden on xs/sm */}
+            <div className="hidden sm:block">
+              <Table>
+                <thead>
+                  <tr>
+                    <Th>{t('users.colDesignation')}</Th>
+                    <Th>{t('users.colRole')}</Th>
+                    <Th className="hidden lg:table-cell">{t('users.colOrganization')}</Th>
+                    <Th>{t('users.colStatus')}</Th>
+                    <Th className="hidden md:table-cell">{t('users.colLastUplink')}</Th>
+                    <Th className="text-right">{t('users.colActions')}</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users?.map((user) => (
+                    <tr key={user.id} className="hover:bg-secondary/40 transition-colors group">
+                      <Td>
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center text-foreground font-display font-bold mr-4 shadow-inner shrink-0">
+                            {user.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
+                          </div>
+                          <div>
+                            <div className="font-bold text-white group-hover:text-primary transition-colors">{user.name}</div>
+                            <div className="text-xs text-muted-foreground flex items-center mt-1">
+                              <Mail className="w-3 h-3 mr-1 opacity-50" /> {user.email}
+                            </div>
+                          </div>
+                        </div>
+                      </Td>
+                      <Td>
+                        <Badge variant="outline" className={cn("uppercase text-[10px] font-bold tracking-widest border", getRoleColor(user.role))}>
+                          {user.role}
+                        </Badge>
+                      </Td>
+                      <Td className="text-sm font-medium text-foreground hidden lg:table-cell">{user.organization}</Td>
+                      <Td>
+                        <div className="flex items-center text-xs font-bold uppercase tracking-wider">
+                          <div className={cn("w-2 h-2 rounded-full mr-2 shrink-0", getStatusDot(user.status))} />
+                          <span className={user.status === 'active' ? 'text-white' : 'text-muted-foreground'}>{user.status}</span>
+                        </div>
+                      </Td>
+                      <Td className="text-sm text-muted-foreground font-mono hidden md:table-cell">
+                        {user.lastLogin ? formatDistanceToNow(new Date(user.lastLogin), { addSuffix: true }) : t('users.never')}
+                      </Td>
+                      <Td className="text-right">
+                        <Button variant="ghost" size="sm" className="text-xs font-medium hover:bg-destructive/10 hover:text-destructive">{t('users.revokeAccess')}</Button>
+                      </Td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          </>
         )}
       </Card>
     </motion.div>
