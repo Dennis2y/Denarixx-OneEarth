@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Home, Zap, Shield, Globe, Bell, MapPin, Users, Settings, LogOut, Menu, Search, Languages, Cpu, ChevronDown } from 'lucide-react';
+import { Home, Zap, Shield, Globe, Bell, MapPin, Users, Settings, LogOut, Menu, Search, Languages, Cpu, ChevronDown, X } from 'lucide-react';
 import { cn } from './ui-core';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { format } from 'date-fns';
@@ -129,7 +129,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const isMobile = useIsMobile();
-  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [time, setTime] = useState(new Date());
 
   const navItems = [
@@ -155,8 +155,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (isMobile) setSidebarOpen(false);
-  }, [location, isMobile]);
+    setSidebarOpen(false);
+  }, [location]);
 
   const handleLogout = async () => {
     await logout();
@@ -170,45 +170,64 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const clearanceLevel = user?.clearanceLevel ?? 5;
 
   return (
-    <div className="flex h-screen bg-background text-foreground font-sans overflow-hidden selection:bg-primary/30 selection:text-primary-foreground">
+    <div className="flex h-[100dvh] bg-background text-foreground font-sans overflow-hidden selection:bg-primary/30 selection:text-primary-foreground">
 
-      {isMobile && sidebarOpen && (
-        <div className="fixed inset-0 bg-black/80 z-40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/80 z-40 backdrop-blur-sm"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar — always slides in from left on all screen sizes */}
       <aside className={cn(
-        "fixed md:relative top-0 left-0 h-full w-[280px] bg-sidebar data-grid bg-tech-grid border-r border-sidebar-border flex flex-col z-50 transition-all duration-300 ease-in-out group/sidebar",
-        !sidebarOpen && "-translate-x-full md:translate-x-0 md:w-[72px]"
+        "fixed top-0 left-0 h-full w-[72px] md:w-[280px] bg-sidebar data-grid bg-tech-grid border-r border-sidebar-border flex flex-col z-50 transition-transform duration-300 ease-in-out",
+        sidebarOpen
+          ? "translate-x-0 w-[280px]"
+          : "-translate-x-full md:translate-x-0"
       )}>
-        <div className="h-20 flex items-center px-4 border-b border-sidebar-border bg-background/50 shrink-0">
-          <img src={`${import.meta.env.BASE_URL}denarixx-logo.png`} className="h-9 w-9 shrink-0 ml-1" alt="Logo" />
-          <div className={cn("ml-4 flex flex-col justify-center transition-opacity duration-200 overflow-hidden whitespace-nowrap", !sidebarOpen && "md:opacity-0 md:w-0")}>
-            <span className="font-display font-bold text-xl tracking-[0.15em] text-primary leading-tight">DENARIXX</span>
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">OneEarth Command</span>
+        {/* Sidebar header */}
+        <div className="h-14 md:h-16 flex items-center px-4 border-b border-sidebar-border bg-background/50 shrink-0 justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <img src={`${import.meta.env.BASE_URL}denarixx-logo.png`} className="h-8 w-8 shrink-0" alt="Logo" />
+            <div className="flex flex-col justify-center overflow-hidden whitespace-nowrap">
+              <span className="font-display font-bold text-lg tracking-[0.15em] text-primary leading-tight">DENARIXX</span>
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">OneEarth Command</span>
+            </div>
           </div>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-secondary transition-colors shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
-        <nav className="flex-1 py-5 px-3 space-y-5 overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 py-4 px-3 space-y-4 overflow-y-auto custom-scrollbar">
           {groups.map((group) => (
             <div key={group} className="space-y-0.5">
-              <div className={cn("px-4 text-[9px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] mb-2 transition-opacity", !sidebarOpen && "md:opacity-0")}>
+              <div className="px-4 text-[9px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] mb-2">
                 {group}
               </div>
               {navItems.filter(item => item.group === group).map((item) => {
                 const isActive = location === item.href;
                 return (
-                  <Link key={item.href} href={item.href} title={!sidebarOpen ? item.label : undefined} className={cn(
-                    "flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 relative group/item",
-                    isActive ? "bg-primary/10 text-primary border border-primary/20 gold-glow" : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-white"
-                  )}>
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 relative group/item",
+                      isActive
+                        ? "bg-primary/10 text-primary border border-primary/20 gold-glow"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-white"
+                    )}
+                  >
                     {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-7 bg-primary rounded-r" />}
                     <item.icon className={cn("w-5 h-5 shrink-0 transition-transform group-hover/item:scale-110", isActive && "text-primary")} />
-                    <span className={cn("ml-3.5 font-medium tracking-wide transition-opacity whitespace-nowrap text-sm", !sidebarOpen && "md:opacity-0 md:hidden")}>
-                      {item.label}
-                    </span>
+                    <span className="ml-3.5 font-medium tracking-wide whitespace-nowrap text-sm">{item.label}</span>
                     {item.href === '/command-center' && (
-                      <span className={cn("ml-auto text-[9px] font-bold text-primary bg-primary/10 border border-primary/20 rounded px-1.5 py-0.5 uppercase tracking-widest", !sidebarOpen && "md:hidden")}>
+                      <span className="ml-auto text-[9px] font-bold text-primary bg-primary/10 border border-primary/20 rounded px-1.5 py-0.5 uppercase tracking-widest">
                         NEW
                       </span>
                     )}
@@ -220,7 +239,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="p-4 border-t border-sidebar-border bg-sidebar/80 backdrop-blur-md shrink-0">
-          <div className={cn("mb-3 transition-opacity", !sidebarOpen && "md:opacity-0 md:hidden")}>
+          <div className="mb-3">
             <div className="flex items-center gap-2 mb-1">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               <span className="text-[10px] font-bold text-green-500 tracking-widest uppercase">{t('header.systemOnline')}</span>
@@ -229,7 +248,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
 
           {user && (
-            <div className={cn("mb-3 p-2.5 rounded-xl bg-secondary/40 border border-border/50", !sidebarOpen && "md:hidden")}>
+            <div className="mb-3 p-2.5 rounded-xl bg-secondary/40 border border-border/50">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-xs font-bold text-primary shrink-0">
                   {initials}
@@ -242,33 +261,27 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           )}
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-xl text-muted-foreground hover:text-white hover:bg-secondary transition-colors border border-transparent hover:border-border/50"
-              title={sidebarOpen ? "Collapse" : "Expand"}
-            >
-              <Menu className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleLogout}
-              className={cn("p-2 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors border border-transparent hover:border-destructive/30", !sidebarOpen && "md:mx-auto")}
-              title="Logout"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors border border-transparent hover:border-destructive/30 text-sm"
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            <span className="font-medium">Logout</span>
+          </button>
         </div>
       </aside>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
+      {/* Main content — always full width on mobile since sidebar is an overlay */}
+      <div className="flex-1 flex flex-col h-[100dvh] overflow-hidden min-w-0 w-full">
+
         {/* Top bar */}
-        <header className="h-16 border-b border-border/50 flex items-center justify-between px-6 bg-background/80 backdrop-blur-md shrink-0 z-30">
-          <div className="flex items-center gap-4">
+        <header className="h-14 md:h-16 border-b border-border/50 flex items-center justify-between px-3 sm:px-6 bg-background/80 backdrop-blur-md shrink-0 z-30">
+          <div className="flex items-center gap-2 sm:gap-4">
+            {/* Hamburger always visible */}
             <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="md:hidden p-2 rounded-xl text-muted-foreground hover:text-white hover:bg-secondary transition-colors"
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 rounded-xl text-muted-foreground hover:text-white hover:bg-secondary transition-colors"
+              aria-label="Open menu"
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -277,19 +290,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <input
                 type="text"
                 placeholder={t('header.search')}
-                className="bg-secondary/50 border border-border/50 rounded-xl pl-10 pr-4 py-2 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary/50 focus:bg-secondary/80 w-72 transition-all"
+                className="bg-secondary/50 border border-border/50 rounded-xl pl-10 pr-4 py-2 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary/50 focus:bg-secondary/80 w-48 md:w-72 transition-all"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <LanguageSwitcher />
             {user && (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-secondary/50 border border-border/50">
-                <div className="w-6 h-6 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-[10px] font-bold text-primary">
+              <div className="hidden sm:flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-secondary/50 border border-border/50">
+                <div className="w-6 h-6 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-[10px] font-bold text-primary shrink-0">
                   {initials}
                 </div>
-                <div>
+                <div className="hidden md:block">
                   <div className="text-xs font-bold text-white leading-none">{displayName}</div>
                   <div className="text-[9px] text-primary capitalize tracking-wider mt-0.5">{roleLabel(user.role)}</div>
                 </div>
@@ -299,7 +312,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-6 relative custom-scrollbar">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 relative custom-scrollbar">
           <div
             className="absolute inset-0 pointer-events-none opacity-[0.03]"
             style={{ backgroundImage: `url(${import.meta.env.BASE_URL}africa-night-hero.png)`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'grayscale(100%)' }}
