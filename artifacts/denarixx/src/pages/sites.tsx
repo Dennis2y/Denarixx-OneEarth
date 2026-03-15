@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useGetSites, useCreateSite } from '@workspace/api-client-react';
-import { PageHeader, LoadingScreen, Card, Badge, Table, Th, Td, Button, Modal, Input, Label, Select, Skeleton, EmptyState, cn } from '@/components/ui-core';
+import { ModuleHeader, LoadingScreen, Card, Badge, Table, Th, Td, Button, Modal, Input, Label, Select, Skeleton, EmptyState, cn } from '@/components/ui-core';
 import { MapPin, Plus, LayoutGrid, List, Users, Server, Zap, Activity, AlertTriangle, Shield, BarChart3, Clock, Radio, ExternalLink, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
@@ -101,9 +101,12 @@ export default function Sites() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <PageHeader
+      <ModuleHeader
         title={t('sites.title')}
-        description={t('sites.description')}
+        subtitle={t('sites.description')}
+        classification="RESTRICTED // INFRASTRUCTURE REGISTRY"
+        moduleId="DNX-SITES-001"
+        status="active"
         actions={
           <div className="flex items-center gap-3 sm:gap-4">
             <div className="hidden sm:flex bg-secondary/50 p-1 rounded-xl border border-border/50">

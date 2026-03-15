@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, PageHeader, Badge, Button, cn } from '@/components/ui-core';
+import { Card, ModuleHeader, Badge, Button, cn } from '@/components/ui-core';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Cpu, Play, AlertTriangle, Zap, Shield, Globe, MapPin, Users,
@@ -249,9 +249,12 @@ export default function CommandCenter() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <PageHeader
+      <ModuleHeader
         title={t('commandCenter.title')}
-        description={t('commandCenter.description')}
+        subtitle={t('commandCenter.description')}
+        classification="TOP SECRET // COMMAND AUTHORITY"
+        moduleId="DNX-CMD-001"
+        status={result ? (result.riskSeverity === 'critical' ? 'degraded' : 'active') : 'active'}
         actions={
           <div className="flex items-center gap-3">
             <Button

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { useGetDashboardStats, useGetUnifiedAlerts } from '@workspace/api-client-react';
-import { PageHeader, LoadingScreen, Card, Badge, Button, Modal, Input, Label, Select, cn } from '@/components/ui-core';
+import { LoadingScreen, Card, Badge, Button, Modal, Input, Label, Select, cn } from '@/components/ui-core';
 import { MapPin, AlertTriangle, Users, Globe, Zap, ArrowRight, ShieldAlert, FileText, Radio, Check, Activity, Shield, Download, Play, Cpu, CheckCircle2 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -273,46 +273,61 @@ export default function Dashboard() {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
 
-      {/* ── System Status Banner ── */}
+      {/* ── Global Threat Assessment Matrix ── */}
       <div className={cn(
-        'mb-6 px-5 py-3 rounded-2xl border flex flex-col sm:flex-row sm:items-center gap-4',
-        systemOk
-          ? 'bg-green-500/5 border-green-500/25'
-          : 'bg-destructive/5 border-destructive/30'
+        'mb-6 rounded-2xl border overflow-hidden',
+        systemOk ? 'border-green-500/20' : 'border-destructive/30'
       )}>
-        <div className="flex items-center gap-3 shrink-0">
-          {systemOk
-            ? <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0" />
-            : <AlertTriangle className="w-5 h-5 text-destructive animate-pulse shrink-0" />
-          }
-          <div>
-            <span className={cn('font-bold text-sm uppercase tracking-widest', systemOk ? 'text-green-400' : 'text-destructive')}>
-              System {systemOk ? 'Operational' : 'Warning'}
+        <div className={cn(
+          'px-4 sm:px-5 py-2.5 flex items-center justify-between',
+          systemOk ? 'bg-green-500/8' : 'bg-destructive/8'
+        )}>
+          <div className="flex items-center gap-3">
+            <div className={cn('w-2 h-2 rounded-full animate-pulse shrink-0', systemOk ? 'bg-green-400' : 'bg-destructive')} />
+            <span className="text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              GLOBAL THREAT ASSESSMENT MATRIX
             </span>
-            <p className="text-[10px] text-muted-foreground font-mono">{format(new Date(), 'yyyy-MM-dd HH:mm')} UTC · Platform V2.4.1</p>
           </div>
+          <span className={cn('text-[9px] font-mono font-bold uppercase tracking-widest', systemOk ? 'text-green-400' : 'text-destructive')}>
+            {systemOk ? '● NOMINAL' : '▲ THREAT ELEVATED'}
+          </span>
         </div>
-        <div className="flex flex-wrap gap-3 sm:gap-5 sm:ml-6 text-xs">
-          {[
-            { label: 'Sites', value: stats?.activeSites ?? '—', color: 'text-primary' },
-            { label: 'Alerts', value: stats?.criticalAlerts ?? '—', color: systemOk ? 'text-amber-400' : 'text-destructive' },
-            { label: 'Protected', value: stats?.protectedPeople?.toLocaleString() ?? '—', color: 'text-green-400' },
-            { label: 'Energy', value: `${stats?.energyAvailability ?? 0}%`, color: 'text-blue-400' },
-            { label: 'Regions', value: stats?.disasterRiskZones ?? '—', color: 'text-purple-400' },
-          ].map(({ label, value, color }) => (
-            <div key={label} className="flex items-center gap-1.5">
-              <span className="text-muted-foreground font-mono">{label}:</span>
-              <span className={cn('font-bold font-mono', color)}>{value}</span>
+        <div className="px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-4 bg-card/30">
+          <div className="flex items-center gap-3 shrink-0">
+            {systemOk
+              ? <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0" />
+              : <AlertTriangle className="w-5 h-5 text-destructive animate-pulse shrink-0" />
+            }
+            <div>
+              <span className={cn('font-bold text-sm uppercase tracking-widest font-display', systemOk ? 'text-green-400' : 'text-destructive')}>
+                {systemOk ? 'ALL SYSTEMS OPERATIONAL' : 'THREAT CONDITION ELEVATED'}
+              </span>
+              <p className="text-[10px] text-muted-foreground font-mono">{format(new Date(), 'yyyy-MM-dd HH:mm:ss')} UTC · DNX-ONEEARTH V2.4.1 · CLASSIFIED</p>
             </div>
-          ))}
-        </div>
-        <div className="sm:ml-auto flex items-center gap-1.5 shrink-0">
-          <div className={cn('w-2 h-2 rounded-full animate-pulse', systemOk ? 'bg-green-400' : 'bg-destructive')} />
-          <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Live</span>
+          </div>
+          <div className="flex flex-wrap gap-3 sm:gap-6 sm:ml-4 text-[10px] font-mono">
+            {[
+              { label: 'ACTIVE NODES', value: stats?.activeSites ?? '—', color: 'text-primary' },
+              { label: 'CRITICAL ALERTS', value: stats?.criticalAlerts ?? '—', color: systemOk ? 'text-amber-400' : 'text-destructive' },
+              { label: 'PROTECTED ENTITIES', value: stats?.protectedPeople?.toLocaleString() ?? '—', color: 'text-green-400' },
+              { label: 'ENERGY GRID', value: `${stats?.energyAvailability ?? 0}%`, color: 'text-blue-400' },
+              { label: 'RISK ZONES', value: stats?.disasterRiskZones ?? '—', color: 'text-purple-400' },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="flex flex-col">
+                <span className="text-muted-foreground/60 text-[8px] uppercase tracking-widest mb-0.5">{label}</span>
+                <span className={cn('font-bold text-sm', color)}>{value}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      <PageHeader title={t('dashboard.title')} description={t('dashboard.description')} />
+      <div className="flex items-center gap-3 mb-6 px-1">
+        <div className="h-4 w-0.5 bg-primary/60 rounded-full" />
+        <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-[0.2em]">OPERATOR COMMAND CONSOLE — {t('dashboard.title').toUpperCase()}</span>
+        <div className="flex-1 h-px bg-gradient-to-r from-primary/20 to-transparent" />
+        <span className="text-[9px] font-mono text-muted-foreground/40 uppercase tracking-widest">CLEARANCE: {user?.role?.toUpperCase()}</span>
+      </div>
 
       {/* KPI Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
@@ -356,9 +371,12 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        {/* Quick Actions — now functional */}
+        {/* Operator Command Console */}
         <div className="flex flex-col gap-3 sm:gap-4">
-          <h3 className="text-sm font-display font-bold text-muted-foreground uppercase tracking-widest px-1">{t('dashboard.rapidDeploy')}</h3>
+          <div className="flex items-center gap-2 px-1">
+            <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+            <h3 className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-[0.2em]">OPERATOR COMMAND CONSOLE</h3>
+          </div>
 
           {/* Mobile: 2×2 compact grid. Desktop: tall vertical stack */}
           <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 lg:gap-4 flex-1">
@@ -425,11 +443,14 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Module Health + Recent Scenarios ── */}
+      {/* ── Module Status Matrix + Recent Scenarios ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Module Health Summary */}
+        {/* Module Status Matrix */}
         <div>
-          <h3 className="text-sm font-display font-bold text-muted-foreground uppercase tracking-widest px-1 mb-4">Module Health</h3>
+          <div className="flex items-center gap-2 px-1 mb-4">
+            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+            <h3 className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-[0.2em]">MODULE STATUS MATRIX</h3>
+          </div>
           <div className="space-y-3">
             {[
               { name: 'Denarixx Energy', icon: Zap, color: 'hsl(var(--primary))', status: 'operational', uptime: 98.7, detail: `${stats.activeSites} sites · ${stats.energyAvailability}% availability` },
@@ -561,37 +582,46 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Activity Log */}
+        {/* Command Ops Log */}
         <div>
           <div className="flex items-center justify-between mb-4 px-1">
-            <h3 className="text-xl font-display font-bold text-white flex items-center gap-3">
-              <Activity className="w-5 h-5 text-primary" /> Activity Feed
-            </h3>
-            <button onClick={fetchAuditLog} className="text-xs text-muted-foreground hover:text-primary transition-colors font-mono uppercase tracking-widest">Refresh</button>
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+              <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-[0.2em]">COMMAND OPS LOG</span>
+            </div>
+            <button onClick={fetchAuditLog} className="text-[9px] font-mono text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest flex items-center gap-1">
+              <Activity className="w-3 h-3" /> SYNC
+            </button>
           </div>
-          <Card className="p-0 overflow-hidden">
+          <Card className="p-0 overflow-hidden border-border/40">
+            <div className="px-3 py-2 border-b border-border/30 bg-secondary/20 flex items-center justify-between">
+              <span className="text-[8px] font-mono text-muted-foreground/50 uppercase tracking-widest">AUDIT CHAIN — IMMUTABLE RECORD</span>
+              <span className="text-[8px] font-mono text-muted-foreground/50">{auditLog.length} ENTRIES</span>
+            </div>
             {auditLog.length === 0 ? (
               <div className="p-8 text-center">
                 <Shield className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">No activity yet. Actions will appear here.</p>
+                <p className="text-xs text-muted-foreground font-mono">NO AUDIT ENTRIES — SYSTEM INITIALIZING</p>
               </div>
             ) : (
-              <div className="divide-y divide-border/50 max-h-[460px] overflow-y-auto">
-                {auditLog.map((entry) => (
-                  <div key={entry.id} className="px-4 py-3 hover:bg-secondary/30 transition-colors">
-                    <div className="flex items-start gap-3">
-                      <span className="text-base mt-0.5 shrink-0">{ACTION_ICONS[entry.action] ?? '⚡'}</span>
+              <div className="divide-y divide-border/30 max-h-[460px] overflow-y-auto custom-scrollbar">
+                {auditLog.map((entry, idx) => (
+                  <div key={entry.id} className="px-3 py-2.5 hover:bg-secondary/20 transition-colors group">
+                    <div className="flex items-start gap-2.5">
+                      <div className="shrink-0 w-5 h-5 rounded flex items-center justify-center bg-secondary/50 border border-border/30 text-[11px] mt-0.5">
+                        {ACTION_ICONS[entry.action] ?? '⚡'}
+                      </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                          <span className="text-xs font-bold text-white truncate">{entry.actor}</span>
+                        <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                          <span className="text-[10px] font-bold text-white truncate">{entry.actor}</span>
                           {entry.actorRole && (
-                            <span className="text-[9px] uppercase tracking-widest text-primary font-mono bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">
+                            <span className="text-[8px] uppercase tracking-widest text-primary font-mono bg-primary/10 px-1 py-0 rounded border border-primary/20">
                               {entry.actorRole}
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-muted-foreground">{formatActionLabel(entry.action)}</p>
-                        {entry.target && <p className="text-[10px] text-muted-foreground/60 font-mono mt-0.5 truncate">{entry.target}</p>}
+                        <p className="text-[10px] text-muted-foreground font-mono">{formatActionLabel(entry.action)}</p>
+                        {entry.target && <p className="text-[9px] text-muted-foreground/50 font-mono mt-0.5 truncate">→ {entry.target}</p>}
                       </div>
                       <span className="text-[10px] text-muted-foreground/60 font-mono shrink-0 mt-0.5">
                         {entry.createdAt ? format(new Date(entry.createdAt), 'HH:mm') : '--:--'}

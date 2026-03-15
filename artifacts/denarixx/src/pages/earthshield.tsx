@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useGetDisasterAlerts, useGetRiskZones } from '@workspace/api-client-react';
-import { PageHeader, LoadingScreen, Card, Badge, Button, cn } from '@/components/ui-core';
+import { ModuleHeader, LoadingScreen, Card, Badge, Button, cn } from '@/components/ui-core';
 import { Globe, Wind, Droplets, Flame, Activity, MapPin, Zap, AlertTriangle, CloudLightning, Shield, Filter, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
@@ -99,9 +99,12 @@ export default function EarthShield() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <PageHeader
+      <ModuleHeader
         title={t('earthshield.title')}
-        description={t('earthshield.description')}
+        subtitle={t('earthshield.description')}
+        classification="RESTRICTED // THREAT INTELLIGENCE"
+        moduleId="DNX-SHIELD-001"
+        status={critical.length > 0 ? 'degraded' : 'active'}
       />
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">

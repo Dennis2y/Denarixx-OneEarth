@@ -204,3 +204,43 @@ export function PageHeader({ title, description, actions }: { title: string, des
     </div>
   );
 }
+
+// --- Module System Header ---
+export function ModuleHeader({
+  title, subtitle, classification = 'RESTRICTED', moduleId, status = 'active', actions
+}: {
+  title: string;
+  subtitle?: string;
+  classification?: string;
+  moduleId: string;
+  status?: 'active' | 'degraded' | 'offline';
+  actions?: React.ReactNode;
+}) {
+  const statusMeta = {
+    active: { label: 'MODULE ACTIVE', dot: 'bg-green-500', text: 'text-green-500', border: 'border-green-500/20', bg: 'bg-green-500/10' },
+    degraded: { label: 'DEGRADED', dot: 'bg-amber-500', text: 'text-amber-500', border: 'border-amber-500/20', bg: 'bg-amber-500/10' },
+    offline: { label: 'OFFLINE', dot: 'bg-destructive', text: 'text-destructive', border: 'border-destructive/20', bg: 'bg-destructive/10' },
+  }[status];
+  return (
+    <div className="mb-6">
+      <div className="flex items-start justify-between flex-wrap gap-3 mb-3">
+        <div>
+          <div className="flex items-center gap-3 mb-2 flex-wrap">
+            <span className="classified-badge">{classification}</span>
+            <span className="text-[9px] font-mono text-muted-foreground/50 uppercase tracking-widest">MODULE: {moduleId}</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-white tracking-tight drop-shadow-md leading-tight">{title}</h1>
+          {subtitle && <p className="text-muted-foreground mt-1 text-sm">{subtitle}</p>}
+        </div>
+        <div className="flex flex-col items-end gap-2 shrink-0">
+          <div className={cn('flex items-center gap-2 px-3 py-1.5 rounded-lg border', statusMeta.border, statusMeta.bg)}>
+            <div className={cn('w-1.5 h-1.5 rounded-full animate-pulse', statusMeta.dot)} />
+            <span className={cn('text-[9px] font-bold uppercase tracking-widest', statusMeta.text)}>{statusMeta.label}</span>
+          </div>
+          {actions && <div className="flex items-center gap-2">{actions}</div>}
+        </div>
+      </div>
+      <div className="h-px w-full bg-gradient-to-r from-primary/30 via-border/50 to-transparent" />
+    </div>
+  );
+}

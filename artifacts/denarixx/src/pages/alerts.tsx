@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGetUnifiedAlerts } from '@workspace/api-client-react';
-import { PageHeader, Card, Badge, Button, Skeleton, EmptyState, cn } from '@/components/ui-core';
+import { ModuleHeader, Card, Badge, Button, Skeleton, EmptyState, cn } from '@/components/ui-core';
 import { format } from 'date-fns';
 import { Bell, Filter, ShieldAlert, Zap, Globe, MapPin, Search, ArrowRight, X, CheckCircle2, AlertTriangle, Info, Clock, CheckCheck, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -112,9 +112,12 @@ export default function Alerts() {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex relative" style={{ minHeight: 'calc(100dvh - 180px)' }}>
       
       <div className={cn("flex-1 transition-all duration-300", selectedAlert ? "md:pr-[420px]" : "")}>
-        <PageHeader 
+        <ModuleHeader
           title={t('alerts.title')}
-          description={t('alerts.description')}
+          subtitle={t('alerts.description')}
+          classification="RESTRICTED // ALERT COMMAND"
+          moduleId="DNX-ALERT-001"
+          status={criticalCount > 0 ? 'degraded' : 'active'}
           actions={
             <div className="flex items-center gap-3">
               {criticalCount > 0 && (

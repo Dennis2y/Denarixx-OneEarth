@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGetEnergyMetrics, useGetEnergyChart } from '@workspace/api-client-react';
-import { PageHeader, LoadingScreen, Card, Badge, Table, Th, Td, cn } from '@/components/ui-core';
+import { ModuleHeader, LoadingScreen, Card, Badge, Table, Th, Td, cn } from '@/components/ui-core';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 import { Zap, Battery, Activity, AlertTriangle, Sun, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -24,9 +24,12 @@ export default function Energy() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <PageHeader 
+      <ModuleHeader
         title={t('energy.title')}
-        description={t('energy.description')}
+        subtitle={t('energy.description')}
+        classification="RESTRICTED // ENERGY COMMAND"
+        moduleId="DNX-ENERGY-001"
+        status="active"
         actions={<Badge variant="safe" className="px-4 py-2 text-sm shadow-[0_0_15px_rgba(34,197,94,0.3)]"><Zap className="w-4 h-4 mr-2"/> {t('energy.gridNominal')}</Badge>}
       />
 
