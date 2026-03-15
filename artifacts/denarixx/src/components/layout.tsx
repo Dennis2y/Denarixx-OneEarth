@@ -53,15 +53,102 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   const groups = Array.from(new Set(navItems.map(item => item.group)));
-
   const initials = user?.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() ?? 'CP';
   const displayName = user?.name ?? 'Cmdr. Prime';
   const clearanceLevel = user?.clearanceLevel ?? 5;
 
+  const sidebarContent = (
+    <>
+      {/* Sidebar header */}
+      <div className="h-14 md:h-16 flex items-center px-4 border-b border-sidebar-border bg-background/50 shrink-0 justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <img src={`${import.meta.env.BASE_URL}denarixx-logo.png`} className="h-8 w-8 shrink-0" alt="Logo" />
+          <div className="flex flex-col justify-center overflow-hidden whitespace-nowrap">
+            <span className="font-display font-bold text-lg tracking-[0.15em] text-primary leading-tight">DENARIXX</span>
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">OneEarth Command</span>
+          </div>
+        </div>
+        {/* Close button — mobile overlay only */}
+        <button
+          onClick={() => setSidebarOpen(false)}
+          className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-secondary transition-colors shrink-0 md:hidden"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      <nav className="flex-1 py-4 px-3 space-y-4 overflow-y-auto custom-scrollbar">
+        {groups.map((group) => (
+          <div key={group} className="space-y-0.5">
+            <div className="px-4 text-[9px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] mb-2">
+              {group}
+            </div>
+            {navItems.filter(item => item.group === group).map((item) => {
+              const isActive = location === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 relative group/item",
+                    isActive
+                      ? "bg-primary/10 text-primary border border-primary/20 gold-glow"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-white"
+                  )}
+                >
+                  {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-7 bg-primary rounded-r" />}
+                  <item.icon className={cn("w-5 h-5 shrink-0 transition-transform group-hover/item:scale-110", isActive && "text-primary")} />
+                  <span className="ml-3.5 font-medium tracking-wide whitespace-nowrap text-sm">{item.label}</span>
+                  {item.href === '/command-center' && (
+                    <span className="ml-auto text-[9px] font-bold text-primary bg-primary/10 border border-primary/20 rounded px-1.5 py-0.5 uppercase tracking-widest">
+                      NEW
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
+      </nav>
+
+      <div className="p-4 border-t border-sidebar-border bg-sidebar/80 backdrop-blur-md shrink-0">
+        <div className="mb-3">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            <span className="text-[10px] font-bold text-green-500 tracking-widest uppercase">{t('header.systemOnline')}</span>
+          </div>
+          <div className="text-[10px] text-muted-foreground font-mono">{format(time, 'yyyy-MM-dd HH:mm:ss')} UTC</div>
+        </div>
+
+        {user && (
+          <div className="mb-3 p-2.5 rounded-xl bg-secondary/40 border border-border/50">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-xs font-bold text-primary shrink-0">
+                {initials}
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-white truncate">{displayName}</div>
+                <div className="text-[9px] text-primary capitalize tracking-wider">{user.role} · L{clearanceLevel}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors border border-transparent hover:border-destructive/30 text-sm"
+        >
+          <LogOut className="w-4 h-4 shrink-0" />
+          <span className="font-medium">Logout</span>
+        </button>
+      </div>
+    </>
+  );
+
   return (
     <div className="flex h-[100dvh] bg-background text-foreground font-sans overflow-hidden selection:bg-primary/30 selection:text-primary-foreground">
 
-      {/* Mobile-only overlay — hidden on md+ */}
+      {/* Mobile-only backdrop overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/80 z-40 backdrop-blur-sm md:hidden"
@@ -69,103 +156,26 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      {/* Sidebar — overlay on mobile, permanently docked on desktop */}
-      <aside className={cn(
-        "fixed top-0 left-0 h-full w-[280px] bg-sidebar data-grid bg-tech-grid border-r border-sidebar-border flex flex-col z-50 transition-transform duration-300 ease-in-out",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-      )}>
-        {/* Sidebar header */}
-        <div className="h-14 md:h-16 flex items-center px-4 border-b border-sidebar-border bg-background/50 shrink-0 justify-between">
-          <div className="flex items-center gap-3 min-w-0">
-            <img src={`${import.meta.env.BASE_URL}denarixx-logo.png`} className="h-8 w-8 shrink-0" alt="Logo" />
-            <div className="flex flex-col justify-center overflow-hidden whitespace-nowrap">
-              <span className="font-display font-bold text-lg tracking-[0.15em] text-primary leading-tight">DENARIXX</span>
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">OneEarth Command</span>
-            </div>
-          </div>
-          {/* Close button — only on mobile overlay mode */}
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-secondary transition-colors shrink-0 md:hidden"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        <nav className="flex-1 py-4 px-3 space-y-4 overflow-y-auto custom-scrollbar">
-          {groups.map((group) => (
-            <div key={group} className="space-y-0.5">
-              <div className="px-4 text-[9px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] mb-2">
-                {group}
-              </div>
-              {navItems.filter(item => item.group === group).map((item) => {
-                const isActive = location === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 relative group/item",
-                      isActive
-                        ? "bg-primary/10 text-primary border border-primary/20 gold-glow"
-                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-white"
-                    )}
-                  >
-                    {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-7 bg-primary rounded-r" />}
-                    <item.icon className={cn("w-5 h-5 shrink-0 transition-transform group-hover/item:scale-110", isActive && "text-primary")} />
-                    <span className="ml-3.5 font-medium tracking-wide whitespace-nowrap text-sm">{item.label}</span>
-                    {item.href === '/command-center' && (
-                      <span className="ml-auto text-[9px] font-bold text-primary bg-primary/10 border border-primary/20 rounded px-1.5 py-0.5 uppercase tracking-widest">
-                        NEW
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          ))}
-        </nav>
-
-        <div className="p-4 border-t border-sidebar-border bg-sidebar/80 backdrop-blur-md shrink-0">
-          <div className="mb-3">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-[10px] font-bold text-green-500 tracking-widest uppercase">{t('header.systemOnline')}</span>
-            </div>
-            <div className="text-[10px] text-muted-foreground font-mono">{format(time, 'yyyy-MM-dd HH:mm:ss')} UTC</div>
-          </div>
-
-          {user && (
-            <div className="mb-3 p-2.5 rounded-xl bg-secondary/40 border border-border/50">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-xs font-bold text-primary shrink-0">
-                  {initials}
-                </div>
-                <div className="min-w-0">
-                  <div className="text-xs font-bold text-white truncate">{displayName}</div>
-                  <div className="text-[9px] text-primary capitalize tracking-wider">{user.role} · L{clearanceLevel}</div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors border border-transparent hover:border-destructive/30 text-sm"
-          >
-            <LogOut className="w-4 h-4 shrink-0" />
-            <span className="font-medium">Logout</span>
-          </button>
-        </div>
+      {/* Desktop sidebar — in flex flow (not fixed), always visible */}
+      <aside className="hidden md:flex flex-col w-[260px] shrink-0 h-full bg-sidebar data-grid bg-tech-grid border-r border-sidebar-border z-30">
+        {sidebarContent}
       </aside>
 
-      {/* Main content — offset by sidebar width on desktop */}
-      <div className="flex-1 flex flex-col h-[100dvh] overflow-hidden min-w-0 w-full md:pl-[280px]">
+      {/* Mobile sidebar — fixed overlay, slides in on hamburger tap */}
+      <aside className={cn(
+        "fixed top-0 left-0 h-full w-[280px] bg-sidebar data-grid bg-tech-grid border-r border-sidebar-border flex flex-col z-50 transition-transform duration-300 ease-in-out md:hidden",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        {sidebarContent}
+      </aside>
+
+      {/* Main content — naturally fills remaining space next to desktop sidebar */}
+      <div className="flex-1 flex flex-col h-[100dvh] overflow-hidden min-w-0">
 
         {/* Top bar */}
         <header className="h-14 md:h-16 border-b border-border/50 flex items-center justify-between px-3 sm:px-6 bg-background/80 backdrop-blur-md shrink-0 z-30">
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* Hamburger — mobile only, sidebar is always open on desktop */}
+            {/* Hamburger — mobile only */}
             <button
               onClick={() => setSidebarOpen(true)}
               className="p-2 rounded-xl text-muted-foreground hover:text-white hover:bg-secondary transition-colors md:hidden"
@@ -173,22 +183,17 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             >
               <Menu className="w-5 h-5" />
             </button>
-            {/* Desktop brand mark (visible when sidebar is always present, gives the header a title anchor) */}
-            <div className="hidden md:flex items-center gap-2 text-muted-foreground/60">
-              <div className="w-1.5 h-4 bg-primary/50 rounded-full" />
-            </div>
             <div className="relative hidden sm:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
               <input
                 type="text"
                 placeholder={t('header.search')}
-                className="bg-secondary/50 border border-border/50 rounded-xl pl-10 pr-4 py-2 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary/50 focus:bg-secondary/80 w-48 md:w-72 transition-all"
+                className="bg-secondary/50 border border-border/50 rounded-xl pl-10 pr-4 py-2 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary/50 focus:bg-secondary/80 w-48 md:w-64 transition-all"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* System status pill — desktop */}
             <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-green-500/10 border border-green-500/20">
               <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
               <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">{t('header.systemOnline')}</span>
