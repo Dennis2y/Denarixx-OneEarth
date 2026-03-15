@@ -5,6 +5,7 @@ import React, { useEffect } from "react";
 import { AppLayout } from "./components/layout";
 import { AuthProvider, useAuth } from "./context/auth";
 
+import Landing from "./pages/landing";
 import Login from "./pages/login";
 import Dashboard from "./pages/dashboard";
 import CommandCenter from "./pages/command-center";
@@ -50,13 +51,12 @@ function RouteWrapper() {
     document.documentElement.classList.add("dark");
   }, []);
 
-  if (location === "/login") {
-    return <Login />;
+  if (location === "/") {
+    return <Landing />;
   }
 
-  if (location === "/" ) {
-    setLocation(isAuthenticated ? "/dashboard" : "/login");
-    return null;
+  if (location === "/login") {
+    return <Login />;
   }
 
   return (

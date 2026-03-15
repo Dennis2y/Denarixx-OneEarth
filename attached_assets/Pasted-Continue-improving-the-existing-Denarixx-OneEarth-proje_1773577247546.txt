@@ -1,0 +1,411 @@
+Continue improving the existing Denarixx OneEarth project. Do NOT rewrite the project, do NOT change the current stack, and do NOT regenerate from scratch. Build on top of the existing codebase and upgrade it into a serious, premium, institutional-grade MVP.
+
+GOAL
+Denarixx OneEarth must feel like a real resilience infrastructure platform, not a generic dashboard or student project.
+
+It is a unified AI-powered platform connecting:
+- Denarixx Energy
+- Denarixx LifeMesh
+- Denarixx EarthShield
+
+The result should look like a billion-dollar climate/resilience platform suitable for investors, governments, NGOs, engineering firms, and pilot partners.
+
+====================================================
+PART 1 — EXECUTIVE LANDING EXPERIENCE
+====================================================
+
+Add a premium public landing page before login.
+
+Requirements:
+- Brand name clearly shown: Denarixx OneEarth
+- Subtitle:
+  "AI-powered resilience infrastructure platform connecting energy, human safety, and disaster intelligence."
+- Present the 3 integrated modules:
+  - Denarixx Energy
+  - Denarixx LifeMesh
+  - Denarixx EarthShield
+- Add premium hero section with strong typography and dark luxury-tech styling
+- Add CTA buttons:
+  - Demo Login
+  - Request Access
+  - Explore Platform
+- Add trust/impact metrics section such as:
+  - Sites Monitored
+  - Protected People
+  - Regions Covered
+  - Active Alerts
+- Add a section explaining who it is for:
+  - Governments
+  - NGOs
+  - Communities
+  - Operators
+  - Critical Facilities
+- Add a section explaining the Command Center
+- Add realistic screenshots/cards/previews of platform capabilities if possible using current components
+- Add footer with Denarixx branding and platform positioning
+
+Routes:
+- Public landing page should be the default root route if appropriate
+- Keep /login for direct login access
+
+====================================================
+PART 2 — DEMO ACCESS EXPERIENCE
+====================================================
+
+Create a more polished demo login experience.
+
+Requirements:
+- Show demo account options clearly on the login page:
+  - Admin
+  - Operator
+  - Government Viewer
+- Show what each role can access
+- Pre-fill or make demo login easy
+- Improve login visual design
+- Add small note that this is a demonstration environment
+- Keep it professional and premium
+
+====================================================
+PART 3 — SYSTEM STATUS / LIVE PLATFORM FEEL
+====================================================
+
+Upgrade dashboard and platform shell so it feels operational.
+
+Add to dashboard:
+- Top system status banner with metrics like:
+  - System Status: Operational / Warning / Critical
+  - Sites Monitored
+  - Active Alerts
+  - Protected People
+  - Regions Covered
+  - Resilience Score
+- Add live activity feed panel
+- Add latest actions/events feed
+- Add module health summary for Energy / LifeMesh / EarthShield
+- Add quick summary of critical facilities impacted
+- Add recent scenario runs panel
+- Add a better global overview layout
+
+Ensure all metrics use realistic seeded demo data.
+
+====================================================
+PART 4 — WORLD / GEO INTELLIGENCE EXPERIENCE
+====================================================
+
+Improve EarthShield and dashboard geo experience.
+
+Requirements:
+- Add a polished geo intelligence panel
+- If a real map library is already present or easy to add safely, use it
+- Otherwise build a premium map-style intelligence panel with:
+  - site markers or marker cards
+  - risk zones
+  - flood/fire/storm overlays represented visually
+  - regional severity groupings
+  - affected population estimates
+  - site clustering by zone
+  - legend for severity levels
+- Use realistic regions and infrastructure locations
+- Show ties between EarthShield alerts and sites where relevant
+
+====================================================
+PART 5 — COMMAND CENTER UPGRADE
+====================================================
+
+Further improve /command-center so it becomes the unified system brain.
+
+Requirements:
+- Keep existing scenario simulation and make it deeper
+- Add scenario history
+- Add saved scenario runs
+- Add last simulated timestamp
+- Add operator attribution
+- Add comparison of latest two or more scenarios
+- Add execution status:
+  - pending
+  - in_progress
+  - completed
+- Add scenario output sections:
+  - affected sites
+  - impacted protected persons count
+  - critical facilities impacted
+  - backup energy available
+  - severity
+  - readiness score
+  - recommended actions
+  - escalation timeline
+- Link scenarios to real site IDs and alerts where possible
+- Add export report action
+
+Scenario types must include:
+- Flood event
+- Severe storm
+- Wildfire risk
+- Clinic power outage
+- Multi-site outage
+- Child emergency / SOS escalation
+
+====================================================
+PART 6 — BACKEND AUTH + SERVER PROTECTION
+====================================================
+
+Move beyond frontend-only auth.
+
+Add real backend auth flow:
+- POST /auth/login
+- GET /auth/me
+- POST /auth/logout
+
+Requirements:
+- Protect server routes
+- Enforce role-based access on backend
+- Keep MVP implementation simple but real
+- Frontend should use backend-supported auth state
+- Remove dependency on frontend-only localStorage auth as the primary source of truth
+- Keep demo-friendly usability
+
+Roles:
+- admin
+- operator
+- government
+- community
+
+Permission ideas:
+- admin: full access
+- operator: alerts, command center, sites, operational actions
+- government: read-only reports and dashboards
+- community: limited, local-only or minimal operational view
+
+====================================================
+PART 7 — ROLE-BASED ACCESS CONTROL
+====================================================
+
+Enforce permissions on both frontend and backend.
+
+Requirements:
+- Hide unauthorized buttons/actions
+- Show role badges clearly
+- Restrict settings and user management to admin
+- Restrict operational controls to operator/admin
+- Government role mostly read-only
+- Add clean permission-aware UI states
+- Add “insufficient permission” handling where needed
+
+====================================================
+PART 8 — AUDIT LOG / ACTIVITY FEED
+====================================================
+
+Add a full audit log system.
+
+Create schema/model/table for audit logs.
+
+Track actions such as:
+- login/logout
+- alert acknowledgement
+- alert resolution
+- scenario run
+- site update
+- user change
+- report generation
+- emergency drill
+- broadcast alert
+
+Requirements:
+- Store actor, action, target type, target id, timestamp, metadata
+- Add dashboard activity feed
+- Add reusable activity feed component
+- Add audit log endpoint(s) if appropriate
+
+====================================================
+PART 9 — SITE DETAIL EXPERIENCE
+====================================================
+
+Add real site detail views.
+
+Requirements:
+- Route or modal/drawer for site details
+- Show:
+  - site metadata
+  - facility type
+  - region
+  - current status
+  - uptime metrics
+  - energy history
+  - active and past alerts
+  - linked protected persons
+  - local risk summary
+  - emergency contacts
+  - scenario impact history
+- Make this feel like a real operations detail page
+
+Use realistic site types:
+- community clinic
+- school safety node
+- district shelter
+- village solar node
+- emergency response hub
+- regional monitoring site
+
+====================================================
+PART 10 — REPORT GENERATION
+====================================================
+
+Add real working report-generation flows.
+
+Requirements:
+- Buttons should perform real actions, not be decorative
+- Add report generation for:
+  - scenario report
+  - alert report
+  - site resilience report
+  - daily operational summary
+- MVP export can be JSON, CSV, or printable structured HTML/PDF-ready output
+- Log report generation in audit log
+- Show success state after report generation
+
+====================================================
+PART 11 — DASHBOARD QUICK ACTIONS
+====================================================
+
+Make quick action buttons functional.
+
+Buttons should trigger real flows for:
+- emergency drill
+- broadcast alert
+- deploy node
+- generate report
+- run simulation
+
+Use modals, forms, or backend actions as appropriate.
+These should create records, update feeds, or generate results.
+
+====================================================
+PART 12 — STANDARDIZED VALIDATION
+====================================================
+
+Use shared validation schemas consistently.
+
+Requirements:
+- Use zod or current validation approach consistently
+- Validate auth payloads, site ids, alert filters, scenario run payloads, user actions, report generation inputs
+- Return clean typed JSON errors
+- Avoid ad hoc inconsistent validation
+
+====================================================
+PART 13 — TYPING AND DOMAIN MODELS
+====================================================
+
+Strengthen type safety across frontend and backend.
+
+Create/improve shared types for:
+- DashboardStats
+- Site
+- EnergyMetric
+- UnifiedAlert
+- ProtectedPerson
+- SafetyIncident
+- DisasterAlert
+- RiskZone
+- CommandCenterScenario
+- CommandCenterResult
+- AuditLogEntry
+- ReportRecord
+- Region
+- EmergencyContact
+
+Reduce important any usage and improve API contracts.
+
+====================================================
+PART 14 — DATABASE / DOMAIN DEPTH
+====================================================
+
+Keep the current DB approach but improve domain structure as needed.
+
+Add or improve entities such as:
+- regions
+- site_contacts or emergency_contacts
+- critical_facilities
+- scenario_runs
+- scenario_impacts
+- audit_logs
+- report_records
+- user_site_access
+
+Strengthen relationships between:
+- sites and alerts
+- sites and energy metrics
+- sites and protected persons
+- sites and incidents
+- scenarios and impacted sites
+- regions and risk zones
+
+====================================================
+PART 15 — REALISTIC SEEDED DEMO DATA
+====================================================
+
+Upgrade demo/seed data so it feels world-ready and operational.
+
+Avoid:
+- lorem ipsum
+- test names
+- placeholder labels
+
+Use realistic, professional data such as:
+- Lagos Community Solar Hub
+- Juba District Health Clinic
+- Nairobi School Safety Node
+- Buchholz Emergency Shelter
+- Northern Flood Monitoring Zone
+- Regional Emergency Coordination Hub
+
+Also create realistic:
+- operators
+- government viewers
+- alerts
+- incidents
+- scenario history
+- audit log entries
+- emergency contacts
+
+====================================================
+PART 16 — UI / DESIGN POLISH
+====================================================
+
+Maintain and improve the premium dark luxury-tech design.
+
+Requirements:
+- serious enterprise / institutional feel
+- stronger spacing and card hierarchy
+- better typography
+- polished loading, empty, and success states
+- more visual consistency
+- make sidebar, header, status badges, and dashboards feel high-trust
+- avoid generic admin-template look
+- keep responsive behavior for desktop and tablet
+
+====================================================
+PART 17 — FINAL DELIVERABLE QUALITY
+====================================================
+
+After implementing changes, ensure these routes/pages exist and feel coherent:
+- /
+- /login
+- /dashboard
+- /command-center
+- /energy
+- /lifemesh
+- /earthshield
+- /alerts
+- /sites
+- /users
+- /settings
+
+Do NOT rewrite from scratch.
+Do NOT break the current architecture.
+Do NOT switch stacks.
+
+At the end, provide a summary:
+1. what was added
+2. what files were changed
+3. what demo users exist
+4. any remaining gaps

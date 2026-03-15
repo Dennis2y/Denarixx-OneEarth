@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { useGetDashboardStats, useGetUnifiedAlerts } from '@workspace/api-client-react';
 import { PageHeader, LoadingScreen, Card, Badge, Button, Modal, Input, Label, Select, cn } from '@/components/ui-core';
-import { MapPin, AlertTriangle, Users, Globe, Zap, ArrowRight, ShieldAlert, FileText, Radio, Check, Activity, Shield, Download, Play } from 'lucide-react';
-import { format } from 'date-fns';
+import { MapPin, AlertTriangle, Users, Globe, Zap, ArrowRight, ShieldAlert, FileText, Radio, Check, Activity, Shield, Download, Play, Cpu, CheckCircle2 } from 'lucide-react';
+import { format, formatDistanceToNow } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { useTranslation } from 'react-i18next';
@@ -82,6 +82,7 @@ export default function Dashboard() {
   const { data: initialAlerts, isLoading: alertsLoading } = useGetUnifiedAlerts({ severity: 'critical' });
   const [liveAlerts, setLiveAlerts] = useState<any[]>([]);
   const [auditLog, setAuditLog] = useState<any[]>([]);
+  const [recentScenarios, setRecentScenarios] = useState<any[]>([]);
 
   // Action modals
   const [drillModal, setDrillModal] = useState(false);
@@ -102,12 +103,20 @@ export default function Dashboard() {
     } catch { /* non-blocking */ }
   }, []);
 
+  const fetchScenarios = useCallback(async () => {
+    try {
+      const resp = await fetch('/api/command-center/history', { credentials: 'include' });
+      if (resp.ok) setRecentScenarios(await resp.json());
+    } catch { /* non-blocking */ }
+  }, []);
+
   useEffect(() => {
     if (initialAlerts) setLiveAlerts(initialAlerts.slice(0, 4));
   }, [initialAlerts]);
 
   useEffect(() => {
     fetchAuditLog();
+    fetchScenarios();
     const interval = setInterval(() => {
       const newAlert = MOCK_LIVE_ALERTS[Math.floor(Math.random() * MOCK_LIVE_ALERTS.length)];
       setLiveAlerts(prev => {
@@ -195,8 +204,50 @@ export default function Dashboard() {
   if (statsLoading || alertsLoading) return <LoadingScreen />;
   if (!stats) return <div className="text-destructive p-8">Failed to load command center data.</div>;
 
+  const systemOk = (stats?.criticalAlerts ?? 0) < 5;
+
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+
+      {/* ── System Status Banner ── */}
+      <div className={cn(
+        'mb-6 px-5 py-3 rounded-2xl border flex flex-col sm:flex-row sm:items-center gap-4',
+        systemOk
+          ? 'bg-green-500/5 border-green-500/25'
+          : 'bg-destructive/5 border-destructive/30'
+      )}>
+        <div className="flex items-center gap-3 shrink-0">
+          {systemOk
+            ? <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0" />
+            : <AlertTriangle className="w-5 h-5 text-destructive animate-pulse shrink-0" />
+          }
+          <div>
+            <span className={cn('font-bold text-sm uppercase tracking-widest', systemOk ? 'text-green-400' : 'text-destructive')}>
+              System {systemOk ? 'Operational' : 'Warning'}
+            </span>
+            <p className="text-[10px] text-muted-foreground font-mono">{format(new Date(), 'yyyy-MM-dd HH:mm')} UTC · Platform V2.4.1</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-5 sm:ml-6 text-xs">
+          {[
+            { label: 'Sites', value: stats?.activeSites ?? '—', color: 'text-primary' },
+            { label: 'Alerts', value: stats?.criticalAlerts ?? '—', color: systemOk ? 'text-amber-400' : 'text-destructive' },
+            { label: 'Protected', value: stats?.protectedPeople?.toLocaleString() ?? '—', color: 'text-green-400' },
+            { label: 'Energy', value: `${stats?.energyAvailability ?? 0}%`, color: 'text-blue-400' },
+            { label: 'Regions', value: stats?.disasterRiskZones ?? '—', color: 'text-purple-400' },
+          ].map(({ label, value, color }) => (
+            <div key={label} className="flex items-center gap-1.5">
+              <span className="text-muted-foreground font-mono">{label}:</span>
+              <span className={cn('font-bold font-mono', color)}>{value}</span>
+            </div>
+          ))}
+        </div>
+        <div className="sm:ml-auto flex items-center gap-1.5 shrink-0">
+          <div className={cn('w-2 h-2 rounded-full animate-pulse', systemOk ? 'bg-green-400' : 'bg-destructive')} />
+          <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Live</span>
+        </div>
+      </div>
+
       <PageHeader title={t('dashboard.title')} description={t('dashboard.description')} />
 
       {/* KPI Stats Row */}
@@ -297,6 +348,99 @@ export default function Dashboard() {
               <h4 className="font-bold text-white text-sm">{t('dashboard.broadcastAlert')}</h4>
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* ── Module Health + Recent Scenarios ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Module Health Summary */}
+        <div>
+          <h3 className="text-sm font-display font-bold text-muted-foreground uppercase tracking-widest px-1 mb-4">Module Health</h3>
+          <div className="space-y-3">
+            {[
+              { name: 'Denarixx Energy', icon: Zap, color: 'hsl(var(--primary))', status: 'operational', uptime: 98.7, detail: `${stats.activeSites} sites · ${stats.energyAvailability}% availability` },
+              { name: 'Denarixx LifeMesh', icon: Shield, color: '#4ade80', status: stats.criticalAlerts > 3 ? 'warning' : 'operational', uptime: 97.2, detail: `${stats.protectedPeople.toLocaleString()} persons protected` },
+              { name: 'EarthShield Intel', icon: Globe, color: '#60a5fa', status: stats.criticalAlerts > 5 ? 'critical' : 'operational', uptime: 99.1, detail: `${stats.disasterRiskZones} risk zones active` },
+            ].map(({ name, icon: Icon, color, status, uptime, detail }) => (
+              <Card key={name} className="p-4 flex items-center gap-4 hover:bg-secondary/40 transition-colors">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border" style={{ backgroundColor: `${color}15`, borderColor: `${color}35` }}>
+                  <Icon className="w-5 h-5" style={{ color }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="font-bold text-sm text-white truncate">{name}</span>
+                    <span className={cn(
+                      'text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full border',
+                      status === 'operational' ? 'text-green-400 border-green-500/30 bg-green-500/10'
+                      : status === 'warning' ? 'text-amber-400 border-amber-500/30 bg-amber-500/10'
+                      : 'text-destructive border-destructive/30 bg-destructive/10'
+                    )}>{status}</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground truncate">{detail}</p>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <div className="flex-1 h-1 bg-background rounded-full overflow-hidden border border-border/30">
+                      <div className="h-full rounded-full" style={{ width: `${uptime}%`, backgroundColor: status === 'operational' ? '#4ade80' : status === 'warning' ? 'hsl(var(--chart-4))' : 'hsl(var(--destructive))' }} />
+                    </div>
+                    <span className="text-[9px] font-mono text-muted-foreground shrink-0">{uptime}%</span>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Scenario Runs */}
+        <div className="lg:col-span-2">
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h3 className="text-sm font-display font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              <Cpu className="w-4 h-4 text-primary" /> Recent Simulations
+            </h3>
+            <button onClick={() => setLocation('/command-center')} className="text-xs text-muted-foreground hover:text-primary transition-colors font-mono uppercase tracking-widest flex items-center gap-1">
+              View All <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+          {recentScenarios.length === 0 ? (
+            <Card className="p-8 text-center border-dashed border-border/40">
+              <Cpu className="w-8 h-8 text-muted-foreground/20 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">No simulations run yet. Go to Command Center to run a scenario.</p>
+              <Button size="sm" variant="ghost" onClick={() => setLocation('/command-center')} className="mt-4 text-primary">
+                Open Command Center <ArrowRight className="w-3 h-3 ml-1" />
+              </Button>
+            </Card>
+          ) : (
+            <div className="space-y-2.5">
+              {recentScenarios.slice(0, 4).map((sim: any) => {
+                const scoreColor = sim.readinessScore >= 70 ? 'text-green-400' : sim.readinessScore >= 50 ? 'text-amber-400' : 'text-destructive';
+                const scoreBar = sim.readinessScore >= 70 ? 'bg-green-400' : sim.readinessScore >= 50 ? 'bg-amber-400' : 'bg-destructive';
+                return (
+                  <Card key={sim.id} className="p-4 hover:bg-secondary/40 transition-colors">
+                    <div className="flex items-start gap-4">
+                      <div className={cn('w-1.5 shrink-0 rounded-full mt-1 self-stretch', sim.riskSeverity === 'critical' ? 'bg-destructive' : sim.riskSeverity === 'high' ? 'bg-amber-500' : 'bg-primary')} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <div>
+                            <h4 className="font-bold text-sm text-white">{sim.scenarioLabel}</h4>
+                            <p className="text-[10px] text-muted-foreground font-mono">
+                              {sim.operatorName} · {sim.operatorRole.toUpperCase()} · {formatDistanceToNow(new Date(sim.createdAt), { addSuffix: true })}
+                            </p>
+                          </div>
+                          <span className={cn('font-display font-bold text-xl shrink-0', scoreColor)}>{sim.readinessScore}%</span>
+                        </div>
+                        <div className="flex items-center gap-4 text-[10px] text-muted-foreground mt-2">
+                          <span className="flex items-center gap-1"><MapPin className="w-2.5 h-2.5 text-primary" /> {sim.affectedSitesCount} sites</span>
+                          <span className="flex items-center gap-1"><Users className="w-2.5 h-2.5 text-blue-400" /> {sim.affectedPersonsCount} persons</span>
+                          <span className={cn('uppercase font-bold', sim.riskSeverity === 'critical' ? 'text-destructive' : 'text-amber-400')}>{sim.riskSeverity}</span>
+                        </div>
+                        <div className="mt-2 h-1 bg-background rounded-full overflow-hidden border border-border/30">
+                          <div className={cn('h-full rounded-full', scoreBar)} style={{ width: `${sim.readinessScore}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 

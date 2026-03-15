@@ -11,7 +11,39 @@ Premium MVP web platform serving as a unified AI infrastructure command center f
 - Gold circuit board tech-grid texture on sidebar; Africa ambient on all content pages
 - Real satellite image in dashboard operations map
 - Live UTC clock, animated alert feed, sparkline stat cards
-- **11 pages**: Login, Dashboard, Command Center, Energy Grid, LifeMesh, EarthShield Intel, Unified Alerts, Sites & Nodes, Site Detail (/sites/:id), Personnel, Settings
+- **12 pages**: Landing (/), Login (/login), Dashboard, Command Center, Energy Grid, LifeMesh, EarthShield Intel, Unified Alerts, Sites & Nodes, Site Detail (/sites/:id), Personnel, Settings
+
+### Public Landing Page (/)
+- Premium hero with Africa-from-space background + cinematic video
+- Module badges (Energy, LifeMesh, EarthShield) with pulsing indicators
+- Animated headline: "Resilience Infrastructure for Africa."
+- Impact metrics section with CountUp animation: Sites (248), Protected People (184,700+), Regions (31), Active Alerts (17)
+- Platform Resilience Score bar (87/100)
+- Three module cards: Denarixx Energy, LifeMesh, EarthShield — each with feature lists
+- Command Center preview section with simulated UI mockup card
+- Who It's For section: Governments, NGOs, Communities, Operators, Critical Facilities, Investors
+- Trust strip: Security, 18 Languages, Institutional Grade, Always-On Monitoring
+- CTA section with Demo and Request Access buttons
+- Full footer with logo, tagline, version info
+- Fixed navbar with anchor nav and Demo Login CTA
+- Scroll-to-section anchors: #modules, #metrics, #audience, #command-center
+
+### Improved Login Page (/login)
+- Role card selector view (shown first): 4 demo accounts displayed as selectable cards
+  - Cmdr. Prime (admin) — full access, Denarixx HQ
+  - Adaeze Okafor (operator) — Lagos Field Ops
+  - Kofi Mensah (government) — Ghana NADMO
+  - Fatuma Wanjiru (community) — Kibera Community
+- Each card shows: name, role badge (color-coded), organization, 2 capability tags + count
+- Clicking a card pre-fills email/password and shows the form view with capability checklist
+- "Switch" button goes back to card selector; "Use custom credentials" skips to bare form
+- Back arrow to return to landing page
+- "Demonstration Environment" notice shown prominently
+
+### Dashboard Additions
+- **System Status Banner**: top of page showing Operational/Warning status, live metrics (Sites, Alerts, Protected, Energy, Regions), animated live indicator
+- **Module Health Summary**: Energy/LifeMesh/EarthShield mini health cards with status badge (operational/warning/critical), uptime progress bar, live metric detail
+- **Recent Simulations Panel**: last 4 command center scenario runs with operator attribution, readiness score bar, affected sites/persons, severity, relative timestamp — links to Command Center
 
 ### Auth & Security
 - **Backend Auth** (`POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`): in-memory session store, signed cookie (`den_session`, 8h), SHA-256 password hashing, audit log on login/logout
