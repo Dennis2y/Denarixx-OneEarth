@@ -171,9 +171,9 @@ export default function Landing() {
 
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.8 }}>
             <h1 className="text-[clamp(3rem,8vw,6.5rem)] font-display font-black tracking-tight leading-none mb-6">
-              <span className="block text-white">Resilience</span>
-              <span className="block" style={{ color: GOLD }}>Infrastructure</span>
-              <span className="block text-white">for Africa.</span>
+              <span className="block text-white">Infrastructure</span>
+              <span className="block" style={{ color: GOLD }}>Intelligence</span>
+              <span className="block text-white">for a Resilient World.</span>
             </h1>
           </motion.div>
 
@@ -183,7 +183,7 @@ export default function Landing() {
             transition={{ delay: 0.5 }}
             className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto mb-10 leading-relaxed font-light"
           >
-            AI-powered resilience infrastructure platform connecting energy, human safety, and disaster intelligence across the continent.
+            AI-powered resilience infrastructure platform connecting energy, human safety, and disaster intelligence worldwide — built for communities, critical facilities, and governments in every high-risk environment.
           </motion.p>
 
           <motion.div
@@ -242,13 +242,13 @@ export default function Landing() {
             className="text-center mb-16"
           >
             <p className="text-[11px] uppercase tracking-[0.4em] text-primary font-bold mb-4">Live Platform Impact</p>
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-white">Operational at Scale</h2>
+            <h2 className="text-4xl md:text-5xl font-display font-bold text-white">Global Scale. Real Impact.</h2>
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { icon: MapPin, label: 'Sites Monitored', end: 248, suffix: '', color: GOLD },
-              { icon: Users, label: 'Protected People', end: 184700, suffix: '+', color: '#4ade80' },
+              { icon: Users, label: 'People Protected', end: 184700, suffix: '+', color: '#4ade80' },
               { icon: Globe, label: 'Regions Covered', end: 31, suffix: '', color: '#60a5fa' },
               { icon: AlertTriangle, label: 'Active Alerts', end: 17, suffix: '', color: '#f97316' },
             ].map(({ icon: Icon, label, end, suffix, color }) => (
@@ -311,7 +311,7 @@ export default function Landing() {
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
             <p className="text-[11px] uppercase tracking-[0.4em] text-primary font-bold mb-4">Integrated Modules</p>
             <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-4">Three Systems. One Platform.</h2>
-            <p className="text-white/50 max-w-xl mx-auto">Every module shares data, alerts, and intelligence — creating a unified resilience infrastructure unlike anything available in the region.</p>
+            <p className="text-white/50 max-w-xl mx-auto">Every module shares data, alerts, and intelligence — creating a unified resilience infrastructure suitable for any region, any environment, worldwide.</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -319,7 +319,7 @@ export default function Landing() {
               <ModuleCard
                 icon={Zap}
                 title="Denarixx Energy"
-                subtitle="Real-time solar microgrid monitoring, battery telemetry, and energy resilience scoring for off-grid communities."
+                subtitle="Real-time solar microgrid monitoring, battery telemetry, and energy resilience scoring for communities and critical facilities worldwide."
                 color={GOLD}
                 items={[
                   'Live solar generation & battery metrics',
@@ -549,7 +549,7 @@ export default function Landing() {
               Enter the<br /><span style={{ color: GOLD }}>Command Center</span>
             </h2>
             <p className="text-white/50 mb-10 text-lg leading-relaxed">
-              The demo environment is fully seeded with realistic African infrastructure data. Log in as any role and explore the complete platform.
+              The demo environment is fully seeded with realistic global infrastructure data — from community solar hubs and emergency shelters to district health clinics and regional monitoring centers. Log in as any role and explore the complete platform.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -589,7 +589,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="text-center">
-              <p className="text-sm text-white/40">Africa AI Infrastructure Command</p>
+              <p className="text-sm text-white/40">Global Resilience Infrastructure Platform</p>
               <p className="text-xs text-white/20 mt-1">Unified Energy · LifeMesh · EarthShield Intelligence</p>
             </div>
             <div className="text-right">

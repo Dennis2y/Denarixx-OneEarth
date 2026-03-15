@@ -263,11 +263,11 @@ export default function Dashboard() {
         {/* Operations Map */}
         <Card className="lg:col-span-2 p-0 relative overflow-hidden border-border/50 group">
           <div className="absolute top-6 left-6 z-20 pointer-events-none">
-            <h3 className="text-xl font-display font-bold text-white drop-shadow-md">{t('dashboard.africaOps')}</h3>
+            <h3 className="text-xl font-display font-bold text-white drop-shadow-md">{t('dashboard.globalOps')}</h3>
             <p className="text-xs font-semibold text-primary tracking-widest uppercase mt-1">{t('dashboard.liveNodeStatus')}</p>
           </div>
           <div className="w-full h-[400px] relative overflow-hidden">
-            <img src={`${import.meta.env.BASE_URL}africa-night-hero.png`} alt="Africa Operations Map" className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-[8000ms] ease-out" />
+            <img src={`${import.meta.env.BASE_URL}africa-night-hero.png`} alt="Global Operations Map" className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-[8000ms] ease-out" />
             <div className="absolute inset-0 bg-gradient-to-t from-card/90 via-black/30 to-black/20 pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/20 pointer-events-none" />
             {AFRICAN_SITES.map(site => (
@@ -421,7 +421,7 @@ export default function Dashboard() {
                           <div>
                             <h4 className="font-bold text-sm text-white">{sim.scenarioLabel}</h4>
                             <p className="text-[10px] text-muted-foreground font-mono">
-                              {sim.operatorName} · {sim.operatorRole.toUpperCase()} · {formatDistanceToNow(new Date(sim.createdAt), { addSuffix: true })}
+                              {sim.operatorName} · {sim.operatorRole.toUpperCase()} · {sim.createdAt ? formatDistanceToNow(new Date(sim.createdAt), { addSuffix: true }) : 'recently'}
                             </p>
                           </div>
                           <span className={cn('font-display font-bold text-xl shrink-0', scoreColor)}>{sim.readinessScore}%</span>
@@ -520,7 +520,7 @@ export default function Dashboard() {
                         {entry.target && <p className="text-[10px] text-muted-foreground/60 mt-0.5 truncate">{entry.target}</p>}
                       </div>
                       <span className="text-[10px] text-muted-foreground/60 font-mono shrink-0 mt-0.5">
-                        {format(new Date(entry.createdAt), 'HH:mm')}
+                        {entry.createdAt ? format(new Date(entry.createdAt), 'HH:mm') : '--:--'}
                       </span>
                     </div>
                   </div>

@@ -23,7 +23,7 @@
   },
   "dashboard": {
     "title": "Küresel Komuta",
-    "description": "Tüm aktif modüllerde Denarixx altyapısının gerçek zamanlı gözetimi.",
+    "description": "Tüm aktif modüllerde Denarixx dayanıklılık altyapısının gerçek zamanlı izlenmesi.",
     "activeSites": "Aktif Siteler",
     "criticalAlerts": "Kritik Uyarılar",
     "protectedLives": "Korunan Hayatlar",
@@ -42,7 +42,8 @@
     "viewArchive": "Arşivi Görüntüle",
     "online": "Çevrimiçi",
     "critical": "Kritik",
-    "ack": "TAM"
+    "ack": "TAM",
+    "globalOps": "Küresel Operasyonlar"
   },
   "energy": {
     "title": "Enerji Komutası",

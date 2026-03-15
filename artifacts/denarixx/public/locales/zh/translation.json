@@ -23,7 +23,7 @@
   },
   "dashboard": {
     "title": "全球指挥",
-    "description": "实时监控所有活跃模块的 Denarixx 基础设施。",
+    "description": "实时监控全球所有活跃模块中的Denarixx弹性基础设施。",
     "activeSites": "活跃站点",
     "criticalAlerts": "严重警报",
     "protectedLives": "受保护人员",
@@ -42,7 +42,8 @@
     "viewArchive": "查看档案",
     "online": "在线",
     "critical": "严重",
-    "ack": "确认"
+    "ack": "确认",
+    "globalOps": "全球运营"
   },
   "energy": {
     "title": "能源指挥",

@@ -23,7 +23,7 @@
   },
   "dashboard": {
     "title": "Global Command",
-    "description": "Real-time oversight of Denarixx infrastructure across all active modules.",
+    "description": "Real-time oversight of Denarixx resilience infrastructure across all active modules worldwide.",
     "activeSites": "Active Sites",
     "criticalAlerts": "Critical Alerts",
     "protectedLives": "Protected Lives",
@@ -42,7 +42,8 @@
     "viewArchive": "View Archive",
     "online": "Online",
     "critical": "Critical",
-    "ack": "ACK"
+    "ack": "ACK",
+    "globalOps": "Global Operations"
   },
   "energy": {
     "title": "Energy Command",

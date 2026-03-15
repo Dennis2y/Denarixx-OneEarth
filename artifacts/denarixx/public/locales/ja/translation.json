@@ -23,7 +23,7 @@
   },
   "dashboard": {
     "title": "グローバルコマンド",
-    "description": "すべてのアクティブモジュールにわたるDenarixxインフラのリアルタイム監視。",
+    "description": "世界中のすべてのアクティブモジュールにわたるDenarixx復元力インフラのリアルタイム監視。",
     "activeSites": "アクティブサイト",
     "criticalAlerts": "重大アラート",
     "protectedLives": "保護された人員",
@@ -42,7 +42,8 @@
     "viewArchive": "アーカイブ表示",
     "online": "オンライン",
     "critical": "重大",
-    "ack": "確認"
+    "ack": "確認",
+    "globalOps": "グローバル業務"
   },
   "energy": {
     "title": "エネルギーコマンド",

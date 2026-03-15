@@ -309,7 +309,7 @@ export default function Login() {
 
       <div className="absolute bottom-5 left-0 right-0 flex justify-center z-20">
         <p className="text-[9px] text-white/20 uppercase tracking-[0.3em] font-mono">
-          Denarixx OneEarth · Africa AI Infrastructure Command © 2026
+          Denarixx OneEarth · Global Resilience Infrastructure Platform © 2026
         </p>
       </div>
     </div>

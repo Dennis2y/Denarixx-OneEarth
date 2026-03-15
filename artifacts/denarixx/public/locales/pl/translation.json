@@ -23,7 +23,7 @@
   },
   "dashboard": {
     "title": "Globalne Dowodzenie",
-    "description": "Nadzór w czasie rzeczywistym nad infrastrukturą Denarixx we wszystkich aktywnych modułach.",
+    "description": "Monitoring w czasie rzeczywistym infrastruktury odporności Denarixx we wszystkich aktywnych modułach na całym świecie.",
     "activeSites": "Aktywne Lokalizacje",
     "criticalAlerts": "Alerty Krytyczne",
     "protectedLives": "Chronione Osoby",
@@ -42,7 +42,8 @@
     "viewArchive": "Pokaż Archiwum",
     "online": "Online",
     "critical": "Krytyczny",
-    "ack": "ACK"
+    "ack": "ACK",
+    "globalOps": "Operacje Globalne"
   },
   "energy": {
     "title": "Dowodzenie Energetyką",

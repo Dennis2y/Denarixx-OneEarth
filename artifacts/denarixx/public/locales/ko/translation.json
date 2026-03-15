@@ -23,7 +23,7 @@
   },
   "dashboard": {
     "title": "글로벌 사령부",
-    "description": "모든 활성 모듈에 걸쳐 Denarixx 인프라의 실시간 감시.",
+    "description": "전 세계 모든 활성 모듈에 걸쳐 Denarixx 복원력 인프라를 실시간으로 감독합니다.",
     "activeSites": "활성 사이트",
     "criticalAlerts": "중요 경보",
     "protectedLives": "보호 인원",
@@ -42,7 +42,8 @@
     "viewArchive": "아카이브 보기",
     "online": "온라인",
     "critical": "위험",
-    "ack": "확인"
+    "ack": "확인",
+    "globalOps": "글로벌 운영"
   },
   "energy": {
     "title": "에너지 사령부",

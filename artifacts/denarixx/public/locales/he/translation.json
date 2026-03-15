@@ -23,7 +23,7 @@
   },
   "dashboard": {
     "title": "פיקוד גלובלי",
-    "description": "פיקוח בזמן אמת על תשתית Denarixx בכל המודולים הפעילים.",
+    "description": "פיקוח בזמן אמת על תשתית החוסן של Denarixx בכל המודולים הפעילים ברחבי העולם.",
     "activeSites": "אתרים פעילים",
     "criticalAlerts": "התראות קריטיות",
     "protectedLives": "חיים מוגנים",
@@ -42,7 +42,8 @@
     "viewArchive": "הצגת ארכיון",
     "online": "מחובר",
     "critical": "קריטי",
-    "ack": "אישור"
+    "ack": "אישור",
+    "globalOps": "פעולות גלובליות"
   },
   "energy": {
     "title": "פיקוד אנרגיה",

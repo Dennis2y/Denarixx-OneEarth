@@ -1,0 +1,85 @@
+Update the Denarixx OneEarth public messaging and landing page positioning. Do NOT rewrite the project and do NOT change the stack. Only refine branding, copy, and UI text so the platform is clearly positioned as GLOBAL, not limited to Africa.
+
+GOAL
+Denarixx OneEarth must be presented as a global resilience infrastructure platform for communities, cities, governments, NGOs, operators, and critical facilities worldwide.
+
+IMPORTANT
+Remove or replace any wording that makes the platform sound limited to Africa only, unless it is specifically describing an example pilot region. Africa can be mentioned as one possible pilot or high-need region, but not as the full market scope.
+
+COPY / POSITIONING FIXES
+
+1. Replace any headline like:
+- "Resilience Infrastructure for Africa"
+with stronger global alternatives such as:
+- "AI-Powered Resilience Infrastructure Platform"
+- "Connecting Energy, Human Safety, and Disaster Intelligence Worldwide"
+- "Resilience Infrastructure for Communities and Critical Facilities Worldwide"
+
+2. Ensure the main platform positioning says something like:
+"Denarixx OneEarth is an AI-powered resilience infrastructure platform connecting energy systems, human safety networks, and disaster intelligence into one operational system."
+
+3. Add supporting copy that reflects global scope, such as:
+- worldwide
+- global
+- across communities and critical facilities
+- scalable across regions
+- built for vulnerable and high-risk environments worldwide
+
+4. If Africa is mentioned anywhere, update the wording to something like:
+- "Initial pilots may focus on high-need and infrastructure-vulnerable regions, including parts of Africa."
+- "Designed for regions where resilience matters most, and scalable worldwide."
+Do NOT present Africa as the only market.
+
+5. Update sections like:
+- hero subtitle
+- module descriptions
+- trust/impact section
+- CTA section
+- footer text
+- about/overview cards
+- dashboard intro copy
+- login support text if needed
+
+LANDING PAGE CONTENT DIRECTION
+
+Use strong global messaging like:
+Title:
+Denarixx OneEarth
+
+Subtitle:
+AI-powered resilience infrastructure platform connecting energy, human safety, and disaster intelligence worldwide.
+
+Optional supporting line:
+Built for communities, critical facilities, operators, NGOs, and governments across diverse and high-risk environments.
+
+MODULE POSITIONING
+Keep modules as:
+- Denarixx Energy
+- Denarixx LifeMesh
+- Denarixx EarthShield
+
+Make sure descriptions are globally relevant, not region-limited.
+
+EXAMPLES OF IMPROVED COPY
+
+Hero examples:
+- "Infrastructure intelligence for a more resilient world."
+- "One operational platform for energy, safety, and disaster awareness."
+- "Resilience infrastructure for communities and critical facilities worldwide."
+
+Pilot language examples:
+- "Initial pilot deployments may focus on vulnerable regions and critical community infrastructure."
+- "Suitable for rural, urban, and high-risk operating environments globally."
+
+UI / CONTENT TASKS
+
+- Search the codebase for any text mentioning "for Africa" and replace with globally appropriate language
+- Review all public-facing copy for accidental regional limitation
+- Keep realistic African examples in demo data if useful, but balance them with broader international examples such as Buchholz, Lagos, Nairobi, Juba, regional emergency shelters, clinics, and monitoring zones
+- Make the messaging feel international, premium, and institution-ready
+
+DELIVERABLE
+After updating, summarize:
+1. which text was changed
+2. which files were updated
+3. the final hero headline and subtitle now in use

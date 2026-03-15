@@ -23,7 +23,7 @@
   },
   "dashboard": {
     "title": "Comando Global",
-    "description": "Supervisión en tiempo real de la infraestructura Denarixx en todos los módulos activos.",
+    "description": "Supervisión en tiempo real de la infraestrutura de resiliencia de Denarixx en todos los módulos activos del mundo.",
     "activeSites": "Sitios Activos",
     "criticalAlerts": "Alertas Críticas",
     "protectedLives": "Vidas Protegidas",
@@ -42,7 +42,8 @@
     "viewArchive": "Ver Archivo",
     "online": "En Línea",
     "critical": "Crítico",
-    "ack": "ACK"
+    "ack": "ACK",
+    "globalOps": "Operaciones Globales"
   },
   "energy": {
     "title": "Comando Energético",

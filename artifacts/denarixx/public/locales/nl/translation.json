@@ -23,7 +23,7 @@
   },
   "dashboard": {
     "title": "Globaal Commando",
-    "description": "Realtime toezicht op Denarixx-infrastructuur in alle actieve modules.",
+    "description": "Realtime toezicht op de Denarixx-veerkrachtinfrastructuur in alle actieve modules wereldwijd.",
     "activeSites": "Actieve Locaties",
     "criticalAlerts": "Kritieke Waarschuwingen",
     "protectedLives": "Beschermde Levens",
@@ -42,7 +42,8 @@
     "viewArchive": "Archief Bekijken",
     "online": "Online",
     "critical": "Kritiek",
-    "ack": "ACK"
+    "ack": "ACK",
+    "globalOps": "Wereldwijde Operaties"
   },
   "energy": {
     "title": "Energie Commando",

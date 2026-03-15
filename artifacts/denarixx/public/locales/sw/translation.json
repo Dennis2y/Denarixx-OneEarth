@@ -23,7 +23,7 @@
   },
   "dashboard": {
     "title": "Amri ya Kimataifa",
-    "description": "Ufuatiliaji wa wakati halisi wa miundombinu ya Denarixx katika moduli zote zinazofanya kazi.",
+    "description": "Usimamizi wa wakati halisi wa miundombinu ya ustahimilivu wa Denarixx katika moduli zote duniani.",
     "activeSites": "Maeneo Yanayofanya Kazi",
     "criticalAlerts": "Tahadhari Muhimu",
     "protectedLives": "Maisha Yaliyolindwa",
@@ -42,7 +42,8 @@
     "viewArchive": "Angalia Kumbukumbu",
     "online": "Mtandaoni",
     "critical": "Muhimu",
-    "ack": "KUKUBALI"
+    "ack": "KUKUBALI",
+    "globalOps": "Operesheni za Kimataifa"
   },
   "energy": {
     "title": "Amri ya Nishati",
