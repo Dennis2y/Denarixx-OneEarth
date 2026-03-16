@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { apiUrl } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 
 export type UserRole = 'admin' | 'operator' | 'government' | 'community';
 
@@ -51,20 +51,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     (async () => {
       try {
-        const resp = await fetch(apiUrl('/api/auth/me'), {
-          credentials: 'include',
-        });
+        const data = await apiFetch('/api/auth/me') as AuthUser;
 
         if (!mounted) return;
 
-        if (resp.ok) {
-          const data = await resp.json() as AuthUser;
-          setUser(data);
-          localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
-        } else {
-          setUser(null);
-          localStorage.removeItem(AUTH_STORAGE_KEY);
-        }
+        setUser(data);
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
       } catch {
         if (!mounted) return;
         setUser(null);
@@ -80,40 +72,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    const cleanEmail = email.trim();
-    const cleanPassword = password.trim();
-
     try {
-      const resp = await fetch(apiUrl('/api/auth/login'), {
+      const data = await apiFetch('/api/auth/login', {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: cleanEmail, password: cleanPassword }),
-      });
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password.trim(),
+        }),
+      }) as AuthUser;
 
-      if (resp.ok) {
-        const data = await resp.json() as AuthUser;
-        setUser(data);
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
-        return { success: true };
-      }
+      setUser(data);
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
 
-      const err = await resp.json().catch(() => ({})) as { error?: string };
-      return { success: false, error: err.error ?? 'Invalid credentials. Access denied.' };
-    } catch {
-      return { success: false, error: 'Unable to reach authentication service.' };
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err?.message ?? 'Invalid credentials' };
     }
   }, []);
 
   const logout = useCallback(async () => {
     try {
-      await fetch(apiUrl('/api/auth/logout'), {
+      await apiFetch('/api/auth/logout', {
         method: 'POST',
-        credentials: 'include',
       });
-    } catch {
-      // ignore network failure on logout; still clear client state
-    }
+    } catch {}
 
     setUser(null);
     localStorage.removeItem(AUTH_STORAGE_KEY);
