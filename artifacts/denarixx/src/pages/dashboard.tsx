@@ -173,6 +173,10 @@ export default function Dashboard() {
       if (resp.ok) {
         setDrillResult({ success: true, message: data.message ?? 'Drill initiated successfully.' });
         await fetchAuditLog();
+        await fetchLiveAlerts();
+        await fetchScenarios();
+        await fetchLiveAlerts();
+        await fetchScenarios();
       } else {
         setDrillResult({ success: false, message: data.error ?? 'Failed to initiate drill.' });
       }
@@ -203,6 +207,10 @@ export default function Dashboard() {
       if (resp.ok) {
         setDeployResult({ success: true, message: data.message ?? 'Node deployed successfully.' });
         await fetchAuditLog();
+        await fetchLiveAlerts();
+        await fetchScenarios();
+        await fetchLiveAlerts();
+        await fetchScenarios();
         setTimeout(() => {
           setDeployModal(false);
           setDeployResult(null);
@@ -234,6 +242,10 @@ export default function Dashboard() {
         setBroadcastForm({ title: '', module: 'energy', severity: 'warning', location: '', description: '' });
         await fetchAuditLog();
         await fetchLiveAlerts();
+        await fetchScenarios();
+        await fetchLiveAlerts();
+        await fetchScenarios();
+        await fetchLiveAlerts();
         setTimeout(() => { setBroadcastModal(false); setBroadcastSuccess(false); }, 1800);
       }
     } catch { /* ignore */ } finally {
@@ -255,6 +267,10 @@ export default function Dashboard() {
         setReportData(data);
         setReportModal(true);
         await fetchAuditLog();
+        await fetchLiveAlerts();
+        await fetchScenarios();
+        await fetchLiveAlerts();
+        await fetchScenarios();
       }
     } catch { /* ignore */ } finally {
       setReportLoading(false);
