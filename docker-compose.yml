@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: denarixx-oneearth-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: denarixx_oneearth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - denarixx_oneearth_db:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: denarixx-oneearth-api
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/denarixx_oneearth
+      PORT: 3001
+      NODE_ENV: development
+    ports:
+      - "3003:3001"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: denarixx-oneearth-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      PORT: 3002
+      BASE_PATH: /
+      VITE_API_URL: http://api:3001
+      VITE_PORT: 3002
+      NODE_ENV: production
+    ports:
+      - "3004:3002"
+
+volumes:
+  denarixx_oneearth_db:
