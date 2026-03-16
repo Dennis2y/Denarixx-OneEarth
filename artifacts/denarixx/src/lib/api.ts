@@ -12,3 +12,25 @@ export function apiUrl(path: string): string {
   const base = rawBase.endsWith('/') ? rawBase.slice(0, -1) : rawBase;
   return `${base}${path}`;
 }
+
+export async function apiFetch(path: string, options: RequestInit = {}) {
+  const response = await fetch(apiUrl(path), {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error ${response.status}`);
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    return response.json();
+  }
+
+  return response.text();
+}
