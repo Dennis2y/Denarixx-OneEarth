@@ -13,6 +13,10 @@ export function apiUrl(path: string): string {
   return `${base}${path}`;
 }
 
+export function apiStreamUrl(path: string): string {
+  return apiUrl(path);
+}
+
 export async function apiFetch(path: string, options: RequestInit = {}) {
   const response = await fetch(apiUrl(path), {
     ...options,

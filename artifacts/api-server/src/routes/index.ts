@@ -13,6 +13,7 @@ import commandCenterRouter from "./command-center.js";
 import auditRouter from "./audit.js";
 import reportsRouter from "./reports.js";
 import mapRouter from "./map.js";
+import liveRouter from "./live.js";
 
 const router: IRouter = Router();
 
@@ -32,5 +33,6 @@ router.use(commandCenterRouter);
 router.use(auditRouter);
 router.use(reportsRouter);
 router.use(mapRouter);
+router.use(liveRouter);
 
 export default router;

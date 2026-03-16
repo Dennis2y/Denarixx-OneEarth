@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { ModuleHeader, Card, Badge, Button, cn } from "@/components/ui-core";
-import { apiUrl } from "@/lib/api";
+import { apiFetch, apiStreamUrl } from "@/lib/api";
 
 type MapOverview = {
   summary: {
@@ -189,14 +189,15 @@ export default function GlobalMap() {
   const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null);
   const [showRiskZones, setShowRiskZones] = useState(true);
   const [showAlertRings, setShowAlertRings] = useState(true);
+  const [liveStatus, setLiveStatus] = useState<"connecting" | "live" | "disconnected">("connecting");
+  const [lastLiveMessage, setLastLiveMessage] = useState("Connecting to global live stream...");
 
   const loadOverview = async (silent = false) => {
     try {
       if (!silent) setIsLoading(true);
       else setIsRefreshing(true);
 
-      const resp = await fetch(apiUrl("/api/map/overview"), { credentials: "include" });
-      const json = resp.ok ? await resp.json() : null;
+      const json = await apiFetch("/api/map/overview");
       setData(json);
     } catch {
       if (!silent) setData(null);
@@ -208,10 +209,39 @@ export default function GlobalMap() {
 
   useEffect(() => {
     loadOverview(false);
-    const interval = setInterval(() => {
-      loadOverview(true);
-    }, 30000);
-    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const stream = new EventSource(apiStreamUrl("/api/live/stream"), { withCredentials: true });
+
+    stream.addEventListener("connected", (event: MessageEvent) => {
+      setLiveStatus("live");
+      setLastLiveMessage("Live stream connected");
+    });
+
+    stream.addEventListener("heartbeat", () => {
+      setLiveStatus("live");
+    });
+
+    stream.addEventListener("map-update", async (event: MessageEvent) => {
+      try {
+        const payload = JSON.parse(event.data);
+        setLiveStatus("live");
+        setLastLiveMessage(payload?.message ?? "Global command update received");
+        await loadOverview(true);
+      } catch {
+        await loadOverview(true);
+      }
+    });
+
+    stream.onerror = () => {
+      setLiveStatus("disconnected");
+      setLastLiveMessage("Live stream disconnected — retrying");
+    };
+
+    return () => {
+      stream.close();
+    };
   }, []);
 
   const sites = useMemo(() => {
@@ -298,9 +328,17 @@ export default function GlobalMap() {
         actions={
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-primary/20 bg-primary/5">
-              <Radio className={cn("w-4 h-4 text-primary", isRefreshing && "animate-pulse")} />
-              <span className="text-xs font-bold uppercase tracking-widest text-primary">
-                {isRefreshing ? "Refreshing" : "Live"}
+              <Radio
+                className={cn(
+                  "w-4 h-4",
+                  liveStatus === "live" ? "text-primary" : liveStatus === "connecting" ? "text-amber-400 animate-pulse" : "text-destructive"
+                )}
+              />
+              <span className={cn(
+                "text-xs font-bold uppercase tracking-widest",
+                liveStatus === "live" ? "text-primary" : liveStatus === "connecting" ? "text-amber-400" : "text-destructive"
+              )}>
+                {liveStatus}
               </span>
             </div>
             <Button variant="outline" size="sm" onClick={resetWorldView}>
@@ -314,6 +352,16 @@ export default function GlobalMap() {
           </div>
         }
       />
+
+      <Card className="p-3 mb-4 border-border/40 bg-secondary/20">
+        <div className="flex items-center gap-2 text-xs">
+          <Activity className={cn(
+            "w-4 h-4",
+            liveStatus === "live" ? "text-green-400" : liveStatus === "connecting" ? "text-amber-400" : "text-destructive"
+          )} />
+          <span className="text-muted-foreground">{lastLiveMessage}</span>
+        </div>
+      </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-4 mb-6">
         {[
