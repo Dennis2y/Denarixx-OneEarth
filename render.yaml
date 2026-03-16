@@ -2,7 +2,6 @@ services:
   - type: web
     name: denarixx-oneearth-api
     runtime: docker
-    repo: https://github.com/Dennis2y/Denarixx-OneEarth
     dockerfilePath: ./Dockerfile.api
     plan: starter
     autoDeploy: true
@@ -18,7 +17,6 @@ services:
 
   - type: static
     name: denarixx-oneearth-web
-    repo: https://github.com/Dennis2y/Denarixx-OneEarth
     rootDir: .
     buildCommand: pnpm install --frozen-lockfile && pnpm --filter @workspace/denarixx run build
     publishPath: artifacts/denarixx/dist/public
