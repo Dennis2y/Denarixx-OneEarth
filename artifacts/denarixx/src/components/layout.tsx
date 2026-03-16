@@ -5,6 +5,7 @@ import { cn } from './ui-core';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useAuth, roleLabel } from '@/context/auth';
+import { apiUrl } from "@/lib/api";
 
 function SystemRibbon({ user }: { user: any }) {
   const [stats, setStats] = useState<any>(null);
@@ -13,7 +14,7 @@ function SystemRibbon({ user }: { user: any }) {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const r = await fetch('/api/dashboard/stats', { credentials: 'include' });
+        const r = await fetch(apiUrl('/api/dashboard/stats'), { credentials: 'include' });
         if (r.ok) setStats(await r.json());
       } catch { /* non-blocking */ }
     };

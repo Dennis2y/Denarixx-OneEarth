@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'wouter';
 import { Card, Badge, Button, LoadingScreen, cn } from '@/components/ui-core';
+import { apiUrl } from "@/lib/api";
 import {
   ArrowLeft, MapPin, Zap, Users, AlertTriangle, Activity, Shield,
   Battery, Sun, Wifi, BarChart3, Clock, Phone, Download, RefreshCw,
@@ -52,7 +53,7 @@ export default function SiteDetail() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/sites/${siteId}`, { credentials: 'include' });
+      const res = await fetch(apiUrl(`/api/sites/${siteId}`), { credentials: 'include' });
       if (!res.ok) throw new Error('Not found');
       setSite(await res.json());
     } catch {
@@ -69,7 +70,7 @@ export default function SiteDetail() {
     setReportLoading(true);
     setReportSuccess(false);
     try {
-      const res = await fetch(`/api/reports/site/${siteId}`, {
+      const res = await fetch(apiUrl(`/api/reports/site/${siteId}`), {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

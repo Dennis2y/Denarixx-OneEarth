@@ -6,6 +6,7 @@ import { MapPin, Plus, LayoutGrid, List, Users, Server, Zap, Activity, AlertTria
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
+import { apiUrl } from "@/lib/api";
 
 export default function Sites() {
   const { t } = useTranslation();
@@ -28,7 +29,7 @@ export default function Sites() {
   const downloadSiteReport = async (site: any) => {
     setReportDownloading(true);
     try {
-      const resp = await fetch(`/api/reports/site/${site.id}`, {
+      const resp = await fetch(apiUrl(`/api/reports/site/${site.id}`), {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -58,9 +59,9 @@ export default function Sites() {
     setDetailLoading(true);
     try {
       const [energyRes, alertsRes, personsRes] = await Promise.all([
-        fetch(`/api/energy/metrics?siteId=${site.id}`, { credentials: 'include' }),
-        fetch(`/api/alerts?status=active`, { credentials: 'include' }),
-        fetch(`/api/lifemesh/persons`, { credentials: 'include' }),
+        fetch(apiUrl(`/api/energy/metrics?siteId=${site.id}`), { credentials: 'include' }),
+        fetch(apiUrl(`/api/alerts?status=active`), { credentials: 'include' }),
+        fetch(apiUrl(`/api/lifemesh/persons`), { credentials: 'include' }),
       ]);
       const [energy, allAlerts, allPersons] = await Promise.all([
         energyRes.json(),

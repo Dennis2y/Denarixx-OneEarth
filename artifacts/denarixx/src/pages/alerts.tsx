@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { Bell, Filter, ShieldAlert, Zap, Globe, MapPin, Search, ArrowRight, X, CheckCircle2, AlertTriangle, Info, Clock, CheckCheck, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { apiUrl } from "@/lib/api";
 
 type UnifiedAlert = {
   id: number;
@@ -28,7 +29,7 @@ export default function Alerts() {
   const exportReport = async () => {
     setExportLoading(true);
     try {
-      const resp = await fetch('/api/reports/alerts', {
+      const resp = await fetch(apiUrl('/api/reports/alerts'), {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -84,7 +85,7 @@ export default function Alerts() {
   const handleAcknowledge = async (alert: UnifiedAlert) => {
     try {
       const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-      await fetch(`${base}/api/alerts/${alert.id}/status`, {
+      await fetch(apiUrl(`/api/alerts/${alert.id}/status`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'acknowledged' }),
@@ -97,7 +98,7 @@ export default function Alerts() {
   const handleResolve = async (alert: UnifiedAlert) => {
     try {
       const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-      await fetch(`${base}/api/alerts/${alert.id}/status`, {
+      await fetch(apiUrl(`/api/alerts/${alert.id}/status`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'resolved' }),

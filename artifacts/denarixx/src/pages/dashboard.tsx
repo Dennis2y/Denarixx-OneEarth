@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/auth';
+import { apiUrl } from "@/lib/api";
 
 const mockSparklines = [
   [40, 42, 45, 43, 48, 52, 50, 55],
@@ -124,7 +125,7 @@ export default function Dashboard() {
 
   const fetchLiveAlerts = useCallback(async () => {
     try {
-      const resp = await fetch('/api/alerts?status=active', { credentials: 'include' });
+      const resp = await fetch(apiUrl('/api/alerts?status=active'), { credentials: 'include' });
       if (!resp.ok) return;
       const data = await resp.json();
       const alerts = Array.isArray(data) ? data : [];
@@ -136,14 +137,14 @@ export default function Dashboard() {
 
   const fetchAuditLog = useCallback(async () => {
     try {
-      const resp = await fetch('/api/audit/log?limit=30', { credentials: 'include' });
+      const resp = await fetch(apiUrl('/api/audit/log?limit=30'), { credentials: 'include' });
       if (resp.ok) setAuditLog(await resp.json());
     } catch { /* non-blocking */ }
   }, []);
 
   const fetchScenarios = useCallback(async () => {
     try {
-      const resp = await fetch('/api/command-center/history', { credentials: 'include' });
+      const resp = await fetch(apiUrl('/api/command-center/history'), { credentials: 'include' });
       if (resp.ok) setRecentScenarios(await resp.json());
     } catch { /* non-blocking */ }
   }, []);
@@ -168,7 +169,7 @@ export default function Dashboard() {
     setDrillRunning(true);
     setDrillResult(null);
     try {
-      const resp = await fetch('/api/dashboard/drill', {
+      const resp = await fetch(apiUrl('/api/dashboard/drill'), {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -197,7 +198,7 @@ export default function Dashboard() {
     setDeploySubmitting(true);
     setDeployResult(null);
     try {
-      const resp = await fetch('/api/dashboard/deploy', {
+      const resp = await fetch(apiUrl('/api/dashboard/deploy'), {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -236,7 +237,7 @@ export default function Dashboard() {
     setBroadcastSubmitting(true);
     setBroadcastSuccess(false);
     try {
-      const resp = await fetch('/api/alerts/broadcast', {
+      const resp = await fetch(apiUrl('/api/alerts/broadcast'), {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -262,7 +263,7 @@ export default function Dashboard() {
     if (!can('reports.generate')) return;
     setReportLoading(true);
     try {
-      const resp = await fetch('/api/reports/daily', {
+      const resp = await fetch(apiUrl('/api/reports/daily'), {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

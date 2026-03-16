@@ -73,10 +73,13 @@ router.post("/auth/login", async (req, res) => {
 
   await writeAudit(user.email, user.role, "auth.login", `user:${user.id}`, JSON.stringify({ name: user.name }));
 
+  const isProduction = process.env.NODE_ENV === "production";
+
   res.cookie("den_session", token, {
     httpOnly: true,
-    sameSite: "lax",
-    maxAge: 8 * 60 * 60 * 1000, // 8 hours
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    maxAge: 8 * 60 * 60 * 1000,
     path: "/",
   });
 
@@ -109,7 +112,15 @@ router.post("/auth/logout", async (req, res) => {
     }
     sessions.delete(token);
   }
-  res.clearCookie("den_session", { path: "/" });
+
+  const isProduction = process.env.NODE_ENV === "production";
+
+  res.clearCookie("den_session", {
+    path: "/",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+  });
+
   return res.json({ success: true });
 });
 

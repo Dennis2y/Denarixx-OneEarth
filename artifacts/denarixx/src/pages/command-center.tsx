@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, ModuleHeader, Badge, Button, cn } from '@/components/ui-core';
 import { motion, AnimatePresence } from 'framer-motion';
+import { apiUrl } from "@/lib/api";
 import {
   Cpu, Play, AlertTriangle, Zap, Shield, Globe, MapPin, Users,
   Battery, Activity, ChevronRight, Download, Clock, TrendingDown,
@@ -169,7 +170,7 @@ export default function CommandCenter() {
   const fetchHistory = useCallback(async () => {
     setHistoryLoading(true);
     try {
-      const res = await fetch('/api/command-center/history', { credentials: 'include' });
+      const res = await fetch(apiUrl('/api/command-center/history'), { credentials: 'include' });
       if (res.ok) setHistory(await res.json());
     } catch { /* non-blocking */ } finally {
       setHistoryLoading(false);
@@ -180,7 +181,7 @@ export default function CommandCenter() {
 
   const loadHistoryItem = async (item: SimulationHistoryItem) => {
     try {
-      const res = await fetch(`/api/command-center/history/${item.id}`, { credentials: 'include' });
+      const res = await fetch(apiUrl(`/api/command-center/history/${item.id}`), { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setResult(data.result as SimulationResult);
@@ -195,7 +196,7 @@ export default function CommandCenter() {
     if (!result) return;
     const latest = history.find(h => h.scenarioId === result.scenarioId);
     if (latest) {
-      const res = await fetch(`/api/reports/scenario/${latest.id}`, {
+      const res = await fetch(apiUrl(`/api/reports/scenario/${latest.id}`), {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -228,7 +229,7 @@ export default function CommandCenter() {
 
     try {
       const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-      const res = await fetch(`${base}/api/command-center/simulate`, {
+      const res = await fetch(apiUrl(`/api/command-center/simulate`), {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
