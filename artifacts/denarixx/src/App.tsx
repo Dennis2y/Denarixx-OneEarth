@@ -17,6 +17,7 @@ const SiteDetail = lazy(() => import("@/pages/site-detail"));
 const Users = lazy(() => import("@/pages/users"));
 const Settings = lazy(() => import("@/pages/settings"));
 const NotFound = lazy(() => import("@/pages/not-found"));
+const GlobalMap = lazy(() => import("./pages/global-map"));
 
 function ProtectedApp() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -57,6 +58,7 @@ function ProtectedApp() {
           <Route path="/sites/:id" component={SiteDetail} />
           <Route path="/users" component={Users} />
           <Route path="/settings" component={Settings} />
+          <Route path="/global-map" component={GlobalMap} />
           <Route component={NotFound} />
         </Switch>
       </Suspense>
