@@ -10,7 +10,20 @@ import {
   useMap,
 } from "react-leaflet";
 import type { Map as LeafletMap } from "leaflet";
-import { Globe, RefreshCw, Shield, Zap, Bell, Users, AlertTriangle, MapPin, Radio, LocateFixed } from "lucide-react";
+import {
+  Globe,
+  RefreshCw,
+  Shield,
+  Zap,
+  Bell,
+  Users,
+  AlertTriangle,
+  MapPin,
+  Radio,
+  LocateFixed,
+  Activity,
+  TriangleAlert,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { ModuleHeader, Card, Badge, Button, cn } from "@/components/ui-core";
 import { apiUrl } from "@/lib/api";
@@ -212,7 +225,11 @@ export default function GlobalMap() {
 
   const visibleRiskZones = useMemo(() => {
     const list = data?.riskZones ?? [];
-    if (filter === "earthshield" || filter === "all") return list;
+    const sorted = [...list].sort((a, b) => {
+      const order = { critical: 3, high: 2, medium: 1, low: 0 };
+      return (order[b.riskLevel as keyof typeof order] ?? 0) - (order[a.riskLevel as keyof typeof order] ?? 0);
+    });
+    if (filter === "earthshield" || filter === "all") return sorted;
     return [];
   }, [data, filter]);
 
@@ -228,6 +245,39 @@ export default function GlobalMap() {
     { key: "earthshield" as FilterKey, label: "EarthShield", icon: Shield },
     { key: "alerts" as FilterKey, label: "Alerts", icon: Bell },
   ];
+
+  const moduleSummary = useMemo(() => {
+    const allSites = data?.sites ?? [];
+    const alerts = data?.alerts ?? [];
+    const persons = data?.persons ?? [];
+
+    return {
+      energy: {
+        unstable: allSites.filter((s) => s.latestEnergy?.gridStatus === "unstable").length,
+        offline: allSites.filter((s) => s.latestEnergy?.gridStatus === "offline").length,
+      },
+      lifemesh: {
+        protected: persons.length,
+        atRisk: persons.filter((p) => p.status === "at-risk" || p.status === "emergency").length,
+      },
+      earthshield: {
+        zones: (data?.riskZones ?? []).length,
+        critical: (data?.riskZones ?? []).filter((z) => z.riskLevel === "critical").length,
+      },
+      alerts: {
+        active: alerts.length,
+        critical: alerts.filter((a) => a.severity === "critical").length,
+      },
+    };
+  }, [data]);
+
+  const tickerText = useMemo(() => {
+    const alerts = (data?.alerts ?? []).slice(0, 8);
+    if (!alerts.length) return "NO ACTIVE GLOBAL ALERT SIGNALS";
+    return alerts
+      .map((a) => `${a.severity.toUpperCase()} · ${a.module.toUpperCase()} · ${a.title} · ${a.location}`)
+      .join("  ◆  ");
+  }, [data]);
 
   const resetWorldView = () => {
     mapRef.current?.flyTo(mapCenter, 2, { animate: true, duration: 1.2 });
@@ -285,51 +335,101 @@ export default function GlobalMap() {
         ))}
       </div>
 
-      <Card className="p-4 sm:p-5 mb-6 border-primary/15 bg-secondary/20">
-        <div className="flex flex-wrap gap-2 mb-3">
-          {filterMeta.map((item) => (
+      <Card className="p-0 mb-6 overflow-hidden border-primary/15 bg-secondary/20">
+        <div className="flex items-center h-9 border-b border-border/30 overflow-hidden">
+          <div className="shrink-0 px-3 h-full flex items-center bg-primary/10 border-r border-primary/20">
+            <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em]">Global Feed</span>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <div className="animate-marquee whitespace-nowrap text-[11px] font-mono text-muted-foreground inline-block px-4">
+              {tickerText}{"  ◆  "}{tickerText}
+            </div>
+          </div>
+        </div>
+        <div className="p-4 sm:p-5">
+          <div className="flex flex-wrap gap-2 mb-3">
+            {filterMeta.map((item) => (
+              <button
+                key={item.key}
+                onClick={() => setFilter(item.key)}
+                className={cn(
+                  "px-3 py-2 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2",
+                  filter === item.key
+                    ? "bg-primary text-primary-foreground border-primary shadow-[0_0_14px_rgba(201,168,76,0.28)]"
+                    : "border-border/50 text-muted-foreground hover:border-primary/40 hover:text-white"
+                )}
+              >
+                <item.icon className="w-3.5 h-3.5" />
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
             <button
-              key={item.key}
-              onClick={() => setFilter(item.key)}
+              onClick={() => setShowRiskZones((v) => !v)}
               className={cn(
-                "px-3 py-2 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2",
-                filter === item.key
-                  ? "bg-primary text-primary-foreground border-primary shadow-[0_0_14px_rgba(201,168,76,0.28)]"
-                  : "border-border/50 text-muted-foreground hover:border-primary/40 hover:text-white"
+                "px-3 py-1.5 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-all",
+                showRiskZones
+                  ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
+                  : "border-border/50 text-muted-foreground"
               )}
             >
-              <item.icon className="w-3.5 h-3.5" />
-              {item.label}
+              Risk Zones
             </button>
-          ))}
-        </div>
 
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setShowRiskZones((v) => !v)}
-            className={cn(
-              "px-3 py-1.5 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-all",
-              showRiskZones
-                ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
-                : "border-border/50 text-muted-foreground"
-            )}
-          >
-            Risk Zones
-          </button>
-
-          <button
-            onClick={() => setShowAlertRings((v) => !v)}
-            className={cn(
-              "px-3 py-1.5 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-all",
-              showAlertRings
-                ? "bg-destructive/10 text-destructive border-destructive/30"
-                : "border-border/50 text-muted-foreground"
-            )}
-          >
-            Alert Rings
-          </button>
+            <button
+              onClick={() => setShowAlertRings((v) => !v)}
+              className={cn(
+                "px-3 py-1.5 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-all",
+                showAlertRings
+                  ? "bg-destructive/10 text-destructive border-destructive/30"
+                  : "border-border/50 text-muted-foreground"
+              )}
+            >
+              Alert Rings
+            </button>
+          </div>
         </div>
       </Card>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <Card className="p-4 bg-primary/5 border-primary/20">
+          <div className="flex items-center gap-2 mb-2">
+            <Zap className="w-4 h-4 text-primary" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Energy</span>
+          </div>
+          <div className="text-sm text-white font-bold">Offline: {moduleSummary.energy.offline}</div>
+          <div className="text-xs text-muted-foreground">Unstable: {moduleSummary.energy.unstable}</div>
+        </Card>
+
+        <Card className="p-4 bg-green-500/5 border-green-500/20">
+          <div className="flex items-center gap-2 mb-2">
+            <Users className="w-4 h-4 text-green-400" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-green-400">LifeMesh</span>
+          </div>
+          <div className="text-sm text-white font-bold">Protected: {moduleSummary.lifemesh.protected}</div>
+          <div className="text-xs text-muted-foreground">At Risk: {moduleSummary.lifemesh.atRisk}</div>
+        </Card>
+
+        <Card className="p-4 bg-blue-500/5 border-blue-500/20">
+          <div className="flex items-center gap-2 mb-2">
+            <Shield className="w-4 h-4 text-blue-400" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400">EarthShield</span>
+          </div>
+          <div className="text-sm text-white font-bold">Zones: {moduleSummary.earthshield.zones}</div>
+          <div className="text-xs text-muted-foreground">Critical: {moduleSummary.earthshield.critical}</div>
+        </Card>
+
+        <Card className="p-4 bg-destructive/5 border-destructive/20">
+          <div className="flex items-center gap-2 mb-2">
+            <Bell className="w-4 h-4 text-destructive" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-destructive">Alerts</span>
+          </div>
+          <div className="text-sm text-white font-bold">Active: {moduleSummary.alerts.active}</div>
+          <div className="text-xs text-muted-foreground">Critical: {moduleSummary.alerts.critical}</div>
+        </Card>
+      </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1.6fr_0.9fr] gap-6">
         <Card className="p-0 overflow-hidden border-border/50">
@@ -359,9 +459,9 @@ export default function GlobalMap() {
                     radius={getRiskZoneRadius(zone.preparednessScore)}
                     pathOptions={{
                       color,
-                      weight: 2,
+                      weight: zone.riskLevel === "critical" ? 3 : 2,
                       fillColor: color,
-                      fillOpacity: 0.08,
+                      fillOpacity: zone.riskLevel === "critical" ? 0.12 : 0.08,
                     }}
                   >
                     <LeafletPopup>
@@ -531,7 +631,7 @@ export default function GlobalMap() {
 
           <Card className="p-5 border-border/50 bg-secondary/20">
             <h3 className="text-sm font-display font-bold text-white uppercase tracking-widest mb-4">
-              Filter Scope
+              Active Nodes
             </h3>
             <div className="space-y-2">
               {sites.slice(0, 8).map((site) => (
@@ -581,6 +681,38 @@ export default function GlobalMap() {
               {visibleRiskZones.length === 0 && (
                 <div className="text-sm text-muted-foreground">No risk-zone overlays in current scope.</div>
               )}
+            </div>
+          </Card>
+
+          <Card className="p-5 border-border/50 bg-secondary/20">
+            <h3 className="text-sm font-display font-bold text-white uppercase tracking-widest mb-4">
+              Legend
+            </h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-destructive" />
+                <span className="text-muted-foreground">Critical / severe command signal</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-amber-500" />
+                <span className="text-muted-foreground">Warning / unstable operational state</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-blue-400" />
+                <span className="text-muted-foreground">Medium risk / monitored zone</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-green-500" />
+                <span className="text-muted-foreground">Nominal / protected / healthy state</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Activity className="w-4 h-4 text-primary" />
+                <span className="text-muted-foreground">Rings indicate expanding live incident influence</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <TriangleAlert className="w-4 h-4 text-orange-400" />
+                <span className="text-muted-foreground">Risk overlays visualize broader planetary threat areas</span>
+              </div>
             </div>
           </Card>
         </div>
