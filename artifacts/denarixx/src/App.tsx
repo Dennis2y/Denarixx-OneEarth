@@ -1,21 +1,22 @@
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import React, { useEffect } from "react";
+import React, { Suspense, useEffect } from "react";
 
 import { AppLayout } from "./components/layout";
 import { AuthProvider, useAuth } from "./context/auth";
 
 import Landing from "./pages/landing";
 import Login from "./pages/login";
-import Dashboard from "./pages/dashboard";
+import { lazy } from "react";
+const Dashboard = lazy(() => import("./pages/dashboard"));
 import CommandCenter from "./pages/command-center";
-import Energy from "./pages/energy";
-import LifeMesh from "./pages/lifemesh";
-import EarthShield from "./pages/earthshield";
-import Alerts from "./pages/alerts";
-import Sites from "./pages/sites";
+const Energy = lazy(() => import("./pages/energy"));
+const LifeMesh = lazy(() => import("./pages/lifemesh"));
+const EarthShield = lazy(() => import("./pages/earthshield"));
+const Alerts = lazy(() => import("./pages/alerts"));
+const Sites = lazy(() => import("./pages/sites"));
 import SiteDetail from "./pages/site-detail";
-import Users from "./pages/users";
+const Users = lazy(() => import("./pages/users"));
 import Settings from "./pages/settings";
 import NotFound from "./pages/not-found";
 
@@ -61,6 +62,7 @@ function RouteWrapper() {
 
   return (
     <AppLayout>
+      <Suspense fallback={<div className="min-h-screen bg-background" />}>
       <Switch>
         <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
         <Route path="/command-center" component={() => <ProtectedRoute component={CommandCenter} />} />
@@ -74,6 +76,7 @@ function RouteWrapper() {
         <Route path="/settings" component={() => <ProtectedRoute component={Settings} />} />
         <Route component={NotFound} />
       </Switch>
+      </Suspense>
     </AppLayout>
   );
 }
