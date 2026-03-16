@@ -13,16 +13,17 @@ const router: IRouter = Router();
 router.get("/sites", async (_req, res) => {
   try {
     const sites = await db.select().from(sitesTable).orderBy(sitesTable.name);
-    res.json(sites.map((s) => ({ ...s, createdAt: s.createdAt.toISOString() })));
+    return res.json(sites.map((s) => ({ ...s, createdAt: s.createdAt.toISOString() })));
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
 router.get("/sites/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(rawId ?? "", 10);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid site ID" });
 
     const [site] = await db.select().from(sitesTable).where(eq(sitesTable.id, id));
@@ -51,7 +52,7 @@ router.get("/sites/:id", async (req, res) => {
       (criticalAlerts * 5) + (atRiskCount * 2)
     ));
 
-    res.json({
+    return res.json({
       ...site,
       createdAt: site.createdAt.toISOString(),
       energyHistory: energyHistory.map(e => ({
@@ -78,7 +79,7 @@ router.get("/sites/:id", async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -96,16 +97,17 @@ router.post("/sites", requireRole("admin", "operator"), async (req: AuthRequest,
       details: JSON.stringify({ name: site.name, type: site.type, location: site.location }),
     }).catch(() => {});
 
-    res.status(201).json({ ...site, createdAt: site.createdAt.toISOString() });
+    return res.status(201).json({ ...site, createdAt: site.createdAt.toISOString() });
   } catch (err) {
     console.error(err);
-    res.status(400).json({ error: "Invalid input" });
+    return res.status(400).json({ error: "Invalid input" });
   }
 });
 
 router.patch("/sites/:id", requireRole("admin", "operator"), async (req: AuthRequest, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(rawId ?? "", 10);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid site ID" });
 
     const allowed = ["status", "currentRiskLevel", "uptime", "powerAvailability"];

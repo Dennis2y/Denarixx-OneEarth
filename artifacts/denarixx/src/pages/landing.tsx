@@ -168,7 +168,7 @@ function NavBar({ onLogin }: { onLogin: () => void }) {
 }
 
 function ModuleCard({ icon: Icon, title, subtitle, color, items }: {
-  icon: React.FC<{ className?: string }>; title: string; subtitle: string; color: string; items: string[];
+  icon: React.FC<{ className?: string; style?: React.CSSProperties }>; title: string; subtitle: string; color: string; items: string[];
 }) {
   return (
     <motion.div
@@ -196,7 +196,7 @@ function ModuleCard({ icon: Icon, title, subtitle, color, items }: {
   );
 }
 
-function AudienceCard({ icon: Icon, title, desc, color }: { icon: React.FC<{ className?: string }>; title: string; desc: string; color: string }) {
+function AudienceCard({ icon: Icon, title, desc, color }: { icon: React.FC<{ className?: string; style?: React.CSSProperties }>; title: string; desc: string; color: string }) {
   return (
     <motion.div
       whileHover={{ scale: 1.03 }}
