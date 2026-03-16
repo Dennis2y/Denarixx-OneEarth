@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'wouter';
-import { useGetDashboardStats, useGetUnifiedAlerts } from '@workspace/api-client-react';
+import { useGetDashboardStats, useGetUnifiedAlerts, useGetSites } from '@workspace/api-client-react';
 import { LoadingScreen, Card, Badge, Button, Modal, Input, Label, Select, cn } from '@/components/ui-core';
 import { MapPin, AlertTriangle, Users, Globe, Zap, ArrowRight, ShieldAlert, FileText, Radio, Check, Activity, Shield, Download, Play, Cpu, CheckCircle2 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -45,22 +45,7 @@ function StatCard({ title, value, icon: Icon, trend, colorClass, sparklineData }
   );
 }
 
-const GLOBAL_SITES = [
-  { id: 1, name: 'Nairobi Hub', cx: '68%', cy: '58%', status: 'online' },
-  { id: 2, name: 'Accra Node', cx: '35%', cy: '45%', status: 'online' },
-  { id: 3, name: 'Dakar Station', cx: '18%', cy: '35%', status: 'critical' },
-  { id: 4, name: 'Lagos Grid', cx: '42%', cy: '48%', status: 'online' },
-  { id: 5, name: 'Kampala Base', cx: '65%', cy: '55%', status: 'online' },
-  { id: 6, name: 'Addis Control', cx: '75%', cy: '45%', status: 'online' },
-  { id: 7, name: 'Kigali Center', cx: '63%', cy: '60%', status: 'critical' },
-  { id: 8, name: 'Abuja Node', cx: '40%', cy: '46%', status: 'online' },
-];
 
-const MOCK_LIVE_ALERTS = [
-  { id: 'live-1', title: 'Grid Fluctuation Detected', module: 'energy', severity: 'warning', description: 'Minor voltage drop across secondary lines in Sector 4.', location: 'Lagos Grid' },
-  { id: 'live-2', title: 'Unauthorized Access Attempt', module: 'lifemesh', severity: 'critical', description: 'Multiple failed biometric scans at perimeter delta.', location: 'Nairobi Hub' },
-  { id: 'live-3', title: 'Severe Weather Warning', module: 'earthshield', severity: 'warning', description: 'Approaching storm front. Predicted impact in 45 minutes.', location: 'Dakar Station' },
-];
 
 const ACTION_ICONS: Record<string, string> = {
   'auth.login': '🔑',
@@ -95,12 +80,27 @@ function formatActionLabel(action: string): string {
   return labels[action] ?? action;
 }
 
+function longitudeToCx(longitude?: number | null): string {
+  const lng = typeof longitude === 'number' ? longitude : 0;
+  const normalized = ((lng + 180) / 360) * 100;
+  const clamped = Math.max(8, Math.min(92, normalized));
+  return `${clamped}%`;
+}
+
+function latitudeToCy(latitude?: number | null): string {
+  const lat = typeof latitude === 'number' ? latitude : 0;
+  const normalized = ((90 - lat) / 180) * 100;
+  const clamped = Math.max(12, Math.min(88, normalized));
+  return `${clamped}%`;
+}
+
 export default function Dashboard() {
   const { t } = useTranslation();
   const { user, can } = useAuth();
   const [, setLocation] = useLocation();
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
   const { data: initialAlerts, isLoading: alertsLoading } = useGetUnifiedAlerts({ severity: 'critical' });
+  const { data: sites } = useGetSites();
   const [liveAlerts, setLiveAlerts] = useState<any[]>([]);
   const [auditLog, setAuditLog] = useState<any[]>([]);
   const [recentScenarios, setRecentScenarios] = useState<any[]>([]);
@@ -121,6 +121,18 @@ export default function Dashboard() {
   const [deployForm, setDeployForm] = useState({ name: '', type: 'village', location: '', country: '', latitude: '', longitude: '', population: '' });
   const [deploySubmitting, setDeploySubmitting] = useState(false);
   const [deployResult, setDeployResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  const fetchLiveAlerts = useCallback(async () => {
+    try {
+      const resp = await fetch('/api/alerts?status=active', { credentials: 'include' });
+      if (!resp.ok) return;
+      const data = await resp.json();
+      const alerts = Array.isArray(data) ? data : [];
+      setLiveAlerts(alerts.slice(0, 5));
+    } catch {
+      /* non-blocking */
+    }
+  }, []);
 
   const fetchAuditLog = useCallback(async () => {
     try {
@@ -143,15 +155,14 @@ export default function Dashboard() {
   useEffect(() => {
     fetchAuditLog();
     fetchScenarios();
+    fetchLiveAlerts();
+
     const interval = setInterval(() => {
-      const newAlert = MOCK_LIVE_ALERTS[Math.floor(Math.random() * MOCK_LIVE_ALERTS.length)];
-      setLiveAlerts(prev => {
-        const updated = [{ ...newAlert, id: `live-${Date.now()}`, createdAt: new Date().toISOString() }, ...prev];
-        return updated.slice(0, 5);
-      });
-    }, 8000);
+      fetchLiveAlerts();
+    }, 10000);
+
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchAuditLog, fetchScenarios, fetchLiveAlerts]);
 
   const runDrill = async () => {
     setDrillRunning(true);
@@ -167,6 +178,10 @@ export default function Dashboard() {
       if (resp.ok) {
         setDrillResult({ success: true, message: data.message ?? 'Drill initiated successfully.' });
         await fetchAuditLog();
+        await fetchLiveAlerts();
+        await fetchScenarios();
+        await fetchLiveAlerts();
+        await fetchScenarios();
       } else {
         setDrillResult({ success: false, message: data.error ?? 'Failed to initiate drill.' });
       }
@@ -197,6 +212,10 @@ export default function Dashboard() {
       if (resp.ok) {
         setDeployResult({ success: true, message: data.message ?? 'Node deployed successfully.' });
         await fetchAuditLog();
+        await fetchLiveAlerts();
+        await fetchScenarios();
+        await fetchLiveAlerts();
+        await fetchScenarios();
         setTimeout(() => {
           setDeployModal(false);
           setDeployResult(null);
@@ -227,6 +246,11 @@ export default function Dashboard() {
         setBroadcastSuccess(true);
         setBroadcastForm({ title: '', module: 'energy', severity: 'warning', location: '', description: '' });
         await fetchAuditLog();
+        await fetchLiveAlerts();
+        await fetchScenarios();
+        await fetchLiveAlerts();
+        await fetchScenarios();
+        await fetchLiveAlerts();
         setTimeout(() => { setBroadcastModal(false); setBroadcastSuccess(false); }, 1800);
       }
     } catch { /* ignore */ } finally {
@@ -248,6 +272,10 @@ export default function Dashboard() {
         setReportData(data);
         setReportModal(true);
         await fetchAuditLog();
+        await fetchLiveAlerts();
+        await fetchScenarios();
+        await fetchLiveAlerts();
+        await fetchScenarios();
       }
     } catch { /* ignore */ } finally {
       setReportLoading(false);
@@ -271,6 +299,18 @@ export default function Dashboard() {
   const liveAlertsList = Array.isArray(liveAlerts) ? liveAlerts : [];
   const recentActivitiesList = Array.isArray(auditLog) ? auditLog : [];
   const scenarioRunsList = Array.isArray(recentScenarios) ? recentScenarios : [];
+  const sitesList = Array.isArray(sites) ? sites : [];
+
+  const dashboardSites = sitesList
+    .filter((site: any) => typeof site.latitude === 'number' && typeof site.longitude === 'number')
+    .slice(0, 12)
+    .map((site: any) => ({
+      id: site.id,
+      name: site.name,
+      cx: longitudeToCx(site.longitude),
+      cy: latitudeToCy(site.latitude),
+      status: site.currentRiskLevel === 'critical' || site.status !== 'online' ? 'critical' : 'online',
+    }));
 
 
   const systemOk = (stats?.criticalAlerts ?? 0) < 5;
@@ -354,7 +394,7 @@ export default function Dashboard() {
             <img src={`${import.meta.env.BASE_URL}africa-night-hero.png`} alt="Global Operations Map" className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-[8000ms] ease-out" />
             <div className="absolute inset-0 bg-gradient-to-t from-card/90 via-black/30 to-black/20 pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/20 pointer-events-none" />
-            {GLOBAL_SITES.map(site => (
+            {dashboardSites.map(site => (
               <div key={site.id} className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group/node cursor-pointer" style={{ left: site.cx, top: site.cy }}>
                 <div className={cn('w-3 h-3 rounded-full border-2 border-background shadow-lg', site.status === 'online' ? 'bg-primary animate-pulse shadow-[0_0_10px_rgba(201,168,76,0.8)]' : 'bg-destructive animate-ping shadow-[0_0_15px_rgba(220,38,38,1)]')} />
                 <div className="absolute top-4 opacity-0 group-hover/node:opacity-100 transition-opacity bg-black/80 backdrop-blur text-xs px-2 py-1 rounded border border-border whitespace-nowrap z-30">
