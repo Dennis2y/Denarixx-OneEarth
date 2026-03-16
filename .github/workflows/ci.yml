@@ -48,3 +48,4 @@ jobs:
           VITE_API_URL: http://localhost:3001
           VITE_PORT: 3002
           NODE_ENV: production
+
