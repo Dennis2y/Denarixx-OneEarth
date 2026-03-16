@@ -1,28 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { useGetSites, useCreateSite } from '@workspace/api-client-react';
 import { ModuleHeader, LoadingScreen, Card, Badge, Table, Th, Td, Button, Modal, Input, Label, Select, Skeleton, EmptyState, cn } from '@/components/ui-core';
-import { MapPin, Plus, LayoutGrid, List, Users, Server, Zap, Activity, AlertTriangle, Shield, BarChart3, Clock, Radio, ExternalLink, Download } from 'lucide-react';
+import { MapPin, Plus, LayoutGrid, List, Users, Server, Zap, Clock, Shield, ExternalLink, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { apiUrl } from "@/lib/api";
+import { apiUrl } from '@/lib/api';
 
 export default function Sites() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
-  const { data: sites, isLoading, refetch } = useGetSites();
-  const { mutate: createSite, isPending } = useCreateSite();
+
+  const [sites, setSites] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid'|'table'>('grid');
-  const [selectedSite, setSelectedSite] = useState<any|null>(null);
-  const [siteDetail, setSiteDetail] = useState<{
-    energy: any[];
-    alerts: any[];
-    persons: any[];
-  } | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [selectedSite, setSelectedSite] = useState<any | null>(null);
+  const [siteDetail, setSiteDetail] = useState<{ energy: any[]; alerts: any[]; persons: any[] } | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [reportDownloading, setReportDownloading] = useState(false);
+  const [isPending, setIsPending] = useState(false);
+
+  const [formData, setFormData] = useState<any>({
+    name: '',
+    type: 'village',
+    location: '',
+    country: '',
+    latitude: 0,
+    longitude: 0,
+    population: 0,
+  });
+
+  const loadSites = async () => {
+    try {
+      setIsLoading(true);
+      const resp = await fetch(apiUrl('/api/sites'), { credentials: 'include' });
+      if (!resp.ok) {
+        setSites([]);
+        return;
+      }
+      const data = await resp.json();
+      setSites(Array.isArray(data) ? data : []);
+    } catch {
+      setSites([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSites();
+  }, []);
 
   const sitesList = Array.isArray(sites) ? sites : [];
 
@@ -34,6 +62,7 @@ export default function Sites() {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
       });
+
       if (resp.ok) {
         const report = await resp.json();
         const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
@@ -44,36 +73,44 @@ export default function Sites() {
         a.click();
         URL.revokeObjectURL(url);
       }
-    } catch { /* ignore */ } finally {
+    } catch {
+    } finally {
       setReportDownloading(false);
     }
   };
-
-  const [formData, setFormData] = useState<any>({
-    name: '', type: 'village', location: '', country: '', latitude: 0, longitude: 0, population: 0
-  });
 
   const loadSiteDetail = async (site: any) => {
     setSelectedSite(site);
     setSiteDetail(null);
     setDetailLoading(true);
+
     try {
       const [energyRes, alertsRes, personsRes] = await Promise.all([
         fetch(apiUrl(`/api/energy/metrics?siteId=${site.id}`), { credentials: 'include' }),
-        fetch(apiUrl(`/api/alerts?status=active`), { credentials: 'include' }),
-        fetch(apiUrl(`/api/lifemesh/persons`), { credentials: 'include' }),
+        fetch(apiUrl('/api/alerts?status=active'), { credentials: 'include' }),
+        fetch(apiUrl('/api/lifemesh/persons'), { credentials: 'include' }),
       ]);
+
       const [energy, allAlerts, allPersons] = await Promise.all([
-        energyRes.json(),
-        alertsRes.json(),
-        personsRes.json(),
+        energyRes.ok ? energyRes.json() : [],
+        alertsRes.ok ? alertsRes.json() : [],
+        personsRes.ok ? personsRes.json() : [],
       ]);
+
       const locationLower = site.location?.toLowerCase() ?? '';
-      const siteAlerts = Array.isArray(allAlerts) ? allAlerts.filter((a: any) =>
-        a.location?.toLowerCase().includes(locationLower) ||
-        a.description?.toLowerCase().includes(site.name?.toLowerCase())
-      ).slice(0, 5) : [];
-      const sitePersons = Array.isArray(allPersons) ? allPersons.filter((p: any) => p.siteId === site.id) : [];
+      const siteNameLower = site.name?.toLowerCase() ?? '';
+
+      const siteAlerts = Array.isArray(allAlerts)
+        ? allAlerts.filter((a: any) =>
+            a.location?.toLowerCase().includes(locationLower) ||
+            a.description?.toLowerCase().includes(siteNameLower)
+          ).slice(0, 5)
+        : [];
+
+      const sitePersons = Array.isArray(allPersons)
+        ? allPersons.filter((p: any) => p.siteId === site.id)
+        : [];
+
       setSiteDetail({
         energy: Array.isArray(energy) ? energy.slice(0, 1) : [],
         alerts: siteAlerts,
@@ -86,15 +123,44 @@ export default function Sites() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    createSite({ data: { ...formData, latitude: Number(formData.latitude), longitude: Number(formData.longitude), population: Number(formData.population) } }, {
-      onSuccess: () => { setModalOpen(false); refetch(); }
-    });
+    setIsPending(true);
+
+    try {
+      const resp = await fetch(apiUrl('/api/sites'), {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          latitude: Number(formData.latitude),
+          longitude: Number(formData.longitude),
+          population: Number(formData.population),
+        }),
+      });
+
+      if (resp.ok) {
+        setModalOpen(false);
+        setFormData({
+          name: '',
+          type: 'village',
+          location: '',
+          country: '',
+          latitude: 0,
+          longitude: 0,
+          population: 0,
+        });
+        await loadSites();
+      }
+    } catch {
+    } finally {
+      setIsPending(false);
+    }
   };
 
   const getRiskColor = (risk: string) => {
-    switch(risk) {
+    switch (risk) {
       case 'critical': return 'text-destructive bg-destructive/10 border-destructive/30';
       case 'high': return 'text-amber-500 bg-amber-500/10 border-amber-500/30';
       case 'medium': return 'text-blue-400 bg-blue-500/10 border-blue-500/30';
@@ -129,7 +195,7 @@ export default function Sites() {
 
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-          {[1,2,3,4,5,6].map(i => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <Card key={i} className="p-6 border-border/50">
               <Skeleton className="h-6 w-1/2 mb-4" />
               <Skeleton className="h-4 w-1/3 mb-6" />
@@ -151,9 +217,9 @@ export default function Sites() {
                   <Badge variant="outline" className="border-primary/30 text-primary uppercase text-[10px] tracking-widest bg-primary/5">{site.type}</Badge>
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
                     {site.status === 'online' ? (
-                      <span className="text-green-500 flex items-center"><div className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2 animate-pulse"/> {t('sites.online')}</span>
+                      <span className="text-green-500 flex items-center"><div className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2 animate-pulse" /> {t('sites.online')}</span>
                     ) : (
-                      <span className="text-destructive flex items-center"><div className="w-1.5 h-1.5 rounded-full bg-destructive mr-2"/> {t('sites.offline')}</span>
+                      <span className="text-destructive flex items-center"><div className="w-1.5 h-1.5 rounded-full bg-destructive mr-2" /> {t('sites.offline')}</span>
                     )}
                   </div>
                 </div>
@@ -163,6 +229,7 @@ export default function Sites() {
                   {site.location}, <span className="text-white/80 ml-1">{site.country}</span>
                 </div>
               </div>
+
               <div className="p-6 flex-1 bg-card">
                 <div className="grid grid-cols-3 gap-4 mb-6">
                   <div className="text-center">
@@ -178,6 +245,7 @@ export default function Sites() {
                     <p className={cn('font-bold text-sm mt-1 py-0.5 rounded border capitalize', getRiskColor(site.currentRiskLevel))}>{site.currentRiskLevel}</p>
                   </div>
                 </div>
+
                 <div className="flex gap-2">
                   <Button variant="secondary" className="flex-1 bg-secondary/50 hover:bg-secondary border border-border/50 group-hover:border-border/80 transition-colors" onClick={() => loadSiteDetail(site)}>
                     {t('sites.accessTelemetry')}
@@ -258,138 +326,116 @@ export default function Sites() {
 
             {detailLoading ? (
               <div className="space-y-3">
-                <div className="h-20 bg-secondary/30 rounded-xl animate-pulse" />
-                <div className="h-20 bg-secondary/30 rounded-xl animate-pulse" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
               </div>
-            ) : siteDetail && (
+            ) : (
               <>
-                {siteDetail.energy.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <Zap className="w-3.5 h-3.5 text-primary" /> {t('sites.energyTelemetry')}
-                    </h4>
-                    {siteDetail.energy.map((e: any) => (
-                      <div key={e.id} className="grid grid-cols-3 gap-3">
-                        <div className="bg-secondary/20 p-3 rounded-xl border border-border/40 text-center">
-                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">{t('sites.solarOutput')}</p>
-                          <p className="text-lg font-mono font-bold text-primary">{e.solarGeneration}%</p>
-                        </div>
-                        <div className="bg-secondary/20 p-3 rounded-xl border border-border/40 text-center">
-                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">{t('sites.battery')}</p>
-                          <p className={cn('text-lg font-mono font-bold', e.batteryLevel < 20 ? 'text-destructive' : 'text-green-400')}>{e.batteryLevel}%</p>
-                        </div>
-                        <div className="bg-secondary/20 p-3 rounded-xl border border-border/40 text-center">
-                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">{t('sites.gridStatus')}</p>
-                          <p className={cn('text-sm font-bold capitalize', e.gridStatus === 'stable' ? 'text-green-400' : 'text-destructive')}>{e.gridStatus}</p>
-                        </div>
-                      </div>
-                    ))}
+                <Card className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-white">Energy</h3>
+                    <Button variant="outline" size="sm" onClick={() => downloadSiteReport(selectedSite)} disabled={reportDownloading}>
+                      <Download className="w-4 h-4 mr-2" /> Report
+                    </Button>
                   </div>
-                )}
-
-                <div>
-                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <Users className="w-3.5 h-3.5 text-blue-400" /> {t('sites.protectedPersons')} ({siteDetail.persons.length})
-                  </h4>
-                  {siteDetail.persons.length === 0 ? (
-                    <p className="text-xs text-muted-foreground italic">{t('sites.noPersons')}</p>
+                  {siteDetail?.energy?.length ? (
+                    siteDetail.energy.map((e, idx) => (
+                      <div key={idx} className="text-sm text-muted-foreground space-y-1">
+                        <div>Solar: <span className="text-white">{e.solarGeneration} kW</span></div>
+                        <div>Battery: <span className="text-white">{e.batteryLevel}%</span></div>
+                        <div>Grid: <span className="text-white">{e.gridStatus}</span></div>
+                      </div>
+                    ))
                   ) : (
-                    <div className="space-y-2 max-h-36 overflow-y-auto">
-                      {siteDetail.persons.map((p: any) => (
-                        <div key={p.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/20 border border-border/40">
-                          <div className={cn('w-2 h-2 rounded-full shrink-0', p.status === 'safe' ? 'bg-green-500' : p.status === 'at-risk' ? 'bg-amber-500 animate-pulse' : 'bg-destructive animate-ping')} />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold text-white truncate">{p.name}</p>
-                            <p className="text-[10px] text-muted-foreground">{p.category} · {p.status}</p>
-                          </div>
-                          <span className="text-[10px] font-mono text-muted-foreground">{p.contactPhone ?? '—'}</span>
-                        </div>
-                      ))}
-                    </div>
+                    <p className="text-sm text-muted-foreground">No energy data.</p>
                   )}
-                </div>
+                </Card>
 
-                <div>
-                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <AlertTriangle className="w-3.5 h-3.5 text-destructive" /> {t('sites.activeAlerts')} ({siteDetail.alerts.length})
-                  </h4>
-                  {siteDetail.alerts.length === 0 ? (
-                    <div className="flex items-center gap-2 text-xs text-green-400 font-medium">
-                      <div className="w-2 h-2 rounded-full bg-green-500" /> {t('sites.noActiveAlerts')}
-                    </div>
-                  ) : (
+                <Card className="p-4">
+                  <h3 className="font-bold text-white mb-3">Alerts</h3>
+                  {siteDetail?.alerts?.length ? (
                     <div className="space-y-2">
-                      {siteDetail.alerts.map((a: any) => (
-                        <div key={a.id} className="flex items-start gap-3 p-2.5 rounded-lg bg-destructive/5 border border-destructive/20">
-                          <div className={cn('w-2 h-2 rounded-full mt-1.5 shrink-0', a.severity === 'critical' ? 'bg-destructive animate-ping' : 'bg-amber-500')} />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold text-white truncate">{a.title}</p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{a.description}</p>
-                            <p className="text-[10px] font-mono text-muted-foreground/60 mt-0.5">{format(new Date(a.createdAt), 'MMM d, HH:mm')} UTC · {a.module}</p>
-                          </div>
+                      {siteDetail.alerts.map((a, idx) => (
+                        <div key={idx} className="text-sm text-muted-foreground border border-border/40 rounded-lg p-3">
+                          <div className="text-white font-semibold">{a.title}</div>
+                          <div>{a.description}</div>
                         </div>
                       ))}
                     </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No active alerts.</p>
                   )}
-                </div>
+                </Card>
+
+                <Card className="p-4">
+                  <h3 className="font-bold text-white mb-3">Protected Persons</h3>
+                  {siteDetail?.persons?.length ? (
+                    <div className="space-y-2">
+                      {siteDetail.persons.map((p, idx) => (
+                        <div key={idx} className="text-sm text-muted-foreground border border-border/40 rounded-lg p-3">
+                          <div className="text-white font-semibold">{p.name}</div>
+                          <div>Status: {p.status}</div>
+                          <div>Category: {p.category}</div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No protected persons linked.</p>
+                  )}
+                </Card>
               </>
             )}
-
-            <div className="flex flex-wrap gap-2 pt-2 border-t border-border/50">
-              <Button variant="ghost" onClick={() => { setSelectedSite(null); setSiteDetail(null); }} className="flex-1">{t('sites.close')}</Button>
-              <Button variant="outline" onClick={() => downloadSiteReport(selectedSite)} disabled={reportDownloading} className="flex-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10">
-                {reportDownloading
-                  ? <><div className="w-3.5 h-3.5 mr-2 border-2 border-current/30 border-t-current rounded-full animate-spin" />Downloading...</>
-                  : <><Download className="w-4 h-4 mr-2" /> Download Report</>}
-              </Button>
-              <Button variant="outline" onClick={() => { setLocation(`/sites/${selectedSite.id}`); setSelectedSite(null); setSiteDetail(null); }} className="flex-1 border-primary/30 text-primary hover:bg-primary/10">
-                <ExternalLink className="w-4 h-4 mr-2" /> Full Profile
-              </Button>
-            </div>
           </div>
         )}
       </Modal>
 
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={t('sites.initializeNode')}>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-2">
-            <Label className="text-white">{t('sites.nodeDesignation')}</Label>
-            <Input className="bg-background border-border/80 text-base" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required placeholder="e.g. Sector 7 Core" />
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={t('sites.deployNode')}>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label>Name</Label>
+            <Input value={formData.name} onChange={(e: any) => setFormData({ ...formData, name: e.target.value })} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-white">{t('sites.facilityType')}</Label>
-              <Select className="bg-background border-border/80 text-base" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}
-                options={['village', 'clinic', 'school', 'district', 'shelter'].map(v => ({ label: v.toUpperCase(), value: v }))} required />
+          <div>
+            <Label>Type</Label>
+            <Select
+              value={formData.type}
+              onChange={(e: any) => setFormData({ ...formData, type: e.target.value })}
+              options={[
+                { value: 'village', label: 'Village' },
+                { value: 'clinic', label: 'Clinic' },
+                { value: 'school', label: 'School' },
+                { value: 'district', label: 'District' },
+                { value: 'shelter', label: 'Shelter' },
+              ]}
+            />
+          </div>
+          <div>
+            <Label>Location</Label>
+            <Input value={formData.location} onChange={(e: any) => setFormData({ ...formData, location: e.target.value })} />
+          </div>
+          <div>
+            <Label>Country</Label>
+            <Input value={formData.country} onChange={(e: any) => setFormData({ ...formData, country: e.target.value })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Latitude</Label>
+              <Input type="number" value={formData.latitude} onChange={(e: any) => setFormData({ ...formData, latitude: e.target.value })} />
             </div>
-            <div className="space-y-2">
-              <Label className="text-white">{t('sites.protectedPopulation')}</Label>
-              <Input className="bg-background border-border/80 text-base font-mono" type="number" value={formData.population || ''} onChange={e => setFormData({...formData, population: e.target.value})} required />
+            <div>
+              <Label>Longitude</Label>
+              <Input type="number" value={formData.longitude} onChange={(e: any) => setFormData({ ...formData, longitude: e.target.value })} />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-white">{t('sites.regionCity')}</Label>
-              <Input className="bg-background border-border/80 text-base" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} required />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-white">{t('sites.country')}</Label>
-              <Input className="bg-background border-border/80 text-base" value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} required />
-            </div>
+          <div>
+            <Label>Population</Label>
+            <Input type="number" value={formData.population} onChange={(e: any) => setFormData({ ...formData, population: e.target.value })} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-white">{t('sites.latitude')}</Label>
-              <Input className="bg-background border-border/80 text-base font-mono" type="number" step="0.0001" value={formData.latitude || ''} onChange={e => setFormData({...formData, latitude: e.target.value})} required />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-white">{t('sites.longitude')}</Label>
-              <Input className="bg-background border-border/80 text-base font-mono" type="number" step="0.0001" value={formData.longitude || ''} onChange={e => setFormData({...formData, longitude: e.target.value})} required />
-            </div>
-          </div>
-          <div className="pt-6 flex gap-4 border-t border-border/50">
-            <Button type="button" variant="ghost" onClick={() => setModalOpen(false)} className="flex-1 h-12">{t('sites.abort')}</Button>
-            <Button type="submit" isLoading={isPending} className="flex-1 h-12 text-md shadow-[0_0_15px_rgba(201,168,76,0.3)]">{t('sites.deployInitialization')}</Button>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
+            <Button type="submit" disabled={isPending}>{isPending ? 'Deploying...' : 'Deploy'}</Button>
           </div>
         </form>
       </Modal>
