@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useGetProtectedPersons, useGetSafetyIncidents, useTriggerSOS } from '@workspace/api-client-react';
 import { ModuleHeader, LoadingScreen, Card, Badge, Button, Modal, Input, Label, Select, cn } from '@/components/ui-core';
 import { Shield, ShieldAlert, Search, MapPin, Activity, Phone, ChevronRight, Lock, Radio, Clock, AlertTriangle, UserCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { useAuth } from '@/context/auth';
+import { apiUrl } from "@/lib/api";
 
 function StatusDot({ status }: { status: string }) {
   const colors: Record<string, string> = {
@@ -19,27 +19,77 @@ function StatusDot({ status }: { status: string }) {
 export default function LifeMesh() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { data: persons, isLoading: pLoading } = useGetProtectedPersons();
-  const { data: incidents, isLoading: iLoading } = useGetSafetyIncidents();
-  const { mutate: triggerSOS, isPending: sosPending } = useTriggerSOS();
+  const [persons, setPersons] = useState<any[]>([]);
+  const [incidents, setIncidents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sosPending, setSosPending] = useState(false);
 
   const [sosModalOpen, setSosOpen] = useState(false);
   const [sosData, setSosData] = useState({ personId: '', location: '', message: '' });
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
-  if (pLoading || iLoading) return <LoadingScreen />;
+  React.useEffect(() => {
+    let mounted = true;
 
-  const handleSOS = (e: React.FormEvent) => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        const [personsResp, incidentsResp] = await Promise.all([
+          fetch(apiUrl('/api/lifemesh/persons'), { credentials: 'include' }),
+          fetch(apiUrl('/api/lifemesh/incidents'), { credentials: 'include' }),
+        ]);
+
+        const [personsData, incidentsData] = await Promise.all([
+          personsResp.ok ? personsResp.json() : [],
+          incidentsResp.ok ? incidentsResp.json() : [],
+        ]);
+
+        if (!mounted) return;
+        setPersons(Array.isArray(personsData) ? personsData : []);
+        setIncidents(Array.isArray(incidentsData) ? incidentsData : []);
+      } catch {
+        if (!mounted) return;
+        setPersons([]);
+        setIncidents([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    load();
+    return () => { mounted = false; };
+  }, []);
+
+  if (loading) return <LoadingScreen />;
+
+  const handleSOS = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!sosData.personId || !sosData.location) return;
-    triggerSOS({ data: { personId: Number(sosData.personId), location: sosData.location, message: sosData.message } }, {
-      onSuccess: () => {
-        setSosOpen(false);
-        setSosData({ personId: '', location: '', message: '' });
-        alert('CRITICAL SOS DISPATCHED — GLOBAL RESPONSE NETWORK ACTIVATED. ALL ACTIONS LOGGED TO CENTRAL COMMAND.');
-      }
-    });
+
+    try {
+      setSosPending(true);
+      const resp = await fetch(apiUrl('/api/lifemesh/sos'), {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          personId: Number(sosData.personId),
+          location: sosData.location,
+          message: sosData.message,
+        }),
+      });
+
+      if (!resp.ok) throw new Error('SOS failed');
+
+      setSosOpen(false);
+      setSosData({ personId: '', location: '', message: '' });
+      alert('CRITICAL SOS DISPATCHED — GLOBAL RESPONSE NETWORK ACTIVATED. ALL ACTIONS LOGGED TO CENTRAL COMMAND.');
+    } catch {
+      alert('SOS dispatch failed. Check API connection.');
+    } finally {
+      setSosPending(false);
+    }
   };
 
   const getStatusMeta = (status: string) => ({

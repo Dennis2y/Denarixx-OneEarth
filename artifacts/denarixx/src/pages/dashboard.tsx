@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'wouter';
-import { useGetDashboardStats, useGetUnifiedAlerts, useGetSites } from '@workspace/api-client-react';
 import { LoadingScreen, Card, Badge, Button, Modal, Input, Label, Select, cn } from '@/components/ui-core';
 import { MapPin, AlertTriangle, Users, Globe, Zap, ArrowRight, ShieldAlert, FileText, Radio, Check, Activity, Shield, Download, Play, Cpu, CheckCircle2 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -99,12 +98,54 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const { user, can } = useAuth();
   const [, setLocation] = useLocation();
-  const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
-  const { data: initialAlerts, isLoading: alertsLoading } = useGetUnifiedAlerts({ severity: 'critical' });
-  const { data: sites } = useGetSites();
+  const [stats, setStats] = useState<any>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [initialAlerts, setInitialAlerts] = useState<any[]>([]);
+  const [alertsLoading, setAlertsLoading] = useState(true);
+  const [sites, setSites] = useState<any[]>([]);
+  const [sitesLoading, setSitesLoading] = useState(true);
   const [liveAlerts, setLiveAlerts] = useState<any[]>([]);
   const [auditLog, setAuditLog] = useState<any[]>([]);
   const [recentScenarios, setRecentScenarios] = useState<any[]>([]);
+
+  const fetchDashboardStats = useCallback(async () => {
+    try {
+      setStatsLoading(true);
+      const resp = await fetch(apiUrl('/api/dashboard/stats'), { credentials: 'include' });
+      const data = resp.ok ? await resp.json() : null;
+      setStats(data);
+    } catch {
+      setStats(null);
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
+  const fetchInitialAlerts = useCallback(async () => {
+    try {
+      setAlertsLoading(true);
+      const resp = await fetch(apiUrl('/api/alerts?severity=critical'), { credentials: 'include' });
+      const data = resp.ok ? await resp.json() : [];
+      setInitialAlerts(Array.isArray(data) ? data : []);
+    } catch {
+      setInitialAlerts([]);
+    } finally {
+      setAlertsLoading(false);
+    }
+  }, []);
+
+  const fetchSites = useCallback(async () => {
+    try {
+      setSitesLoading(true);
+      const resp = await fetch(apiUrl('/api/sites'), { credentials: 'include' });
+      const data = resp.ok ? await resp.json() : [];
+      setSites(Array.isArray(data) ? data : []);
+    } catch {
+      setSites([]);
+    } finally {
+      setSitesLoading(false);
+    }
+  }, []);
 
   // Action modals
   const [drillModal, setDrillModal] = useState(false);
@@ -154,16 +195,20 @@ export default function Dashboard() {
   }, [initialAlerts]);
 
   useEffect(() => {
+    fetchDashboardStats();
+    fetchInitialAlerts();
+    fetchSites();
     fetchAuditLog();
     fetchScenarios();
     fetchLiveAlerts();
 
     const interval = setInterval(() => {
+      fetchDashboardStats();
       fetchLiveAlerts();
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [fetchAuditLog, fetchScenarios, fetchLiveAlerts]);
+  }, [fetchDashboardStats, fetchInitialAlerts, fetchSites, fetchAuditLog, fetchScenarios, fetchLiveAlerts]);
 
   const runDrill = async () => {
     setDrillRunning(true);
