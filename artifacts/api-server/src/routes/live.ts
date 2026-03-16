@@ -1,19 +1,14 @@
 import { Router, type IRouter } from "express";
+import {
+  registerLiveClient,
+  unregisterLiveClient,
+  sendLiveEvent,
+  broadcastLiveEvent,
+  getLiveClientCount,
+  makeLivePayload,
+} from "../lib/live.js";
 
 const router: IRouter = Router();
-
-type Client = {
-  id: number;
-  res: any;
-};
-
-let clientIdCounter = 1;
-const clients = new Map<number, Client>();
-
-function sendEvent(res: any, event: string, data: unknown) {
-  res.write(`event: ${event}\n`);
-  res.write(`data: ${JSON.stringify(data)}\n\n`);
-}
 
 router.get("/live/stream", (req, res) => {
   res.setHeader("Content-Type", "text/event-stream");
@@ -21,42 +16,48 @@ router.get("/live/stream", (req, res) => {
   res.setHeader("Connection", "keep-alive");
   res.setHeader("X-Accel-Buffering", "no");
 
-  const clientId = clientIdCounter++;
-  clients.set(clientId, { id: clientId, res });
+  const clientId = registerLiveClient(res);
 
-  sendEvent(res, "connected", {
-    ok: true,
-    clientId,
-    ts: new Date().toISOString(),
-  });
+  sendLiveEvent(
+    res,
+    "connected",
+    makeLivePayload("live:connected", "Live stream connected", {
+      clientId,
+      connectedClients: getLiveClientCount(),
+    }),
+  );
 
   const heartbeat = setInterval(() => {
-    sendEvent(res, "heartbeat", {
-      ts: new Date().toISOString(),
-    });
+    sendLiveEvent(
+      res,
+      "heartbeat",
+      makeLivePayload("live:heartbeat", "Heartbeat", {
+        connectedClients: getLiveClientCount(),
+      }),
+    );
   }, 15000);
 
   req.on("close", () => {
     clearInterval(heartbeat);
-    clients.delete(clientId);
+    unregisterLiveClient(clientId);
     res.end();
   });
 });
 
-router.post("/live/broadcast", (req, res) => {
-  const payload = {
-    type: req.body?.type ?? "map:update",
-    message: req.body?.message ?? "Global command update received",
-    ts: new Date().toISOString(),
-  };
+router.post("/live/broadcast", (_req, res) => {
+  const payload = makeLivePayload(
+    "map:update",
+    "Critical live command update",
+    {
+      connectedClients: getLiveClientCount(),
+    },
+  );
 
-  for (const [, client] of clients) {
-    sendEvent(client.res, "map-update", payload);
-  }
+  broadcastLiveEvent("map-update", payload);
 
   return res.json({
     ok: true,
-    sentTo: clients.size,
+    sentTo: getLiveClientCount(),
     payload,
   });
 });

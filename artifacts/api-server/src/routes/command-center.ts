@@ -1,11 +1,16 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import {
-  sitesTable, protectedPersonsTable, unifiedAlertsTable,
-  energyMetricsTable, simulationHistoryTable, auditLogTable,
+  sitesTable,
+  protectedPersonsTable,
+  unifiedAlertsTable,
+  energyMetricsTable,
+  simulationHistoryTable,
+  auditLogTable,
 } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 import type { AuthRequest } from "../middlewares/auth.js";
+import { broadcastLiveEvent, makeLivePayload, getLiveClientCount } from "../lib/live.js";
 
 const router: IRouter = Router();
 
@@ -170,6 +175,64 @@ const SCENARIO_META: Record<ScenarioType, ScenarioMeta> = {
   },
 };
 
+router.get("/command-center/history", async (_req, res) => {
+  try {
+    const rows = await db
+      .select()
+      .from(simulationHistoryTable)
+      .orderBy(desc(simulationHistoryTable.simulatedAt))
+      .limit(20);
+
+    return res.json(
+      rows.map((r) => ({
+        id: r.id,
+        scenarioId: r.scenarioId,
+        scenarioType: r.scenarioType,
+        scenarioLabel: r.scenarioLabel,
+        operatorEmail: r.operatorEmail,
+        operatorName: r.operatorName,
+        operatorRole: r.operatorRole,
+        readinessScore: r.readinessScore,
+        riskSeverity: r.riskSeverity,
+        affectedSitesCount: r.affectedSitesCount,
+        affectedPersonsCount: r.affectedPersonsCount,
+        estimatedPopulationAtRisk: r.estimatedPopulationAtRisk,
+        simulatedAt: r.simulatedAt.toISOString(),
+      })),
+    );
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/command-center/history/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const rows = await db
+      .select()
+      .from(simulationHistoryTable)
+      .where(eq(simulationHistoryTable.id, id))
+      .limit(1);
+
+    const row = rows[0];
+
+    if (!row) {
+      return res.status(404).json({ error: "Simulation not found" });
+    }
+
+    let result: unknown = {};
+    try {
+      result = JSON.parse(row.resultJson);
+    } catch {}
+
+    return res.json({ result });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.post("/command-center/simulate", async (req: AuthRequest, res) => {
   try {
     const { scenarioType } = req.body as { scenarioType?: string };
@@ -184,26 +247,38 @@ router.post("/command-center/simulate", async (req: AuthRequest, res) => {
     const [allSites, allPersons, recentAlerts, latestMetrics] = await Promise.all([
       db.select().from(sitesTable),
       db.select().from(protectedPersonsTable),
-      db.select().from(unifiedAlertsTable).where(eq(unifiedAlertsTable.status, "active")).orderBy(desc(unifiedAlertsTable.createdAt)).limit(20),
+      db
+        .select()
+        .from(unifiedAlertsTable)
+        .where(eq(unifiedAlertsTable.status, "active"))
+        .orderBy(desc(unifiedAlertsTable.createdAt))
+        .limit(20),
       db.select().from(energyMetricsTable).orderBy(desc(energyMetricsTable.recordedAt)).limit(50),
     ]);
 
-    const affectedSites = allSites.filter(s =>
-      meta.siteTypesAffected.includes(s.type) || s.currentRiskLevel === "critical" || s.currentRiskLevel === "high"
-    ).slice(0, 5);
+    const affectedSites = allSites
+      .filter(
+        (s) =>
+          meta.siteTypesAffected.includes(s.type) ||
+          s.currentRiskLevel === "critical" ||
+          s.currentRiskLevel === "high",
+      )
+      .slice(0, 5);
 
-    const affectedSiteIds = new Set(affectedSites.map(s => s.id));
-    const affectedPersons = allPersons.filter(p => affectedSiteIds.has(p.siteId));
-    const atRiskPersons = affectedPersons.filter(p => p.status === "at-risk" || p.status === "emergency");
-    const criticalFacilities = affectedSites.filter(s => s.type === "clinic" || s.type === "shelter");
+    const affectedSiteIds = new Set(affectedSites.map((s) => s.id));
+    const affectedPersons = allPersons.filter((p) => affectedSiteIds.has(p.siteId));
+    const atRiskPersons = affectedPersons.filter((p) => p.status === "at-risk" || p.status === "emergency");
+    const criticalFacilities = affectedSites.filter((s) => s.type === "clinic" || s.type === "shelter");
 
-    const relevantMetrics = latestMetrics.filter(m => affectedSiteIds.has(m.siteId));
-    const avgBattery = relevantMetrics.length > 0
-      ? relevantMetrics.reduce((sum, m) => sum + m.batteryLevel, 0) / relevantMetrics.length
-      : 65;
-    const avgSolar = relevantMetrics.length > 0
-      ? relevantMetrics.reduce((sum, m) => sum + m.solarGeneration, 0) / relevantMetrics.length
-      : 45;
+    const relevantMetrics = latestMetrics.filter((m) => affectedSiteIds.has(m.siteId));
+    const avgBattery =
+      relevantMetrics.length > 0
+        ? relevantMetrics.reduce((sum, m) => sum + m.batteryLevel, 0) / relevantMetrics.length
+        : 65;
+    const avgSolar =
+      relevantMetrics.length > 0
+        ? relevantMetrics.reduce((sum, m) => sum + m.solarGeneration, 0) / relevantMetrics.length
+        : 45;
 
     const baseReadiness = 100 - meta.readinessPenalty;
     const batteryPenalty = avgBattery < 30 ? 15 : avgBattery < 60 ? 5 : 0;
@@ -226,7 +301,7 @@ router.post("/command-center/simulate", async (req: AuthRequest, res) => {
         name: operator.name,
         role: operator.role,
       },
-      affectedSites: affectedSites.map(s => ({
+      affectedSites: affectedSites.map((s) => ({
         id: s.id,
         name: s.name,
         type: s.type,
@@ -240,7 +315,12 @@ router.post("/command-center/simulate", async (req: AuthRequest, res) => {
       affectedPersonsTotal: affectedPersons.length,
       atRiskPersonsCount: atRiskPersons.length,
       criticalFacilitiesCount: criticalFacilities.length,
-      criticalFacilities: criticalFacilities.map(f => ({ id: f.id, name: f.name, type: f.type, location: f.location })),
+      criticalFacilities: criticalFacilities.map((f) => ({
+        id: f.id,
+        name: f.name,
+        type: f.type,
+        location: f.location,
+      })),
       estimatedPopulationAtRisk,
       energyStatus: {
         avgBatteryLevel: Math.round(avgBattery),
@@ -250,87 +330,52 @@ router.post("/command-center/simulate", async (req: AuthRequest, res) => {
       },
       recommendedActions: meta.actions,
       escalationTimeline: meta.timelineEvents,
-      activeAlertCount: recentAlerts.filter(a => a.module === meta.module).length,
+      activeAlertCount: recentAlerts.filter((a) => a.module === meta.module).length,
       simulatedAt: new Date().toISOString(),
     };
 
-    await Promise.all([
-      db.insert(simulationHistoryTable).values({
+    const [saved] = await db
+      .insert(simulationHistoryTable)
+      .values({
         scenarioId,
         scenarioType,
-        scenarioLabel: meta.label,
+        scenarioLabel: result.scenarioLabel,
         operatorEmail: operator.email,
         operatorName: operator.name,
         operatorRole: operator.role,
-        readinessScore,
-        riskSeverity: meta.baseRisk,
-        affectedSitesCount: affectedSites.length,
-        affectedPersonsCount: affectedPersons.length,
-        estimatedPopulationAtRisk,
+        readinessScore: result.readinessScore,
+        riskSeverity: result.riskSeverity,
+        affectedSitesCount: result.affectedSites.length,
+        affectedPersonsCount: result.atRiskPersonsCount,
+        estimatedPopulationAtRisk: result.estimatedPopulationAtRisk,
         resultJson: JSON.stringify(result),
-      }).catch(() => {}),
-      db.insert(auditLogTable).values({
-        actor: operator.email,
-        actorRole: operator.role,
-        action: "scenario.run",
-        target: `simulation:${scenarioId}`,
-        details: JSON.stringify({ scenarioType, scenarioLabel: meta.label, readinessScore }),
-      }).catch(() => {}),
-    ]);
+      })
+      .returning();
+
+    await db.insert(auditLogTable).values({
+      actor: operator.email,
+      actorRole: operator.role,
+      action: "scenario.run",
+      target: `scenario:${scenarioType}`,
+      details: JSON.stringify({
+        scenarioLabel: result.scenarioLabel,
+        readinessScore: result.readinessScore,
+        riskSeverity: result.riskSeverity,
+      }),
+    });
+
+    broadcastLiveEvent(
+      "map-update",
+      makeLivePayload("command-center:simulation", `Simulation executed: ${result.scenarioLabel}`, {
+        scenarioType: result.scenarioType,
+        readinessScore: result.readinessScore,
+        riskSeverity: result.riskSeverity,
+        simulationId: saved.id,
+        connectedClients: getLiveClientCount(),
+      }),
+    );
 
     return res.json(result);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-router.get("/command-center/history", async (_req, res) => {
-  try {
-    const history = await db
-      .select({
-        id: simulationHistoryTable.id,
-        scenarioId: simulationHistoryTable.scenarioId,
-        scenarioType: simulationHistoryTable.scenarioType,
-        scenarioLabel: simulationHistoryTable.scenarioLabel,
-        operatorEmail: simulationHistoryTable.operatorEmail,
-        operatorName: simulationHistoryTable.operatorName,
-        operatorRole: simulationHistoryTable.operatorRole,
-        readinessScore: simulationHistoryTable.readinessScore,
-        riskSeverity: simulationHistoryTable.riskSeverity,
-        affectedSitesCount: simulationHistoryTable.affectedSitesCount,
-        affectedPersonsCount: simulationHistoryTable.affectedPersonsCount,
-        estimatedPopulationAtRisk: simulationHistoryTable.estimatedPopulationAtRisk,
-        simulatedAt: simulationHistoryTable.simulatedAt,
-      })
-      .from(simulationHistoryTable)
-      .orderBy(desc(simulationHistoryTable.simulatedAt))
-      .limit(50);
-
-    return res.json(history.map(h => ({ ...h, simulatedAt: h.simulatedAt.toISOString() })));
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-router.get("/command-center/history/:id", async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-
-    const [record] = await db
-      .select()
-      .from(simulationHistoryTable)
-      .where(eq(simulationHistoryTable.id, id));
-
-    if (!record) return res.status(404).json({ error: "Simulation not found" });
-
-    return res.json({
-      ...record,
-      simulatedAt: record.simulatedAt.toISOString(),
-      result: JSON.parse(record.resultJson),
-    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Internal server error" });

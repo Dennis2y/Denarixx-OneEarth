@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { protectedPersonsTable, safetyIncidentsTable, sitesTable, unifiedAlertsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { broadcastLiveEvent, makeLivePayload, getLiveClientCount } from "../lib/live.js";
 
 const router: IRouter = Router();
 
@@ -72,6 +73,16 @@ router.post("/lifemesh/sos", async (req, res) => {
       status: "active",
       description: `Emergency SOS has been triggered for person #${personId} at ${location}`,
     });
+
+    broadcastLiveEvent(
+      "map-update",
+      makeLivePayload("lifemesh:sos", `SOS triggered for person #${personId}`, {
+        personId,
+        incidentId: incident.id,
+        location: location ?? "Unknown",
+        connectedClients: getLiveClientCount(),
+      }),
+    );
 
     res.json({
       success: true,

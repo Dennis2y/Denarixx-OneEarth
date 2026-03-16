@@ -3,6 +3,7 @@ import { randomBytes, createHash } from "crypto";
 import { db } from "@workspace/db";
 import { auditLogTable, sessionsTable } from "@workspace/db";
 import { and, eq, gt, lt } from "drizzle-orm";
+import { broadcastLiveEvent, makeLivePayload, getLiveClientCount } from "../lib/live.js";
 
 const router: IRouter = Router();
 
@@ -149,6 +150,15 @@ router.post("/auth/login", async (req, res) => {
     JSON.stringify({ name: user.name }),
   );
 
+  broadcastLiveEvent(
+    "map-update",
+    makeLivePayload("auth:login", `${user.name} signed in`, {
+      actor: user.email,
+      actorRole: user.role,
+      connectedClients: getLiveClientCount(),
+    }),
+  );
+
   const isProduction = process.env.NODE_ENV === "production";
 
   res.cookie("den_session", token, {
@@ -191,6 +201,15 @@ router.post("/auth/logout", async (req, res) => {
 
     if (user) {
       await writeAudit(user.email, user.role, "auth.logout", `user:${user.id}`);
+
+      broadcastLiveEvent(
+        "map-update",
+        makeLivePayload("auth:logout", `${user.name} signed out`, {
+          actor: user.email,
+          actorRole: user.role,
+          connectedClients: getLiveClientCount(),
+        }),
+      );
     }
 
     await db.delete(sessionsTable).where(eq(sessionsTable.token, token));
