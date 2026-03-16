@@ -112,6 +112,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: '/dashboard', label: t('nav.dashboard'), icon: Home, group: t('nav.core') },
     { href: '/command-center', label: 'Command Center', icon: Cpu, group: t('nav.core') },
+    { href: '/global-map', label: 'Global Map', icon: Globe, group: t('nav.core') },
     { href: '/energy', label: t('nav.energy'), icon: Zap, group: t('nav.modules') },
     { href: '/lifemesh', label: t('nav.lifemesh'), icon: Shield, group: t('nav.modules') },
     { href: '/earthshield', label: t('nav.earthshield'), icon: Globe, group: t('nav.modules') },
@@ -146,7 +147,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   const sidebarContent = (
     <>
-      {/* Sidebar header */}
       <div className="h-14 md:h-16 flex items-center px-4 border-b border-sidebar-border bg-background/50 shrink-0 justify-between">
         <div className="flex items-center gap-3 min-w-0">
           <img src={`${import.meta.env.BASE_URL}denarixx-logo.png`} className="h-8 w-8 shrink-0" alt="Logo" />
@@ -155,7 +155,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">OneEarth Command</span>
           </div>
         </div>
-        {/* Close button — mobile overlay only */}
         <button
           onClick={() => setSidebarOpen(false)}
           className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-secondary transition-colors shrink-0 md:hidden"
@@ -234,8 +233,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-[100dvh] bg-background text-foreground font-sans overflow-hidden selection:bg-primary/30 selection:text-primary-foreground">
-
-      {/* Mobile-only backdrop overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/80 z-40 backdrop-blur-sm md:hidden"
@@ -243,12 +240,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      {/* Desktop sidebar — in flex flow (not fixed), always visible */}
       <aside className="hidden md:flex flex-col w-[260px] shrink-0 h-full bg-sidebar data-grid bg-tech-grid border-r border-sidebar-border z-30">
         {sidebarContent}
       </aside>
 
-      {/* Mobile sidebar — fixed overlay, slides in on hamburger tap */}
       <aside className={cn(
         "fixed top-0 left-0 h-full w-[280px] bg-sidebar data-grid bg-tech-grid border-r border-sidebar-border flex flex-col z-50 transition-transform duration-300 ease-in-out md:hidden",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -256,91 +251,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         {sidebarContent}
       </aside>
 
-      {/* Main content — naturally fills remaining space next to desktop sidebar */}
       <div className="flex-1 flex flex-col h-[100dvh] overflow-hidden min-w-0">
-
-        {/* Top bar */}
-        <header className="h-14 md:h-16 border-b border-border/50 flex items-center justify-between px-3 sm:px-6 bg-background/80 backdrop-blur-md shrink-0 z-30">
-          <div className="flex items-center gap-2 sm:gap-4">
-            {/* Hamburger — mobile only */}
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-xl text-muted-foreground hover:text-white hover:bg-secondary transition-colors md:hidden"
-              aria-label="Open menu"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-            <div className="relative hidden sm:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-              <input
-                type="text"
-                placeholder={t('header.search')}
-                className="bg-secondary/50 border border-border/50 rounded-xl pl-10 pr-4 py-2 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary/50 focus:bg-secondary/80 w-48 md:w-64 transition-all"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-green-500/10 border border-green-500/20">
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">{t('header.systemOnline')}</span>
-            </div>
-            {user && (
-              <div className="hidden sm:flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-secondary/50 border border-border/50">
-                <div className="w-6 h-6 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-[10px] font-bold text-primary shrink-0">
-                  {initials}
-                </div>
-                <div className="hidden md:block">
-                  <div className="text-xs font-bold text-white leading-none">{displayName}</div>
-                  <div className="text-[9px] text-primary capitalize tracking-wider mt-0.5">{roleLabel(user.role)}</div>
-                </div>
-              </div>
-            )}
-          </div>
-        </header>
-
-        {/* Operational Status Ribbon */}
         <SystemRibbon user={user} />
-
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 pb-20 md:pb-6 relative custom-scrollbar">
-          <div
-            className="absolute inset-0 pointer-events-none opacity-[0.03]"
-            style={{ backgroundImage: `url(${import.meta.env.BASE_URL}africa-night-hero.png)`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'grayscale(100%)' }}
-          />
-          <div className="relative z-10 max-w-[1600px] mx-auto">
-            {children}
-          </div>
+        <main className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 lg:p-8">
+          {children}
         </main>
       </div>
-
-      {/* Mobile bottom navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 h-16 bg-sidebar border-t border-sidebar-border flex md:hidden z-30 backdrop-blur-md">
-        {BOTTOM_NAV.map(({ href, icon: Icon, label }) => {
-          const isActive = location === href;
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex-1 flex flex-col items-center justify-center gap-1 transition-all",
-                isActive ? "text-primary" : "text-muted-foreground hover:text-white"
-              )}
-            >
-              <Icon className={cn("w-5 h-5", isActive && "drop-shadow-[0_0_6px_hsl(43,65%,52%)]")} />
-              <span className="text-[9px] font-bold uppercase tracking-widest">{label}</span>
-              {isActive && <div className="absolute bottom-0 w-8 h-0.5 bg-primary rounded-full" />}
-            </Link>
-          );
-        })}
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="flex-1 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-white transition-all"
-        >
-          <Menu className="w-5 h-5" />
-          <span className="text-[9px] font-bold uppercase tracking-widest">More</span>
-        </button>
-      </nav>
     </div>
   );
 }
