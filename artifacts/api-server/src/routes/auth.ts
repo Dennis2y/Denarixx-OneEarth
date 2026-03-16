@@ -2,11 +2,11 @@ import { Router, type IRouter } from "express";
 import { randomBytes, createHash } from "crypto";
 import { db } from "@workspace/db";
 import { auditLogTable, sessionsTable } from "@workspace/db";
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, lt } from "drizzle-orm";
 
 const router: IRouter = Router();
 
-type SessionUser = {
+export type SessionUser = {
   id: number;
   name: string;
   email: string;
@@ -21,28 +21,50 @@ function hashPassword(pw: string): string {
 
 const DEMO_USERS: Array<SessionUser & { passwordHash: string }> = [
   {
-    id: 1, name: "Cmdr. Prime", email: "commander@denarixx.io",
+    id: 1,
+    name: "Cmdr. Prime",
+    email: "commander@denarixx.io",
     passwordHash: hashPassword("denarixx2026"),
-    role: "admin", organization: "Denarixx HQ", clearanceLevel: 5,
+    role: "admin",
+    organization: "Denarixx HQ",
+    clearanceLevel: 5,
   },
   {
-    id: 2, name: "Adaeze Okonkwo", email: "adaeze@denarixx.io",
+    id: 2,
+    name: "Adaeze Okonkwo",
+    email: "adaeze@denarixx.io",
     passwordHash: hashPassword("operator123"),
-    role: "operator", organization: "Lagos Grid Ops", clearanceLevel: 3,
+    role: "operator",
+    organization: "Lagos Grid Ops",
+    clearanceLevel: 3,
   },
   {
-    id: 3, name: "Dr. Kofi Mensah", email: "kofi@gov.gh",
+    id: 3,
+    name: "Dr. Kofi Mensah",
+    email: "kofi@gov.gh",
     passwordHash: hashPassword("gov2026"),
-    role: "government", organization: "Ghana Disaster Authority", clearanceLevel: 4,
+    role: "government",
+    organization: "Ghana Disaster Authority",
+    clearanceLevel: 4,
   },
   {
-    id: 4, name: "Fatuma Wanjiru", email: "fatuma@community.ke",
+    id: 4,
+    name: "Fatuma Wanjiru",
+    email: "fatuma@community.ke",
     passwordHash: hashPassword("community1"),
-    role: "community", organization: "Kibera Community Watch", clearanceLevel: 1,
+    role: "community",
+    organization: "Kibera Community Watch",
+    clearanceLevel: 1,
   },
 ];
 
-async function writeAudit(actor: string, actorRole: string | null, action: string, target?: string, details?: string) {
+async function writeAudit(
+  actor: string,
+  actorRole: string | null,
+  action: string,
+  target?: string,
+  details?: string,
+) {
   try {
     await db.insert(auditLogTable).values({ actor, actorRole, action, target, details });
   } catch {
@@ -50,13 +72,19 @@ async function writeAudit(actor: string, actorRole: string | null, action: strin
   }
 }
 
-async function getSessionUserByToken(token: string): Promise<SessionUser | null> {
-  const now = new Date();
+async function cleanupExpiredSessions() {
+  try {
+    await db.delete(sessionsTable).where(lt(sessionsTable.expiresAt, new Date()));
+  } catch {
+    // non-blocking
+  }
+}
 
+async function getSessionUserByToken(token: string): Promise<SessionUser | null> {
   const rows = await db
     .select()
     .from(sessionsTable)
-    .where(and(eq(sessionsTable.token, token), gt(sessionsTable.expiresAt, now)))
+    .where(and(eq(sessionsTable.token, token), gt(sessionsTable.expiresAt, new Date())))
     .limit(1);
 
   const row = rows[0];
@@ -84,8 +112,12 @@ router.post("/auth/login", async (req, res) => {
     return res.status(400).json({ error: "Email and password are required" });
   }
 
+  await cleanupExpiredSessions();
+
   const user = DEMO_USERS.find(
-    u => u.email.toLowerCase() === email.toLowerCase() && u.passwordHash === hashPassword(password)
+    (u) =>
+      u.email.toLowerCase() === email.toLowerCase() &&
+      u.passwordHash === hashPassword(password),
   );
 
   if (!user) {
@@ -95,17 +127,6 @@ router.post("/auth/login", async (req, res) => {
 
   const token = randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000);
-
-  await db.insert(sessionsTable).values({
-    token,
-    userId: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    organization: user.organization,
-    clearanceLevel: user.clearanceLevel,
-    expiresAt,
-  });
 
   await db.delete(sessionsTable).where(eq(sessionsTable.email, user.email));
 
@@ -120,7 +141,13 @@ router.post("/auth/login", async (req, res) => {
     expiresAt,
   });
 
-  await writeAudit(user.email, user.role, "auth.login", `user:${user.id}`, JSON.stringify({ name: user.name }));
+  await writeAudit(
+    user.email,
+    user.role,
+    "auth.login",
+    `user:${user.id}`,
+    JSON.stringify({ name: user.name }),
+  );
 
   const isProduction = process.env.NODE_ENV === "production";
 
@@ -146,6 +173,8 @@ router.get("/auth/me", async (req, res) => {
   const token = (req.cookies as Record<string, string>)?.den_session;
   if (!token) return res.status(401).json({ error: "No session" });
 
+  await cleanupExpiredSessions();
+
   const user = await getSessionUserByToken(token);
   if (!user) return res.status(401).json({ error: "Session expired" });
 
@@ -155,11 +184,15 @@ router.get("/auth/me", async (req, res) => {
 router.post("/auth/logout", async (req, res) => {
   const token = (req.cookies as Record<string, string>)?.den_session;
 
+  await cleanupExpiredSessions();
+
   if (token) {
     const user = await getSessionUserByToken(token);
+
     if (user) {
       await writeAudit(user.email, user.role, "auth.logout", `user:${user.id}`);
     }
+
     await db.delete(sessionsTable).where(eq(sessionsTable.token, token));
   }
 

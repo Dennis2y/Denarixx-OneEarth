@@ -22,6 +22,10 @@ async function main() {
   `);
 
   await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS sessions_email_idx ON sessions(email);
+  `);
+
+  await db.execute(sql`
     CREATE INDEX IF NOT EXISTS sessions_expires_at_idx ON sessions(expires_at);
   `);
 

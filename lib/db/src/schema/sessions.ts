@@ -9,6 +9,6 @@ export const sessionsTable = pgTable("sessions", {
   role: text("role").notNull(),
   organization: text("organization").notNull(),
   clearanceLevel: integer("clearance_level").notNull(),
-  expiresAt: timestamp("expires_at", { withTimezone: false }).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: false }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
 });
