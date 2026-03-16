@@ -1,7 +1,8 @@
 import { Router, type IRouter } from "express";
 import { randomBytes, createHash } from "crypto";
 import { db } from "@workspace/db";
-import { auditLogTable } from "@workspace/db";
+import { auditLogTable, sessionsTable } from "@workspace/db";
+import { and, eq, gt } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -13,8 +14,6 @@ type SessionUser = {
   organization: string;
   clearanceLevel: number;
 };
-
-export const sessions = new Map<string, SessionUser>();
 
 function hashPassword(pw: string): string {
   return createHash("sha256").update(pw + "denarixx_salt_2026").digest("hex");
@@ -47,8 +46,35 @@ async function writeAudit(actor: string, actorRole: string | null, action: strin
   try {
     await db.insert(auditLogTable).values({ actor, actorRole, action, target, details });
   } catch {
-    // Non-blocking — audit failures should never break core flows
+    // non-blocking
   }
+}
+
+async function getSessionUserByToken(token: string): Promise<SessionUser | null> {
+  const now = new Date();
+
+  const rows = await db
+    .select()
+    .from(sessionsTable)
+    .where(and(eq(sessionsTable.token, token), gt(sessionsTable.expiresAt, now)))
+    .limit(1);
+
+  const row = rows[0];
+  if (!row) return null;
+
+  return {
+    id: row.userId,
+    name: row.name,
+    email: row.email,
+    role: row.role,
+    organization: row.organization,
+    clearanceLevel: row.clearanceLevel,
+  };
+}
+
+export async function resolveSessionUserFromCookie(token: string | undefined): Promise<SessionUser | null> {
+  if (!token) return null;
+  return getSessionUserByToken(token);
 }
 
 router.post("/auth/login", async (req, res) => {
@@ -68,8 +94,31 @@ router.post("/auth/login", async (req, res) => {
   }
 
   const token = randomBytes(32).toString("hex");
-  const { passwordHash: _, ...sessionUser } = user;
-  sessions.set(token, sessionUser);
+  const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000);
+
+  await db.insert(sessionsTable).values({
+    token,
+    userId: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    organization: user.organization,
+    clearanceLevel: user.clearanceLevel,
+    expiresAt,
+  });
+
+  await db.delete(sessionsTable).where(eq(sessionsTable.email, user.email));
+
+  await db.insert(sessionsTable).values({
+    token,
+    userId: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    organization: user.organization,
+    clearanceLevel: user.clearanceLevel,
+    expiresAt,
+  });
 
   await writeAudit(user.email, user.role, "auth.login", `user:${user.id}`, JSON.stringify({ name: user.name }));
 
@@ -93,11 +142,11 @@ router.post("/auth/login", async (req, res) => {
   });
 });
 
-router.get("/auth/me", (req, res) => {
+router.get("/auth/me", async (req, res) => {
   const token = (req.cookies as Record<string, string>)?.den_session;
   if (!token) return res.status(401).json({ error: "No session" });
 
-  const user = sessions.get(token);
+  const user = await getSessionUserByToken(token);
   if (!user) return res.status(401).json({ error: "Session expired" });
 
   return res.json(user);
@@ -105,12 +154,13 @@ router.get("/auth/me", (req, res) => {
 
 router.post("/auth/logout", async (req, res) => {
   const token = (req.cookies as Record<string, string>)?.den_session;
+
   if (token) {
-    const user = sessions.get(token);
+    const user = await getSessionUserByToken(token);
     if (user) {
       await writeAudit(user.email, user.role, "auth.logout", `user:${user.id}`);
     }
-    sessions.delete(token);
+    await db.delete(sessionsTable).where(eq(sessionsTable.token, token));
   }
 
   const isProduction = process.env.NODE_ENV === "production";

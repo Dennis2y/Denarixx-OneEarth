@@ -6,3 +6,4 @@ export * from "./alerts";
 export * from "./users";
 export * from "./audit";
 export * from "./simulations";
+export * from "./sessions";
