@@ -1,14 +1,16 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 import {
   MapContainer as LeafletMapContainer,
   TileLayer as LeafletTileLayer,
   CircleMarker as LeafletCircleMarker,
   Popup as LeafletPopup,
+  Circle as LeafletCircle,
+  useMap,
 } from "react-leaflet";
-import { Globe, RefreshCw, Shield, Zap, Bell, Users, AlertTriangle, MapPin, Radio } from "lucide-react";
+import type { Map as LeafletMap } from "leaflet";
+import { Globe, RefreshCw, Shield, Zap, Bell, Users, AlertTriangle, MapPin, Radio, LocateFixed } from "lucide-react";
 import { motion } from "framer-motion";
 import { ModuleHeader, Card, Badge, Button, cn } from "@/components/ui-core";
 import { apiUrl } from "@/lib/api";
@@ -95,6 +97,20 @@ type FilterKey = "all" | "energy" | "lifemesh" | "earthshield" | "alerts";
 
 const mapCenter: [number, number] = [12, 15];
 
+function FlyToSite({ site }: { site: MapOverview["sites"][number] | null }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!site) return;
+    map.flyTo([site.latitude, site.longitude], Math.max(map.getZoom(), 5), {
+      animate: true,
+      duration: 1.2,
+    });
+  }, [map, site]);
+
+  return null;
+}
+
 function getSiteColor(site: MapOverview["sites"][number], filter: FilterKey) {
   if (filter === "energy") {
     const grid = site.latestEnergy?.gridStatus ?? "stable";
@@ -137,13 +153,29 @@ function getSiteRadius(site: MapOverview["sites"][number], filter: FilterKey) {
   return Math.max(8, Math.min(22, 10 + site.criticalAlertsCount * 3));
 }
 
+function getRiskZoneColor(riskLevel: string) {
+  if (riskLevel === "critical") return "#dc2626";
+  if (riskLevel === "high") return "#f59e0b";
+  if (riskLevel === "medium") return "#60a5fa";
+  return "#22c55e";
+}
+
+function getRiskZoneRadius(score: number) {
+  const deficit = 100 - score;
+  return Math.max(50000, Math.min(280000, deficit * 3200));
+}
+
 export default function GlobalMap() {
   const [, setLocation] = useLocation();
+  const mapRef = useRef<LeafletMap | null>(null);
+
   const [data, setData] = useState<MapOverview | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [filter, setFilter] = useState<FilterKey>("all");
   const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null);
+  const [showRiskZones, setShowRiskZones] = useState(true);
+  const [showAlertRings, setShowAlertRings] = useState(true);
 
   const loadOverview = async (silent = false) => {
     try {
@@ -178,6 +210,12 @@ export default function GlobalMap() {
     return list;
   }, [data, filter]);
 
+  const visibleRiskZones = useMemo(() => {
+    const list = data?.riskZones ?? [];
+    if (filter === "earthshield" || filter === "all") return list;
+    return [];
+  }, [data, filter]);
+
   const selectedSite = useMemo(
     () => sites.find((s) => s.id === selectedSiteId) ?? sites[0] ?? null,
     [sites, selectedSiteId]
@@ -190,6 +228,10 @@ export default function GlobalMap() {
     { key: "earthshield" as FilterKey, label: "EarthShield", icon: Shield },
     { key: "alerts" as FilterKey, label: "Alerts", icon: Bell },
   ];
+
+  const resetWorldView = () => {
+    mapRef.current?.flyTo(mapCenter, 2, { animate: true, duration: 1.2 });
+  };
 
   if (isLoading) {
     return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Loading global command map...</div>;
@@ -211,6 +253,10 @@ export default function GlobalMap() {
                 {isRefreshing ? "Refreshing" : "Live"}
               </span>
             </div>
+            <Button variant="outline" size="sm" onClick={resetWorldView}>
+              <LocateFixed className="w-4 h-4 mr-2" />
+              World View
+            </Button>
             <Button variant="outline" size="sm" onClick={() => loadOverview(true)} disabled={isRefreshing}>
               <RefreshCw className={cn("w-4 h-4 mr-2", isRefreshing && "animate-spin")} />
               Refresh
@@ -240,7 +286,7 @@ export default function GlobalMap() {
       </div>
 
       <Card className="p-4 sm:p-5 mb-6 border-primary/15 bg-secondary/20">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 mb-3">
           {filterMeta.map((item) => (
             <button
               key={item.key}
@@ -257,6 +303,32 @@ export default function GlobalMap() {
             </button>
           ))}
         </div>
+
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setShowRiskZones((v) => !v)}
+            className={cn(
+              "px-3 py-1.5 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-all",
+              showRiskZones
+                ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
+                : "border-border/50 text-muted-foreground"
+            )}
+          >
+            Risk Zones
+          </button>
+
+          <button
+            onClick={() => setShowAlertRings((v) => !v)}
+            className={cn(
+              "px-3 py-1.5 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-all",
+              showAlertRings
+                ? "bg-destructive/10 text-destructive border-destructive/30"
+                : "border-border/50 text-muted-foreground"
+            )}
+          >
+            Alert Rings
+          </button>
+        </div>
       </Card>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1.6fr_0.9fr] gap-6">
@@ -267,47 +339,104 @@ export default function GlobalMap() {
               zoom={2}
               scrollWheelZoom={true}
               style={{ height: "100%", width: "100%" }}
+              ref={(instance) => {
+                if (instance) mapRef.current = instance;
+              }}
             >
+              <FlyToSite site={selectedSite} />
+
               <LeafletTileLayer
                 attribution='&copy; OpenStreetMap contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
+
+              {showRiskZones && visibleRiskZones.map((zone) => {
+                const color = getRiskZoneColor(zone.riskLevel);
+                return (
+                  <LeafletCircle
+                    key={`risk-${zone.id}`}
+                    center={[zone.latitude, zone.longitude]}
+                    radius={getRiskZoneRadius(zone.preparednessScore)}
+                    pathOptions={{
+                      color,
+                      weight: 2,
+                      fillColor: color,
+                      fillOpacity: 0.08,
+                    }}
+                  >
+                    <LeafletPopup>
+                      <div className="min-w-[220px]">
+                        <div className="font-bold text-sm mb-1">{zone.name}</div>
+                        <div className="text-xs mb-1">{zone.region}, {zone.country}</div>
+                        <div className="text-xs">Risk: {zone.riskLevel} · Preparedness: {zone.preparednessScore}/100</div>
+                      </div>
+                    </LeafletPopup>
+                  </LeafletCircle>
+                );
+              })}
 
               {sites.map((site) => {
                 const color = getSiteColor(site, filter);
                 const radius = getSiteRadius(site, filter);
 
                 return (
-                  <LeafletCircleMarker
-                    key={site.id}
-                    center={[site.latitude, site.longitude]}
-                    radius={radius}
-                    pathOptions={{
-                      color,
-                      weight: selectedSiteId === site.id ? 4 : 2,
-                      fillColor: color,
-                      fillOpacity: 0.55,
-                    }}
-                    eventHandlers={{
-                      click: () => setSelectedSiteId(site.id),
-                    }}
-                  >
-                    <LeafletPopup>
-                      <div className="min-w-[220px]">
-                        <div className="font-bold text-sm mb-1">{site.name}</div>
-                        <div className="text-xs mb-1">{site.location}, {site.country}</div>
-                        <div className="text-xs mb-2">
-                          Alerts: {site.activeAlertsCount} · At Risk: {site.atRiskPersonsCount}
+                  <React.Fragment key={site.id}>
+                    {showAlertRings && site.criticalAlertsCount > 0 && (
+                      <LeafletCircle
+                        center={[site.latitude, site.longitude]}
+                        radius={120000 + site.criticalAlertsCount * 50000}
+                        pathOptions={{
+                          color: "#dc2626",
+                          weight: 2,
+                          fillColor: "#dc2626",
+                          fillOpacity: 0.06,
+                        }}
+                      />
+                    )}
+
+                    {showAlertRings && site.activeAlertsCount > 0 && site.criticalAlertsCount === 0 && (
+                      <LeafletCircle
+                        center={[site.latitude, site.longitude]}
+                        radius={90000 + site.activeAlertsCount * 35000}
+                        pathOptions={{
+                          color: "#f59e0b",
+                          weight: 2,
+                          fillColor: "#f59e0b",
+                          fillOpacity: 0.05,
+                        }}
+                      />
+                    )}
+
+                    <LeafletCircleMarker
+                      center={[site.latitude, site.longitude]}
+                      radius={radius}
+                      pathOptions={{
+                        color,
+                        weight: selectedSiteId === site.id ? 4 : 2,
+                        fillColor: color,
+                        fillOpacity: 0.6,
+                      }}
+                      eventHandlers={{
+                        click: () => setSelectedSiteId(site.id),
+                      }}
+                    >
+                      <LeafletPopup>
+                        <div className="min-w-[220px]">
+                          <div className="font-bold text-sm mb-1">{site.name}</div>
+                          <div className="text-xs mb-1">{site.location}, {site.country}</div>
+                          <div className="text-xs mb-2">
+                            Alerts: {site.activeAlertsCount} · At Risk: {site.atRiskPersonsCount}
+                          </div>
+                          <button
+                            onClick={() => setLocation(`/sites/${site.id}`)}
+                            className="text-xs font-bold underline"
+                          >
+                            Open site detail
+                          </button>
                         </div>
-                        <button
-                          onClick={() => setLocation(`/sites/${site.id}`)}
-                          className="text-xs font-bold underline"
-                        >
-                          Open site detail
-                        </button>
-                      </div>
-                    </LeafletPopup>
-                  </LeafletCircleMarker>
+                      </LeafletPopup>
+                    </LeafletCircleMarker>
+                  </React.Fragment>
                 );
               })}
             </LeafletMapContainer>
@@ -428,6 +557,30 @@ export default function GlobalMap() {
                   </div>
                 </button>
               ))}
+            </div>
+          </Card>
+
+          <Card className="p-5 border-border/50 bg-secondary/20">
+            <h3 className="text-sm font-display font-bold text-white uppercase tracking-widest mb-4">
+              Planetary Risk Layer
+            </h3>
+            <div className="space-y-2">
+              {(visibleRiskZones ?? []).slice(0, 6).map((zone) => (
+                <div key={zone.id} className="rounded-xl border border-border/40 bg-card/40 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-sm font-bold text-white truncate">{zone.name}</div>
+                      <div className="text-[11px] text-muted-foreground truncate">{zone.region}, {zone.country}</div>
+                    </div>
+                    <div className="text-xs font-bold" style={{ color: getRiskZoneColor(zone.riskLevel) }}>
+                      {zone.preparednessScore}/100
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {visibleRiskZones.length === 0 && (
+                <div className="text-sm text-muted-foreground">No risk-zone overlays in current scope.</div>
+              )}
             </div>
           </Card>
         </div>
