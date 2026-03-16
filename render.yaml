@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: denarixx-oneearth-api
+    runtime: docker
+    repo: https://github.com/Dennis2y/Denarixx-OneEarth
+    dockerfilePath: ./Dockerfile.api
+    plan: starter
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: denarixx-oneearth-db
+          property: connectionString
+
+  - type: static
+    name: denarixx-oneearth-web
+    repo: https://github.com/Dennis2y/Denarixx-OneEarth
+    rootDir: .
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @workspace/denarixx run build
+    publishPath: artifacts/denarixx/dist/public
+    autoDeploy: true
+    envVars:
+      - key: BASE_PATH
+        value: /
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        value: https://denarixx-oneearth-api.onrender.com
+
+databases:
+  - name: denarixx-oneearth-db
+    plan: starter
+    databaseName: denarixx_oneearth
+    user: denarixx
