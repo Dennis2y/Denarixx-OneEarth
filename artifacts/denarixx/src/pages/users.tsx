@@ -1,18 +1,42 @@
-import React from 'react';
-import { useGetUsers } from '@workspace/api-client-react';
+import React, { useEffect, useState } from 'react';
 import { PageHeader, LoadingScreen, Card, Badge, Table, Th, Td, Button, Skeleton, cn } from '@/components/ui-core';
-import { Users as UsersIcon, Shield, Mail, Activity, Lock, Plus, Clock } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
+import { Shield, Mail, Activity, Lock, Plus, Clock } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { apiUrl } from '@/lib/api';
 
 export default function Users() {
   const { t } = useTranslation();
-  const { data: users, isLoading } = useGetUsers();
+  const [users, setUsers] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const load = async () => {
+      try {
+        setIsLoading(true);
+        const resp = await fetch(apiUrl('/api/users'), { credentials: 'include' });
+        const data = resp.ok ? await resp.json() : [];
+        if (!mounted) return;
+        setUsers(Array.isArray(data) ? data : []);
+      } catch {
+        if (!mounted) return;
+        setUsers([]);
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    };
+
+    load();
+    return () => { mounted = false; };
+  }, []);
+
   const usersList = Array.isArray(users) ? users : [];
 
   const getRoleColor = (role: string) => {
-    switch(role) {
+    switch (role) {
       case 'admin': return 'bg-primary/10 text-primary border-primary/30';
       case 'operator': return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
       case 'family': return 'bg-green-500/10 text-green-400 border-green-500/30';
@@ -29,7 +53,7 @@ export default function Users() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <PageHeader 
+      <PageHeader
         title={t('users.title')}
         description={t('users.description')}
         actions={
@@ -70,7 +94,6 @@ export default function Users() {
           </div>
         ) : (
           <>
-            {/* Mobile card list — visible on xs/sm only */}
             <div className="sm:hidden divide-y divide-border/50">
               {usersList.map((user) => (
                 <div key={user.id} className="p-4 space-y-3">
@@ -95,9 +118,7 @@ export default function Users() {
                     <Badge variant="outline" className={cn("uppercase text-[10px] font-bold tracking-widest border", getRoleColor(user.role))}>
                       {user.role}
                     </Badge>
-                    {user.organization && (
-                      <span className="text-xs text-muted-foreground">{user.organization}</span>
-                    )}
+                    {user.organization && <span className="text-xs text-muted-foreground">{user.organization}</span>}
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
@@ -112,7 +133,6 @@ export default function Users() {
               ))}
             </div>
 
-            {/* Desktop table — hidden on xs/sm */}
             <div className="hidden sm:block">
               <Table>
                 <thead>
