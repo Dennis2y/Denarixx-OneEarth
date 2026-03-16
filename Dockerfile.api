@@ -11,9 +11,10 @@ COPY lib ./lib
 COPY scripts ./scripts
 
 RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @workspace/api-server run build
 
 WORKDIR /app/artifacts/api-server
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "pnpm --filter @workspace/api-server run dev"]
+CMD ["sh", "-c", "pnpm --filter @workspace/api-server run start"]
