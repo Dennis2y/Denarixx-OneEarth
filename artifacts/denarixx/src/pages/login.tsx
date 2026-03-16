@@ -14,7 +14,7 @@ interface DemoAccount {
   clearance: number;
   capabilities: string[];
   color: string;
-  icon: React.FC<{ className?: string }>;
+  icon: React.FC<{ className?: string; style?: React.CSSProperties }>;
 }
 
 const DEMO_ACCOUNTS: DemoAccount[] = [

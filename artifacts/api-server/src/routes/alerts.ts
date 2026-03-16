@@ -45,7 +45,8 @@ router.get("/alerts", async (req, res) => {
 
 router.patch("/alerts/:id/status", async (req: AuthRequest, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(rawId ?? "", 10);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid alert ID" });
 
     const { status } = req.body as { status?: string };

@@ -20,20 +20,21 @@ router.get("/users", requireRole("admin", "operator", "government"), async (_req
       createdAt: usersTable.createdAt,
     }).from(usersTable).orderBy(usersTable.name);
 
-    res.json(users.map((u) => ({
+    return res.json(users.map((u) => ({
       ...u,
       lastLogin: u.lastLogin?.toISOString() ?? null,
       createdAt: u.createdAt.toISOString(),
     })));
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
 router.patch("/users/:id/status", requireRole("admin"), async (req: AuthRequest, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(rawId ?? "", 10);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid user ID" });
 
     const { status } = req.body as { status?: string };

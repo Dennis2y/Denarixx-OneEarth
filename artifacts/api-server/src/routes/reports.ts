@@ -12,7 +12,8 @@ const router: IRouter = Router();
 
 router.post("/reports/site/:id", async (req: AuthRequest, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(rawId ?? "", 10);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid site ID" });
 
     const [site] = await db.select().from(sitesTable).where(eq(sitesTable.id, id));
@@ -112,7 +113,8 @@ router.post("/reports/site/:id", async (req: AuthRequest, res) => {
 
 router.post("/reports/scenario/:historyId", async (req: AuthRequest, res) => {
   try {
-    const id = parseInt(req.params.historyId);
+    const rawHistoryId = Array.isArray(req.params.historyId) ? req.params.historyId[0] : req.params.historyId;
+    const id = parseInt(rawHistoryId ?? "", 10);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
 
     const [record] = await db.select().from(simulationHistoryTable).where(eq(simulationHistoryTable.id, id));
