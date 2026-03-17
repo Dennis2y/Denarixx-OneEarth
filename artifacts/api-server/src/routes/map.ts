@@ -8,7 +8,8 @@ import {
   disasterAlertsTable,
   riskZonesTable,
 } from "@workspace/db";
-import { desc, eq, and } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
+import { scoreAlert, scoreSite } from "../lib/threat-score.js";
 
 const router: IRouter = Router();
 
@@ -49,6 +50,28 @@ router.get("/map/overview", async (_req, res) => {
 
     const energyBySite = new Map(latestEnergyRows.map((row) => [row.siteId, row.latestEnergy]));
 
+    const alertsPayload = activeAlerts.map((a) => {
+      const threat = scoreAlert({
+        title: a.title,
+        severity: a.severity,
+        module: a.module,
+        location: a.location,
+        description: a.description ?? "",
+      });
+
+      return {
+        id: a.id,
+        title: a.title,
+        module: a.module,
+        severity: a.severity,
+        status: a.status,
+        location: a.location,
+        description: a.description,
+        createdAt: a.createdAt.toISOString(),
+        ...threat,
+      };
+    });
+
     const siteCards = sites.map((site) => {
       const latestEnergy = energyBySite.get(site.id) ?? null;
 
@@ -58,13 +81,24 @@ router.get("/map/overview", async (_req, res) => {
       const locationLower = (site.location ?? "").toLowerCase();
       const nameLower = (site.name ?? "").toLowerCase();
 
-      const siteAlerts = activeAlerts.filter((a) =>
+      const siteAlerts = alertsPayload.filter((a) =>
         (a.location ?? "").toLowerCase().includes(locationLower) ||
         (a.location ?? "").toLowerCase().includes(nameLower) ||
         (a.description ?? "").toLowerCase().includes(nameLower)
       );
 
       const criticalAlerts = siteAlerts.filter((a) => a.severity === "critical").length;
+      const topThreatScore = siteAlerts.length ? Math.max(...siteAlerts.map((a) => a.threatScore ?? 0)) : 0;
+
+      const threat = scoreSite({
+        name: site.name,
+        type: site.type,
+        status: site.status,
+        currentRiskLevel: site.currentRiskLevel,
+        population: site.population,
+        powerAvailability: site.powerAvailability,
+        country: site.country,
+      });
 
       return {
         id: site.id,
@@ -85,19 +119,10 @@ router.get("/map/overview", async (_req, res) => {
         criticalAlertsCount: criticalAlerts,
         protectedPersonsCount: sitePersons.length,
         atRiskPersonsCount: atRiskPersons,
+        linkedAlertThreatScore: topThreatScore,
+        ...threat,
       };
     });
-
-    const alertsPayload = activeAlerts.map((a) => ({
-      id: a.id,
-      title: a.title,
-      module: a.module,
-      severity: a.severity,
-      status: a.status,
-      location: a.location,
-      description: a.description,
-      createdAt: a.createdAt.toISOString(),
-    }));
 
     const personsPayload = persons.map((p) => ({
       id: p.id,
@@ -146,6 +171,10 @@ router.get("/map/overview", async (_req, res) => {
       atRiskPersons: personsPayload.filter((p) => p.status === "at-risk" || p.status === "emergency").length,
       disasterAlerts: disastersPayload.length,
       riskZones: risksPayload.length,
+      averageThreatScore: siteCards.length
+        ? Math.round(siteCards.reduce((sum, s) => sum + s.threatScore, 0) / siteCards.length)
+        : 0,
+      criticalThreatSites: siteCards.filter((s) => s.threatLevel === "critical").length,
     };
 
     return res.json({
