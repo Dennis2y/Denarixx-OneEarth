@@ -11,7 +11,7 @@ import {
   Globe,
 } from "lucide-react";
 import { PageHeader, Card, Badge, Button, cn } from "@/components/ui-core";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, apiStreamUrl } from "@/lib/api";
 
 type ScenarioType =
   | "flood_event"
@@ -133,6 +133,8 @@ export default function CommandCenterPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [history, setHistory] = useState<HistoryRow[]>([]);
+  const [liveEvent, setLiveEvent] = useState<string>("Connecting to command live stream...");
+  const [liveStatus, setLiveStatus] = useState<"connecting" | "live" | "disconnected">("connecting");
   const [liveEscalationStatus, setLiveEscalationStatus] = useState("Awaiting command simulation...");
 
 
@@ -151,6 +153,65 @@ export default function CommandCenterPage() {
   useEffect(() => {
     loadHistory(false);
   }, []);
+
+
+  useEffect(() => {
+    const stream = new EventSource(apiStreamUrl("/api/live/stream"), { withCredentials: true });
+
+    stream.addEventListener("connected", () => {
+      setLiveStatus("live");
+      setLiveEvent("Live command stream connected");
+    });
+
+    stream.addEventListener("heartbeat", () => {
+      setLiveStatus("live");
+    });
+
+    stream.addEventListener("map-update", async (event: MessageEvent) => {
+      try {
+        const payload = JSON.parse(event.data);
+
+        if (payload?.type !== "command-center:auto-escalation") {
+          return;
+        }
+
+        setLiveStatus("live");
+        setLiveEvent(
+          payload?.message ??
+            "Auto-escalation event received"
+        );
+
+        await loadHistory(true);
+
+        if (payload?.scenarioId) {
+          try {
+            const latest = await apiFetch("/api/command-center/history");
+            const rows = latest as HistoryRow[];
+            const matched = rows.find((row) => row.scenarioId === payload.scenarioId);
+
+            if (matched) {
+              const detail = await apiFetch(`/api/command-center/history/${matched.id}`);
+              if ((detail as any)?.result) {
+                setResult((detail as any).result as SimulationResult);
+              }
+            }
+          } catch {}
+        }
+      } catch {
+        setLiveStatus("live");
+        setLiveEvent("Auto-escalation event received");
+        await loadHistory(true);
+      }
+    });
+
+    stream.onerror = () => {
+      setLiveStatus("disconnected");
+      setLiveEvent("Live command stream disconnected — retrying");
+    };
+
+    return () => stream.close();
+  }, []);
+
 
   useEffect(() => {
     if (!result) return;
@@ -209,6 +270,33 @@ export default function CommandCenterPage() {
           </Button>
         }
       />
+
+
+      <Card className="border border-border/60 bg-card/70 p-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-semibold">Live Auto-Escalation Stream</div>
+            <div className="text-sm text-muted-foreground">{liveEvent}</div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                "inline-flex h-2.5 w-2.5 rounded-full",
+                liveStatus === "live"
+                  ? "bg-green-500 shadow-[0_0_14px_rgba(34,197,94,0.85)]"
+                  : liveStatus === "connecting"
+                  ? "bg-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.85)]"
+                  : "bg-red-500 shadow-[0_0_14px_rgba(239,68,68,0.85)]"
+              )}
+            />
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">
+              {liveStatus}
+            </span>
+          </div>
+        </div>
+      </Card>
+
 
       <Card className="border border-border/60 bg-card/70 p-4">
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
