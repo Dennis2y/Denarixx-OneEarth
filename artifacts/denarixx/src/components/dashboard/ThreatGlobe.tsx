@@ -493,3 +493,13 @@ export default function ThreatGlobe({ sites, escalations = [], liveFlashToken }:
     </div>
   );
 }
+
+
+<style>{`
+@keyframes threatSweep {
+  0% { transform: translateX(-140%) rotate(12deg); opacity: 0; }
+  10% { opacity: 0.18; }
+  45% { opacity: 0.28; }
+  100% { transform: translateX(320%) rotate(12deg); opacity: 0; }
+}
+`}</style>
