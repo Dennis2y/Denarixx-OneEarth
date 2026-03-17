@@ -13,6 +13,7 @@ import { eq, desc } from "drizzle-orm";
 import type { AuthRequest } from "../middlewares/auth.js";
 import { broadcastLiveEvent, makeLivePayload, getLiveClientCount } from "../lib/live.js";
 import { buildAutoEscalation } from "../lib/auto-escalation.js";
+import { buildAutoResponse } from "../lib/auto-response.js";
 
 const router: IRouter = Router();
 
@@ -332,6 +333,16 @@ router.post("/command-center/simulate", async (req: AuthRequest, res) => {
       estimatedPopulationAtRisk,
     });
 
+    const autoResponse = buildAutoResponse({
+      triggerModule: meta.module,
+      threatScore,
+      escalationLevel: autoEscalation.escalationLevel,
+      deploymentMode: autoEscalation.deploymentMode,
+      affectedSitesCount: affectedSites.length,
+      atRiskPersonsCount: atRiskPersons.length,
+      estimatedPopulationAtRisk,
+    });
+
     const scenarioId = `SIM-${Date.now()}`;
 
     const result = {
@@ -378,6 +389,7 @@ router.post("/command-center/simulate", async (req: AuthRequest, res) => {
       escalationTimeline: meta.timelineEvents,
       activeAlertCount: recentAlerts.filter((a) => a.module === meta.module).length,
       autoEscalation,
+      autoResponse,
       simulatedAt: new Date().toISOString(),
     };
 

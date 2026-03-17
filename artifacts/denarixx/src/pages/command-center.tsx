@@ -145,6 +145,14 @@ function deploymentClass(mode: DeploymentMode) {
   return "bg-green-500/15 text-green-400 border-green-500/30";
 }
 
+
+function escalationPulseClass(level: EscalationLevel) {
+  if (level === "global-command") return "animate-pulse border-red-500/40 bg-red-500/10";
+  if (level === "regional-command") return "animate-pulse border-amber-500/40 bg-amber-500/10";
+  if (level === "district") return "border-blue-500/40 bg-blue-500/10";
+  return "border-green-500/30 bg-green-500/10";
+}
+
 export default function CommandCenterPage() {
   const [selectedScenario, setSelectedScenario] = useState<ScenarioType>("flood_event");
   const [running, setRunning] = useState(false);

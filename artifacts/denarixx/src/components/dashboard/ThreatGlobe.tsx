@@ -28,6 +28,10 @@ type Props = {
 const COUNTRIES_URL =
   "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson";
 
+function normalizeCountry(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
 function pointColor(level: ThreatLevel) {
   if (level === "critical") return "#ef4444";
   if (level === "high") return "#f59e0b";
@@ -154,6 +158,28 @@ export default function ThreatGlobe({ sites }: Props) {
     [globePoints]
   );
 
+  const hotCountries = useMemo(() => {
+    const map = new Map<string, ThreatLevel>();
+
+    for (const site of globePoints) {
+      const key = normalizeCountry(site.country);
+      if (!key) continue;
+
+      const current = map.get(key);
+      if (site.threatLevel === "critical") {
+        map.set(key, "critical");
+      } else if (site.threatLevel === "high" && current !== "critical") {
+        map.set(key, "high");
+      } else if (site.threatLevel === "medium" && !current) {
+        map.set(key, "medium");
+      } else if (site.threatLevel === "low" && !current) {
+        map.set(key, "low");
+      }
+    }
+
+    return map;
+  }, [globePoints]);
+
   return (
     <div className="rounded-3xl border border-primary/20 bg-[#04070d] p-3 sm:p-4 shadow-[0_0_40px_rgba(0,0,0,0.45)]">
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -168,20 +194,33 @@ export default function ThreatGlobe({ sites }: Props) {
         </div>
       </div>
 
-      <div className="relative mx-auto h-[320px] w-full max-w-[520px] sm:h-[360px] lg:h-[390px]">
+      <div className="relative mx-auto h-[260px] w-full max-w-[430px] sm:h-[300px] lg:h-[330px]">
         <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.08),transparent_58%)] blur-2xl" />
 
         <Globe
           ref={globeRef}
-          width={520}
-          height={390}
+          width={430}
+          height={330}
           backgroundColor="rgba(0,0,0,0)"
           globeImageUrl="https://unpkg.com/three-globe/example/img/earth-night.jpg"
           bumpImageUrl="https://unpkg.com/three-globe/example/img/earth-topology.png"
           atmosphereColor="#3b82f6"
           atmosphereAltitude={0.18}
           polygonsData={countries}
-          polygonCapColor={() => "rgba(17,24,39,0.30)"}
+          polygonCapColor={(feat: any) => {
+            const country =
+              feat?.properties?.name ||
+              feat?.properties?.NAME ||
+              feat?.properties?.admin ||
+              "";
+            const level = hotCountries.get(normalizeCountry(String(country)));
+
+            if (level === "critical") return "rgba(239,68,68,0.55)";
+            if (level === "high") return "rgba(245,158,11,0.40)";
+            if (level === "medium") return "rgba(96,165,250,0.30)";
+            if (level === "low") return "rgba(34,197,94,0.22)";
+            return "rgba(17,24,39,0.18)";
+          }}
           polygonSideColor={() => "rgba(14,165,233,0.06)"}
           polygonStrokeColor={() => "rgba(148,163,184,0.24)"}
           polygonAltitude={0.008}
