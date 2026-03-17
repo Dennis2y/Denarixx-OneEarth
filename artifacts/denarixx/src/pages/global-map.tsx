@@ -356,9 +356,9 @@ export default function GlobalMap() {
       className="space-y-6"
     >
       <ModuleHeader
+        moduleId="earthshield"
         title="Global Command Map"
         subtitle="Live planetary operational awareness with AI threat scoring"
-        icon={Globe}
       />
 
       <div className="grid grid-cols-1 xl:grid-cols-[1.6fr_0.9fr] gap-6">
