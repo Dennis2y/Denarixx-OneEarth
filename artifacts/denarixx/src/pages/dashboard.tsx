@@ -49,6 +49,7 @@ type DashboardStats = {
   disasterAlerts: number;
   criticalThreatSites: number;
   averageThreatScore: number;
+  globeSites: ThreatSite[];
   topThreatSites: ThreatSite[];
   urgentQueue: QueueItem[];
   recentAlerts: Array<{
@@ -165,7 +166,7 @@ export default function DashboardPage() {
           ) : !stats || stats.topThreatSites.length === 0 ? (
             <div className="text-sm text-muted-foreground">No globe threat data available.</div>
           ) : (
-            <ThreatGlobe sites={stats.topThreatSites} />
+            <ThreatGlobe sites={stats.globeSites ?? stats.topThreatSites} />
           )}
         </div>
       </Card>

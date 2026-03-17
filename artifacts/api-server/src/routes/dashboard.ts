@@ -156,10 +156,10 @@ router.get("/dashboard/stats", async (_req, res) => {
       disasterAlerts: disasters.length,
       criticalThreatSites,
       averageThreatScore,
+      globeSites: scoredSites,
       topThreatSites,
       urgentQueue,
       recentAlerts,
-      globeSites: scoredSites,
     });
   } catch (err) {
     console.error(err);
