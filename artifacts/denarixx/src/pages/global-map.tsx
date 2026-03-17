@@ -198,6 +198,27 @@ function getSiteRadius(site: MapOverview["sites"][number], filter: FilterKey) {
   return Math.max(10, Math.min(24, 10 + Math.round(site.threatScore / 12)));
 }
 
+function getDangerCoreRadius(site: MapOverview["sites"][number]) {
+  if (site.threatLevel === "critical") return 6;
+  if (site.threatLevel === "high") return 4;
+  return 0;
+}
+
+function getDangerHaloRadius(site: MapOverview["sites"][number]) {
+  if (site.threatLevel === "critical") return 14 + Math.round(site.threatScore / 8);
+  if (site.threatLevel === "high") return 10 + Math.round(site.threatScore / 12);
+  return 0;
+}
+
+function hasLiveDanger(site: MapOverview["sites"][number]) {
+  return (
+    site.threatLevel === "critical" ||
+    site.criticalAlertsCount > 0 ||
+    site.linkedAlertThreatScore >= 85 ||
+    site.atRiskPersonsCount >= 2
+  );
+}
+
 function getRiskZoneColor(riskLevel: string) {
   if (riskLevel === "critical") return "#dc2626";
   if (riskLevel === "high") return "#f59e0b";
@@ -504,19 +525,50 @@ export default function GlobalMap() {
               {sites.map((site) => {
                 const color = getSiteColor(site, filter);
                 const radius = getSiteRadius(site, filter);
-                const shouldPulseRing = showAlertRings && (site.criticalAlertsCount > 0 || site.threatLevel === "critical");
+                const shouldPulseRing = showAlertRings && hasLiveDanger(site);
+                const dangerCoreRadius = getDangerCoreRadius(site);
+                const dangerHaloRadius = getDangerHaloRadius(site);
 
                 return (
                   <React.Fragment key={site.id}>
                     {shouldPulseRing && (
-                      <LeafletCircle
+                      <>
+                        <LeafletCircle
+                          center={[site.latitude, site.longitude]}
+                          radius={110000 + site.threatScore * 1200}
+                          pathOptions={{
+                            color: site.threatLevel === "critical" ? "#ef4444" : color,
+                            weight: 2,
+                            opacity: 0.75,
+                            fillOpacity: 0.04,
+                          }}
+                        />
+                        <LeafletCircle
+                          center={[site.latitude, site.longitude]}
+                          radius={55000 + site.threatScore * 700}
+                          pathOptions={{
+                            color: site.threatLevel === "critical" ? "#f87171" : color,
+                            weight: 1.5,
+                            opacity: 0.55,
+                            fillOpacity: 0.05,
+                          }}
+                        />
+                      </>
+                    )}
+
+                    {dangerHaloRadius > 0 && (
+                      <LeafletCircleMarker
                         center={[site.latitude, site.longitude]}
-                        radius={90000 + site.threatScore * 900}
+                        radius={dangerHaloRadius}
                         pathOptions={{
-                          color,
+                          color: site.threatLevel === "critical" ? "#ef4444" : "#f59e0b",
                           weight: 1.5,
-                          opacity: 0.6,
-                          fillOpacity: 0.03,
+                          fillColor: site.threatLevel === "critical" ? "#ef4444" : "#f59e0b",
+                          fillOpacity: 0.12,
+                          opacity: 0.9,
+                        }}
+                        eventHandlers={{
+                          click: () => setSelectedSiteId(site.id),
                         }}
                       />
                     )}
@@ -528,7 +580,7 @@ export default function GlobalMap() {
                         color,
                         weight: selectedSite?.id === site.id ? 3 : 2,
                         fillColor: color,
-                        fillOpacity: 0.9,
+                        fillOpacity: 0.92,
                       }}
                       eventHandlers={{
                         click: () => setSelectedSiteId(site.id),
@@ -554,6 +606,23 @@ export default function GlobalMap() {
                         </div>
                       </LeafletPopup>
                     </LeafletCircleMarker>
+
+                    {dangerCoreRadius > 0 && (
+                      <LeafletCircleMarker
+                        center={[site.latitude, site.longitude]}
+                        radius={dangerCoreRadius}
+                        pathOptions={{
+                          color: "#ffe4e6",
+                          weight: 1,
+                          fillColor: "#ef4444",
+                          fillOpacity: 1,
+                          opacity: 1,
+                        }}
+                        eventHandlers={{
+                          click: () => setSelectedSiteId(site.id),
+                        }}
+                      />
+                    )}
                   </React.Fragment>
                 );
               })}
@@ -732,7 +801,11 @@ export default function GlobalMap() {
               </div>
               <div className="flex items-center gap-3">
                 <Siren className="w-4 h-4 text-primary" />
-                <span className="text-muted-foreground">Marker size scales with AI threat score</span>
+                <span className="text-muted-foreground">Marker size scales with AI threat score and live danger halo intensity</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_16px_rgba(239,68,68,0.95)]" />
+                <span className="text-muted-foreground">Bright red hotspot cores mark immediate live danger locations</span>
               </div>
               <div className="flex items-center gap-3">
                 <Activity className="w-4 h-4 text-primary" />
