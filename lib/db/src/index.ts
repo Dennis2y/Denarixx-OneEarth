@@ -13,3 +13,4 @@ const pool = new pg.Pool({
 });
 
 export const db = drizzle(pool);
+export * from "./schema/escalations.js";

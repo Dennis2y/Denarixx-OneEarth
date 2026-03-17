@@ -7,6 +7,7 @@ import {
   energyMetricsTable,
   simulationHistoryTable,
   auditLogTable,
+  escalationEventsTable,
 } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 import type { AuthRequest } from "../middlewares/auth.js";
@@ -231,6 +232,41 @@ router.get("/command-center/history/:id", async (req, res) => {
   }
 });
 
+
+router.get("/command-center/escalations", async (_req, res) => {
+  try {
+    const rows = await db
+      .select()
+      .from(escalationEventsTable)
+      .orderBy(desc(escalationEventsTable.createdAt))
+      .limit(20);
+
+    return res.json(
+      rows.map((row) => ({
+        id: row.id,
+        scenarioId: row.scenarioId,
+        scenarioType: row.scenarioType,
+        scenarioLabel: row.scenarioLabel,
+        triggerModule: row.triggerModule,
+        threatScore: Number(row.threatScore),
+        escalationLevel: row.escalationLevel,
+        deploymentMode: row.deploymentMode,
+        operatingProtocol: row.operatingProtocol,
+        operatorDirective: row.operatorDirective,
+        recommendedTeams: JSON.parse(row.recommendedTeamsJson),
+        recommendedActions: JSON.parse(row.recommendedActionsJson),
+        actorEmail: row.actorEmail,
+        actorName: row.actorName,
+        actorRole: row.actorRole,
+        createdAt: row.createdAt.toISOString(),
+      }))
+    );
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.post("/command-center/simulate", async (req: AuthRequest, res) => {
   try {
     const { scenarioType } = req.body as { scenarioType?: string };
@@ -375,6 +411,23 @@ router.post("/command-center/simulate", async (req: AuthRequest, res) => {
         deploymentMode: autoEscalation.deploymentMode,
         connectedClients: getLiveClientCount(),
       }),
+    });
+
+    await db.insert(escalationEventsTable).values({
+      scenarioId,
+      scenarioType,
+      scenarioLabel: result.scenarioLabel,
+      triggerModule: result.triggerModule,
+      threatScore: String(result.threatScore),
+      escalationLevel: autoEscalation.escalationLevel,
+      deploymentMode: autoEscalation.deploymentMode,
+      operatingProtocol: autoEscalation.operatingProtocol,
+      operatorDirective: autoEscalation.operatorDirective,
+      recommendedTeamsJson: JSON.stringify(autoEscalation.recommendedTeams),
+      recommendedActionsJson: JSON.stringify(autoEscalation.recommendedActions),
+      actorEmail: operator.email,
+      actorName: operator.name,
+      actorRole: operator.role,
     });
 
     const livePayload = makeLivePayload(
