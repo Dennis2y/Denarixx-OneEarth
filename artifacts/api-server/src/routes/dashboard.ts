@@ -1,153 +1,162 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import { db } from "@workspace/db";
 import {
-  sitesTable, unifiedAlertsTable, protectedPersonsTable,
-  disasterAlertsTable, energyMetricsTable, auditLogTable,
+  sitesTable,
+  unifiedAlertsTable,
+  protectedPersonsTable,
+  energyMetricsTable,
+  disasterAlertsTable,
 } from "@workspace/db";
-import { eq, count, and, desc } from "drizzle-orm";
-import type { AuthRequest } from "../middlewares/auth.js";
-import { requireRole } from "../middlewares/auth.js";
+import { desc, eq } from "drizzle-orm";
+import { scoreAlert, scoreSite } from "../lib/threat-score.js";
 
-const router: IRouter = Router();
+const router = Router();
 
 router.get("/dashboard/stats", async (_req, res) => {
   try {
-    const [
-      sitesResult,
-      criticalAlertsResult,
-      protectedResult,
-      riskZonesResult,
-      recentAlerts,
-      recentMetrics,
-    ] = await Promise.all([
-      db.select({ count: count() }).from(sitesTable).where(eq(sitesTable.status, "online")),
-      db.select({ count: count() }).from(unifiedAlertsTable).where(and(eq(unifiedAlertsTable.severity, "critical"), eq(unifiedAlertsTable.status, "active"))),
-      db.select({ count: count() }).from(protectedPersonsTable),
-      db.select({ count: count() }).from(disasterAlertsTable).where(eq(disasterAlertsTable.status, "active")),
-      db.select().from(unifiedAlertsTable).orderBy(desc(unifiedAlertsTable.createdAt)).limit(10),
-      db.select({
-        batteryLevel: energyMetricsTable.batteryLevel,
-        solarGeneration: energyMetricsTable.solarGeneration,
-      }).from(energyMetricsTable).orderBy(desc(energyMetricsTable.recordedAt)).limit(20),
+    const [sites, alerts, persons, disasters] = await Promise.all([
+      db.select().from(sitesTable).orderBy(sitesTable.name),
+      db.select().from(unifiedAlertsTable)
+        .where(eq(unifiedAlertsTable.status, "active"))
+        .orderBy(desc(unifiedAlertsTable.createdAt)),
+      db.select().from(protectedPersonsTable),
+      db.select().from(disasterAlertsTable).orderBy(desc(disasterAlertsTable.issuedAt)).limit(12),
     ]);
 
-    const avgBattery = recentMetrics.length > 0
-      ? recentMetrics.reduce((sum, m) => sum + m.batteryLevel, 0) / recentMetrics.length
-      : 87;
-    const avgSolar = recentMetrics.length > 0
-      ? recentMetrics.reduce((sum, m) => sum + m.solarGeneration, 0) / recentMetrics.length
-      : 72;
-    const energyAvailability = Math.round(((avgBattery * 0.6) + (avgSolar * 0.4)) * 10) / 10;
+    const latestEnergyRows = await Promise.all(
+      sites.map(async (site) => {
+        const [latest] = await db.select().from(energyMetricsTable)
+          .where(eq(energyMetricsTable.siteId, site.id))
+          .orderBy(desc(energyMetricsTable.recordedAt))
+          .limit(1);
 
-    res.json({
-      activeSites: Number(sitesResult[0]?.count ?? 0),
-      criticalAlerts: Number(criticalAlertsResult[0]?.count ?? 0),
-      protectedPeople: Number(protectedResult[0]?.count ?? 0),
-      disasterRiskZones: Number(riskZonesResult[0]?.count ?? 0),
-      energyAvailability: Math.min(99.9, Math.max(0, energyAvailability)),
-      recentAlerts: recentAlerts.map((a) => ({
-        ...a,
-        createdAt: a.createdAt.toISOString(),
-      })),
+        return {
+          siteId: site.id,
+          latestEnergy: latest
+            ? {
+                solarGeneration: latest.solarGeneration,
+                batteryLevel: latest.batteryLevel,
+                communityLoad: latest.communityLoad,
+                gridStatus: latest.gridStatus,
+                uptime: latest.uptime,
+                recordedAt: latest.recordedAt.toISOString(),
+              }
+            : null,
+        };
+      })
+    );
+
+    const energyBySite = new Map(latestEnergyRows.map((row) => [row.siteId, row.latestEnergy]));
+
+    const scoredAlerts = alerts.map((a) => ({
+      id: a.id,
+      title: a.title,
+      module: a.module,
+      severity: a.severity,
+      status: a.status,
+      location: a.location,
+      description: a.description,
+      createdAt: a.createdAt.toISOString(),
+      ...scoreAlert({
+        title: a.title,
+        severity: a.severity,
+        module: a.module,
+        location: a.location,
+        description: a.description ?? "",
+      }),
+    }));
+
+    const scoredSites = sites.map((site) => {
+      const latestEnergy = energyBySite.get(site.id) ?? null;
+
+      return {
+        id: site.id,
+        name: site.name,
+        type: site.type,
+        location: site.location,
+        country: site.country,
+        status: site.status,
+        currentRiskLevel: site.currentRiskLevel,
+        powerAvailability: site.powerAvailability,
+        population: site.population,
+        latestEnergy,
+        ...scoreSite({
+          name: site.name,
+          type: site.type,
+          status: site.status,
+          currentRiskLevel: site.currentRiskLevel,
+          population: site.population,
+          powerAvailability: site.powerAvailability,
+          country: site.country,
+        }),
+      };
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
 
-router.post("/dashboard/drill", requireRole("admin", "operator"), async (req: AuthRequest, res) => {
-  try {
-    const { drillType = "evacuation", zones = "All Zones" } = req.body as {
-      drillType?: string;
-      zones?: string;
-    };
+    const criticalAlerts = scoredAlerts.filter((a) => a.severity === "critical").length;
+    const criticalThreatSites = scoredSites.filter((s) => s.threatLevel === "critical").length;
+    const averageThreatScore = scoredSites.length
+      ? Math.round(scoredSites.reduce((sum, s) => sum + s.threatScore, 0) / scoredSites.length)
+      : 0;
 
-    const DRILL_LABELS: Record<string, string> = {
-      evacuation: "Mass Evacuation",
-      medical: "Medical Emergency",
-      "grid-failure": "Grid Failure Response",
-      "flood-response": "Flood Response",
-      "comms-blackout": "Communications Blackout",
-    };
+    const protectedPeople = persons.length;
+    const atRiskPeople = persons.filter((p) => p.status === "at-risk" || p.status === "emergency").length;
 
-    const drillLabel = DRILL_LABELS[drillType] ?? drillType;
-    const operator = req.sessionUser!;
+    const energyAvailability = scoredSites.length
+      ? scoredSites.reduce((sum, s) => sum + Number(s.powerAvailability ?? 0), 0) / scoredSites.length
+      : 0;
 
-    await db.insert(unifiedAlertsTable).values({
-      title: `DRILL: ${drillLabel} Protocol`,
-      module: "earthshield",
-      severity: "info",
-      location: zones,
-      status: "active",
-      description: `Emergency drill initiated by ${operator.name} (${operator.role}). Drill type: ${drillLabel}. All teams to standby positions. This is a drill — no real emergency.`,
-    });
+    const activeSites = scoredSites.length;
 
-    await db.insert(auditLogTable).values({
-      actor: operator.email,
-      actorRole: operator.role,
-      action: "drill.run",
-      target: `drill:${drillType}`,
-      details: JSON.stringify({ drillType, drillLabel, zones, initiatedBy: operator.name }),
-    }).catch(() => {});
+    const topThreatSites = [...scoredSites]
+      .sort((a, b) => b.threatScore - a.threatScore)
+      .slice(0, 5);
+
+    const urgentQueue = [
+      ...scoredAlerts
+        .filter((a) => a.responsePriority === "immediate" || a.responsePriority === "urgent")
+        .map((a) => ({
+          kind: "alert",
+          id: a.id,
+          title: a.title,
+          location: a.location,
+          threatScore: a.threatScore,
+          threatLevel: a.threatLevel,
+          responsePriority: a.responsePriority,
+          recommendedAction: a.recommendedAction,
+        })),
+      ...scoredSites
+        .filter((s) => s.responsePriority === "immediate" || s.responsePriority === "urgent")
+        .map((s) => ({
+          kind: "site",
+          id: s.id,
+          title: s.name,
+          location: `${s.location}, ${s.country}`,
+          threatScore: s.threatScore,
+          threatLevel: s.threatLevel,
+          responsePriority: s.responsePriority,
+          recommendedAction: s.recommendedAction,
+        })),
+    ]
+      .sort((a, b) => b.threatScore - a.threatScore)
+      .slice(0, 8);
+
+    const recentAlerts = scoredAlerts.slice(0, 10);
 
     return res.json({
-      success: true,
-      drillType,
-      drillLabel,
-      zones,
-      operator: { name: operator.name, email: operator.email, role: operator.role },
-      initiatedAt: new Date().toISOString(),
-      message: `Drill "${drillLabel}" initiated successfully. All zone coordinators notified via broadcast. Expected duration: 15–30 minutes.`,
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-router.post("/dashboard/deploy", requireRole("admin", "operator"), async (req: AuthRequest, res) => {
-  try {
-    const {
-      name, type = "village", location, country,
-      latitude = 0, longitude = 0, population = 0,
-    } = req.body as {
-      name?: string; type?: string; location?: string; country?: string;
-      latitude?: number; longitude?: number; population?: number;
-    };
-
-    if (!name || !location || !country) {
-      return res.status(400).json({ error: "name, location, and country are required" });
-    }
-
-    const operator = req.sessionUser!;
-
-    const [newSite] = await db.insert(sitesTable).values({
-      name,
-      type: type as "village" | "clinic" | "school" | "district" | "shelter",
-      location,
-      country,
-      status: "online",
-      uptime: 99.9,
-      powerAvailability: 95.0,
-      currentRiskLevel: "low",
-      population: Number(population),
-      latitude: Number(latitude),
-      longitude: Number(longitude),
-    }).returning();
-
-    await db.insert(auditLogTable).values({
-      actor: operator.email,
-      actorRole: operator.role,
-      action: "node.deploy",
-      target: `site:${newSite.id}`,
-      details: JSON.stringify({ name, type, location, country, deployedBy: operator.name }),
-    }).catch(() => {});
-
-    return res.status(201).json({
-      success: true,
-      site: { ...newSite, createdAt: newSite.createdAt.toISOString() },
-      message: `Node "${name}" deployed successfully. ID: ${newSite.id}. Ready for telemetry.`,
+      totalSites: activeSites,
+      activeSites,
+      activeAlerts: scoredAlerts.length,
+      criticalAlerts,
+      protectedPeople,
+      protectedPersons: protectedPeople,
+      atRiskPeople,
+      energyAvailability: Number(energyAvailability.toFixed(1)),
+      disasterAlerts: disasters.length,
+      criticalThreatSites,
+      averageThreatScore,
+      topThreatSites,
+      urgentQueue,
+      recentAlerts,
     });
   } catch (err) {
     console.error(err);
