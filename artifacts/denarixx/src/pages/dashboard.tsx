@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { Shield, Bell, Siren, RefreshCw } from "lucide-react";
 import { PageHeader, Card, Badge, Button, cn } from "@/components/ui-core";
 import { apiFetch } from "@/lib/api";
-import ThreatGlobe from "@/components/dashboard/ThreatGlobe";
+
+const ThreatGlobe = lazy(() => import("@/components/dashboard/ThreatGlobe"));
 
 type ThreatLevel = "low" | "medium" | "high" | "critical";
 type ResponsePriority = "routine" | "priority" | "urgent" | "immediate";
