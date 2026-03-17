@@ -79,6 +79,8 @@ router.get("/dashboard/stats", async (_req, res) => {
         currentRiskLevel: site.currentRiskLevel,
         powerAvailability: site.powerAvailability,
         population: site.population,
+        latitude: site.latitude,
+        longitude: site.longitude,
         latestEnergy,
         ...scoreSite({
           name: site.name,
@@ -157,6 +159,7 @@ router.get("/dashboard/stats", async (_req, res) => {
       topThreatSites,
       urgentQueue,
       recentAlerts,
+      globeSites: scoredSites,
     });
   } catch (err) {
     console.error(err);
