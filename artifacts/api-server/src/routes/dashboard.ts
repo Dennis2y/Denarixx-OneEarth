@@ -13,6 +13,21 @@ import { scoreAlert, scoreSite } from "../lib/threat-score.js";
 
 const router = Router();
 
+function normalizePlace(value: string | null | undefined) {
+  return (value ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\b(republic|state|province|region|district|city|town|village|county)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function extractCountryHints(label: string | null | undefined) {
+  const value = normalizePlace(label);
+  return new Set(value.split(" ").filter(Boolean));
+}
+
+
 router.get("/dashboard/stats", async (_req, res) => {
   try {
     const [sites, alerts, persons, disasters, escalations] = await Promise.all([
@@ -146,12 +161,23 @@ router.get("/dashboard/stats", async (_req, res) => {
 
 
     const escalationHotspots = escalations.map((row, index) => {
+      const scenarioLabelNorm = normalizePlace(row.scenarioLabel);
+      const scenarioTypeNorm = normalizePlace(row.scenarioType);
+      const hintTokens = extractCountryHints(`${row.scenarioLabel} ${row.scenarioType}`);
+
       const matchedSite =
-        scoredSites.find((site) =>
-          row.scenarioLabel.toLowerCase().includes(site.country.toLowerCase()) ||
-          row.scenarioLabel.toLowerCase().includes(site.location.toLowerCase()) ||
-          row.scenarioLabel.toLowerCase().includes(site.name.toLowerCase())
-        ) ?? scoredSites[index % Math.max(scoredSites.length, 1)];
+        scoredSites.find((site) => {
+          const countryNorm = normalizePlace(site.country);
+          const locationNorm = normalizePlace(site.location);
+          const nameNorm = normalizePlace(site.name);
+
+          return (
+            (!!countryNorm && (scenarioLabelNorm.includes(countryNorm) || scenarioTypeNorm.includes(countryNorm))) ||
+            (!!locationNorm && scenarioLabelNorm.includes(locationNorm)) ||
+            (!!nameNorm && scenarioLabelNorm.includes(nameNorm)) ||
+            [...hintTokens].some((token) => token.length > 3 && countryNorm.includes(token))
+          );
+        }) ?? scoredSites[index % Math.max(scoredSites.length, 1)];
 
       return {
         id: row.id,

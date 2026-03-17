@@ -25,7 +25,7 @@ type EscalationHotspot = {
   id: number;
   scenarioId: string;
   scenarioLabel: string;
-  triggerModule: string;
+  triggerModule: "energy" | "lifemesh" | "earthshield" | string;
   threatScore: number;
   escalationLevel: "site" | "district" | "regional-command" | "global-command";
   country?: string;
@@ -58,6 +58,26 @@ function hotspotCountryClass(level: EscalationHotspot["escalationLevel"]) {
   if (level === "regional-command") return "rgba(245,158,11,0.45)";
   if (level === "district") return "rgba(96,165,250,0.35)";
   return "rgba(34,197,94,0.18)";
+}
+
+function moduleGlowColor(module: string, level: EscalationHotspot["escalationLevel"]) {
+  if (module === "earthshield") {
+    return level === "global-command" ? "rgba(251,146,60,0.75)" : "rgba(245,158,11,0.50)";
+  }
+  if (module === "energy") {
+    return level === "global-command" ? "rgba(56,189,248,0.75)" : "rgba(59,130,246,0.50)";
+  }
+  if (module === "lifemesh") {
+    return level === "global-command" ? "rgba(74,222,128,0.78)" : "rgba(34,197,94,0.50)";
+  }
+  return hotspotCountryClass(level);
+}
+
+function modulePointColor(module: string, level: EscalationHotspot["escalationLevel"]) {
+  if (module === "earthshield") return level === "global-command" ? "#fb923c" : "#f59e0b";
+  if (module === "energy") return level === "global-command" ? "#38bdf8" : "#3b82f6";
+  if (module === "lifemesh") return level === "global-command" ? "#4ade80" : "#22c55e";
+  return level === "global-command" ? "#ef4444" : "#f59e0b";
 }
 
 function pointAltitude(score: number) {
@@ -145,14 +165,7 @@ export default function ThreatGlobe({ sites, escalations = [] }: Props) {
           ...row,
           lat: row.latitude as number,
           lng: row.longitude as number,
-          color:
-            row.escalationLevel === "global-command"
-              ? "#ef4444"
-              : row.escalationLevel === "regional-command"
-              ? "#f59e0b"
-              : row.escalationLevel === "district"
-              ? "#60a5fa"
-              : "#22c55e",
+          color: modulePointColor(row.triggerModule, row.escalationLevel),
           altitude:
             row.escalationLevel === "global-command"
               ? 0.3
@@ -170,7 +183,7 @@ export default function ThreatGlobe({ sites, escalations = [] }: Props) {
   );
 
   const hotspotCountries = useMemo(() => {
-    const map = new Map<string, EscalationHotspot["escalationLevel"]>();
+    const map = new Map<string, { level: EscalationHotspot["escalationLevel"]; module: string }>();
 
     for (const row of escalations ?? []) {
       if (!row.country) continue;
@@ -180,8 +193,8 @@ export default function ThreatGlobe({ sites, escalations = [] }: Props) {
         value === "regional-command" ? 3 :
         value === "district" ? 2 : 1;
 
-      if (!existing || rank(row.escalationLevel) > rank(existing)) {
-        map.set(row.country, row.escalationLevel);
+      if (!existing || rank(row.escalationLevel) > rank(existing.level)) {
+        map.set(row.country, { level: row.escalationLevel, module: row.triggerModule });
       }
     }
 
@@ -317,11 +330,14 @@ export default function ThreatGlobe({ sites, escalations = [] }: Props) {
           ringsData={[...ringSites, ...escalationPoints]}
           ringLat="lat"
           ringLng="lng"
-          ringColor={(d: any) =>
-            d.threatLevel === "critical"
+          ringColor={(d: any) => {
+            if (d?.triggerModule) {
+              return moduleGlowColor(d.triggerModule, d.escalationLevel ?? "district");
+            }
+            return d.threatLevel === "critical"
               ? "rgba(239,68,68,0.9)"
-              : "rgba(245,158,11,0.85)"
-          }
+              : "rgba(245,158,11,0.85)";
+          }}
           ringMaxRadius={(d: any) => (d.threatLevel === "critical" ? 6 : 4)}
           ringPropagationSpeed={() => 1.5}
           ringRepeatPeriod={(d: any) => (d.threatLevel === "critical" ? 850 : 1300)}
@@ -348,16 +364,16 @@ export default function ThreatGlobe({ sites, escalations = [] }: Props) {
 
       <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-full bg-red-500 shadow-[0_0_14px_rgba(239,68,68,0.9)]" />
-          <span>Immediate danger</span>
+          <span className="h-3 w-3 rounded-full bg-orange-400 shadow-[0_0_14px_rgba(251,146,60,0.9)]" />
+          <span>EarthShield hotspot</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-full bg-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.85)]" />
-          <span>High risk</span>
+          <span className="h-3 w-3 rounded-full bg-sky-400 shadow-[0_0_14px_rgba(56,189,248,0.9)]" />
+          <span>Energy hotspot</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-full bg-green-500 shadow-[0_0_14px_rgba(34,197,94,0.85)]" />
-          <span>Stable node</span>
+          <span className="h-3 w-3 rounded-full bg-green-500 shadow-[0_0_14px_rgba(34,197,94,0.9)]" />
+          <span>LifeMesh hotspot</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="h-[2px] w-5 rounded-full bg-gradient-to-r from-green-500 to-red-500" />
