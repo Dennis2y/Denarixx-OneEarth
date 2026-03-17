@@ -79,6 +79,12 @@ type SimulationResult = {
     recommendedTeams: string[];
     recommendedActions: string[];
   };
+  autoResponse: {
+    responseTier: "local" | "district" | "regional" | "global";
+    responseMode: "observe" | "prepare" | "dispatch" | "crisis";
+    commandMessage: string;
+    machineActions: string[];
+  };
   simulatedAt: string;
 };
 
@@ -129,6 +135,22 @@ function severityClass(value: string) {
   if (value === "critical") return "bg-red-500/15 text-red-400 border-red-500/30";
   if (value === "warning") return "bg-amber-500/15 text-amber-400 border-amber-500/30";
   return "bg-blue-500/15 text-blue-400 border-blue-500/30";
+}
+
+
+
+function responseTierClass(tier: string) {
+  if (tier === "global") return "bg-red-500/15 text-red-400 border-red-500/30";
+  if (tier === "regional") return "bg-amber-500/15 text-amber-400 border-amber-500/30";
+  if (tier === "district") return "bg-blue-500/15 text-blue-400 border-blue-500/30";
+  return "bg-green-500/15 text-green-400 border-green-500/30";
+}
+
+function responseModeClass(mode: string) {
+  if (mode === "crisis") return "bg-red-500/20 text-red-300 border-red-500/40 animate-pulse";
+  if (mode === "dispatch") return "bg-amber-500/20 text-amber-300 border-amber-500/40";
+  if (mode === "prepare") return "bg-blue-500/20 text-blue-300 border-blue-500/40";
+  return "bg-green-500/20 text-green-300 border-green-500/40";
 }
 
 function escalationClass(level: EscalationLevel) {

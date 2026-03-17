@@ -7,4 +7,4 @@ export * from "./users";
 export * from "./audit";
 export * from "./simulations";
 export * from "./sessions";
-export * from "./escalations.js";
+export * from "./escalations";
