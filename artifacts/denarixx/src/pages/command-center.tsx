@@ -271,6 +271,25 @@ export default function CommandCenterPage() {
     );
   }, [result]);
 
+  const escalationOverview = useMemo(() => {
+    const rows = escalations ?? [];
+
+    const totalEvents = rows.length;
+    const globalCommand = rows.filter((row) => row.escalationLevel === "global-command").length;
+    const immediateDeployments = rows.filter((row) => row.deploymentMode === "immediate-deployment").length;
+    const averageThreat = totalEvents
+      ? Math.round(rows.reduce((sum, row) => sum + Number(row.threatScore || 0), 0) / totalEvents)
+      : 0;
+
+    return {
+      totalEvents,
+      globalCommand,
+      immediateDeployments,
+      averageThreat,
+    };
+  }, [escalations]);
+
+
 
   useEffect(() => {
     const stream = new EventSource(apiStreamUrl("/api/live/stream"), { withCredentials: true });
@@ -447,6 +466,28 @@ export default function CommandCenterPage() {
         <Card className="p-4 border border-border/60 bg-card/70">
           <div className="text-xs text-muted-foreground">Population at Risk</div>
           <div className="text-2xl font-bold">{overview.population.toLocaleString()}</div>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-4 border border-red-500/20 bg-red-500/5">
+          <div className="text-xs text-muted-foreground">Escalation Events</div>
+          <div className="text-2xl font-bold text-white">{escalationOverview.totalEvents}</div>
+        </Card>
+
+        <Card className="p-4 border border-red-500/30 bg-red-500/10">
+          <div className="text-xs text-muted-foreground">Global Command</div>
+          <div className="text-2xl font-bold text-red-400">{escalationOverview.globalCommand}</div>
+        </Card>
+
+        <Card className="p-4 border border-amber-500/30 bg-amber-500/10">
+          <div className="text-xs text-muted-foreground">Immediate Deployments</div>
+          <div className="text-2xl font-bold text-amber-300">{escalationOverview.immediateDeployments}</div>
+        </Card>
+
+        <Card className="p-4 border border-primary/30 bg-primary/10">
+          <div className="text-xs text-muted-foreground">Avg Escalation Threat</div>
+          <div className="text-2xl font-bold text-primary">{escalationOverview.averageThreat}</div>
         </Card>
       </div>
 
