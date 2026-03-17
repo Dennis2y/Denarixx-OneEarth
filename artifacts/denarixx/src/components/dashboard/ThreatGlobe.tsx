@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Globe from "react-globe.gl";
+import { motion } from "framer-motion";
 
 type ThreatLevel = "low" | "medium" | "high" | "critical";
 
@@ -274,7 +275,16 @@ export default function ThreatGlobe({ sites, escalations = [] }: Props) {
     <div className="rounded-3xl border border-primary/20 bg-[#04070d] p-3 sm:p-4 shadow-[0_0_40px_rgba(0,0,0,0.45)]">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold text-white">Live World Threat Globe</div>
+          <div className="flex items-center gap-2">
+            <div className="text-sm font-semibold text-white">Live World Threat Globe</div>
+            <motion.div
+              className="rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary"
+              animate={{ opacity: [0.7, 1, 0.7] }}
+              transition={{ duration: 2.2, repeat: Infinity }}
+            >
+              Sweep Active
+            </motion.div>
+          </div>
           <div className="text-xs text-muted-foreground">
             Rotating global surface with country lighting, live escalation hotspots, and response links
           </div>
@@ -286,6 +296,28 @@ export default function ThreatGlobe({ sites, escalations = [] }: Props) {
 
       <div className="relative mx-auto h-[240px] w-full max-w-[400px] sm:h-[280px] lg:h-[305px]">
         <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.08),transparent_58%)] blur-2xl" />
+
+        <motion.div
+          className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-[78%] w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+          style={{
+            background:
+              "conic-gradient(from 0deg, transparent 0deg, transparent 300deg, rgba(59,130,246,0.06) 328deg, rgba(250,204,21,0.22) 344deg, rgba(255,255,255,0.08) 352deg, transparent 360deg)",
+            filter: "blur(1px)",
+            boxShadow: "0 0 60px rgba(37,99,235,0.08) inset",
+          }}
+        />
+
+        <motion.div
+          className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-[64%] w-[64%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/10"
+          animate={{ rotate: -360 }}
+          transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
+          style={{
+            background:
+              "conic-gradient(from 0deg, transparent 0deg, transparent 312deg, rgba(34,197,94,0.08) 332deg, rgba(59,130,246,0.10) 346deg, transparent 360deg)",
+          }}
+        />
 
         <Globe
           ref={globeRef}
