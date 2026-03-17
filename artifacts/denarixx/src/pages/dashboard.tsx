@@ -97,6 +97,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [liveFlashToken, setLiveFlashToken] = useState("");
 
   const loadDashboard = async (silent = false) => {
     try {

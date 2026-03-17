@@ -37,10 +37,45 @@ type EscalationHotspot = {
 type Props = {
   sites: ThreatSite[];
   escalations?: EscalationHotspot[];
+  liveFlashToken?: string;
 };
 
 const COUNTRIES_URL =
   "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson";
+
+const COUNTRY_NAME_ALIASES: Record<string, string[]> = {
+  "ghana": ["ghana"],
+  "senegal": ["senegal"],
+  "kenya": ["kenya"],
+  "uganda": ["uganda"],
+  "ethiopia": ["ethiopia"],
+  "south sudan": ["south sudan"],
+  "sudan": ["sudan"],
+  "nigeria": ["nigeria"],
+  "tanzania": ["tanzania", "united republic of tanzania"],
+  "congo": ["democratic republic of the congo", "dr congo", "congo"],
+  "haiti": ["haiti"],
+  "indonesia": ["indonesia"],
+};
+
+function normalizeCountryName(value: string | undefined | null) {
+  return (value ?? "")
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getFeatureCountryName(feature: any) {
+  return normalizeCountryName(
+    feature?.properties?.name ??
+      feature?.properties?.NAME ??
+      feature?.properties?.admin ??
+      feature?.properties?.ADMIN ??
+      feature?.properties?.country ??
+      ""
+  );
+}
 
 function normalizeCountry(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -95,9 +130,10 @@ function pointRadius(score: number) {
   return 0.28;
 }
 
-export default function ThreatGlobe({ sites, escalations = [] }: Props) {
+export default function ThreatGlobe({ sites, escalations = [], liveFlashToken }: Props) {
   const globeRef = useRef<any>(null);
   const [countries, setCountries] = useState<CountryFeature[]>([]);
+  const [flashCountryKeys, setFlashCountryKeys] = useState<string[]>([]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -140,6 +176,37 @@ export default function ThreatGlobe({ sites, escalations = [] }: Props) {
       ),
     [sites]
   );
+
+  const matchedCountryKeys = useMemo(() => {
+    const keys = new Set<string>();
+
+    for (const site of validSites) {
+      const normalized = normalizeCountryName(site.country);
+      const aliases = COUNTRY_NAME_ALIASES[normalized] ?? [normalized];
+
+      for (const feature of countries as any[]) {
+        const featureName = getFeatureCountryName(feature);
+        if (aliases.some((alias) => alias && featureName.includes(alias))) {
+          keys.add(featureName);
+        }
+      }
+    }
+
+    return keys;
+  }, [validSites, countries]);
+
+  useEffect(() => {
+    if (!liveFlashToken || !matchedCountryKeys.size) return;
+
+    const keys = Array.from(matchedCountryKeys);
+    setFlashCountryKeys(keys);
+
+    const timeout = setTimeout(() => {
+      setFlashCountryKeys([]);
+    }, 3200);
+
+    return () => clearTimeout(timeout);
+  }, [liveFlashToken, matchedCountryKeys]);
 
   const globePoints = useMemo(
     () =>
