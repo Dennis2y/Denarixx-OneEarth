@@ -86,6 +86,10 @@ type HistoryRow = {
   id: number;
   scenarioId: string;
   scenarioType: string;
+  scenarioLabel?: string;
+  operatorEmail?: string;
+  operatorName?: string;
+  operatorRole?: string;
   riskSeverity: string;
   readinessScore: number;
   affectedSites: number;
@@ -129,6 +133,8 @@ export default function CommandCenterPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [history, setHistory] = useState<HistoryRow[]>([]);
+  const [liveEscalationStatus, setLiveEscalationStatus] = useState("Awaiting command simulation...");
+
 
   const loadHistory = async (silent = false) => {
     try {
@@ -145,6 +151,15 @@ export default function CommandCenterPage() {
   useEffect(() => {
     loadHistory(false);
   }, []);
+
+  useEffect(() => {
+    if (!result) return;
+
+    setLiveEscalationStatus(
+      `${result.scenarioLabel} · ${result.autoEscalation.escalationLevel} · ${result.autoEscalation.deploymentMode}`
+    );
+  }, [result]);
+
 
   const runSimulation = async () => {
     try {
@@ -167,6 +182,8 @@ export default function CommandCenterPage() {
         readinessScore: 0,
         affectedSites: 0,
         population: 0,
+        escalationLevel: "site" as EscalationLevel,
+        deploymentMode: "monitor" as DeploymentMode,
       };
     }
 
@@ -175,6 +192,8 @@ export default function CommandCenterPage() {
       readinessScore: result.readinessScore,
       affectedSites: result.affectedSites.length,
       population: result.estimatedPopulationAtRisk,
+      escalationLevel: result.autoEscalation.escalationLevel,
+      deploymentMode: result.autoEscalation.deploymentMode,
     };
   }, [result]);
 
@@ -217,6 +236,24 @@ export default function CommandCenterPage() {
               <Play className="w-4 h-4 mr-2" />
               Run AI Simulation
             </Button>
+          </div>
+        </div>
+      </Card>
+
+
+      <Card className="border border-primary/20 bg-primary/5 p-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.25em] text-primary mb-1">Live Escalation Feed</div>
+            <div className="text-sm text-white">{liveEscalationStatus}</div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Badge className={cn("border", escalationClass(overview.escalationLevel))}>
+              {overview.escalationLevel.toUpperCase()}
+            </Badge>
+            <Badge className={cn("border", deploymentClass(overview.deploymentMode))}>
+              {overview.deploymentMode.toUpperCase()}
+            </Badge>
           </div>
         </div>
       </Card>
@@ -406,6 +443,52 @@ export default function CommandCenterPage() {
             )}
           </div>
         </Card>
+
+      <Card className="border border-border/60 bg-card/70">
+        <div className="p-4 border-b border-border/50 flex items-center gap-2">
+          <Globe className="w-4 h-4 text-primary" />
+          <div className="text-sm font-semibold">Simulation History</div>
+        </div>
+
+        <div className="p-4 space-y-3">
+          {history.length === 0 ? (
+            <div className="text-sm text-muted-foreground">No simulation history yet.</div>
+          ) : (
+            history.map((item) => (
+              <div
+                key={item.id}
+                className="rounded-xl border border-border/60 bg-background/40 p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3"
+              >
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="font-semibold">{item.scenarioLabel ?? item.scenarioType}</div>
+                    <Badge className={cn("border", severityClass(item.riskSeverity))}>
+                      {item.riskSeverity.toUpperCase()}
+                    </Badge>
+                    <Badge variant="outline">READINESS {item.readinessScore}</Badge>
+                  </div>
+
+                  <div className="text-sm text-muted-foreground">
+                    {item.affectedSites} sites · {item.affectedPersons} persons · population at risk {item.estimatedPopulationAtRisk.toLocaleString()}
+                  </div>
+
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(item.simulatedAt).toLocaleString()}
+                    {item.operatorName ? ` · ${item.operatorName}` : ""}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center min-w-[120px]">
+                  <div className="text-[11px] text-muted-foreground uppercase">Scenario ID</div>
+                  <div className="text-sm font-semibold text-primary">{item.scenarioId}</div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </Card>
+
+
       </div>
     </div>
   );
