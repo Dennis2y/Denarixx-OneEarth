@@ -97,6 +97,24 @@ type HistoryRow = {
   estimatedPopulationAtRisk: number;
   simulatedAt: string;
 };
+type EscalationFeedRow = {
+  id: number;
+  scenarioId: string;
+  scenarioType: string;
+  scenarioLabel: string;
+  triggerModule: string;
+  threatScore: number;
+  escalationLevel: EscalationLevel;
+  deploymentMode: DeploymentMode;
+  operatingProtocol: OperatingProtocol;
+  operatorDirective: string;
+  recommendedTeams: string[];
+  recommendedActions: string[];
+  actorEmail: string;
+  actorName: string;
+  actorRole: string;
+  createdAt: string;
+};
 
 const scenarioOptions: Array<{ value: ScenarioType; label: string }> = [
   { value: "flood_event", label: "Flood Event" },
@@ -133,9 +151,10 @@ export default function CommandCenterPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [history, setHistory] = useState<HistoryRow[]>([]);
+  const [escalations, setEscalations] = useState<EscalationFeedRow[]>([]);
+  const [liveEscalationStatus, setLiveEscalationStatus] = useState("Waiting for escalation events...");
   const [liveEvent, setLiveEvent] = useState<string>("Connecting to command live stream...");
   const [liveStatus, setLiveStatus] = useState<"connecting" | "live" | "disconnected">("connecting");
-  const [liveEscalationStatus, setLiveEscalationStatus] = useState("Awaiting command simulation...");
 
 
   const loadHistory = async (silent = false) => {
@@ -152,6 +171,7 @@ export default function CommandCenterPage() {
 
   useEffect(() => {
     loadHistory(false);
+    loadEscalations(false);
   }, []);
 
 
@@ -221,6 +241,41 @@ export default function CommandCenterPage() {
     );
   }, [result]);
 
+
+  useEffect(() => {
+    const stream = new EventSource(apiStreamUrl("/api/live/stream"), { withCredentials: true });
+
+    stream.addEventListener("map-update", async (event: MessageEvent) => {
+      try {
+        const payload = JSON.parse(event.data);
+        if (payload?.type !== "command-center:auto-escalation") return;
+
+        setLiveEscalationStatus(payload?.message ?? "Live escalation event received");
+        await loadEscalations(true);
+      } catch {}
+    });
+
+    stream.onerror = () => {
+      setLiveEscalationStatus("Live escalation stream disconnected — retrying");
+    };
+
+    return () => stream.close();
+  }, []);
+
+
+
+
+  const loadEscalations = async (silent = false) => {
+    try {
+      if (silent) setRefreshing(true);
+      const json = await apiFetch("/api/command-center/escalations");
+      setEscalations(json as EscalationFeedRow[]);
+    } catch {
+      if (!silent) setEscalations([]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const runSimulation = async () => {
     try {
@@ -578,6 +633,58 @@ export default function CommandCenterPage() {
 
 
       </div>
+
+      <Card className="border border-border/60 bg-card/70">
+        <div className="p-4 border-b border-border/50 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Siren className="w-4 h-4 text-primary" />
+            <div className="text-sm font-semibold">Escalation Event Feed</div>
+          </div>
+          <div className="text-xs text-muted-foreground">{liveEscalationStatus}</div>
+        </div>
+
+        <div className="p-4 space-y-3">
+          {!escalations.length ? (
+            <div className="text-sm text-muted-foreground">No escalation events yet.</div>
+          ) : (
+            escalations.map((item) => (
+              <div
+                key={item.id}
+                className="rounded-2xl border border-border/60 bg-background/40 p-4 space-y-3"
+              >
+                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-3">
+                  <div className="space-y-2">
+                    <div className="font-semibold">{item.scenarioLabel}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {new Date(item.createdAt).toLocaleString()} · {item.actorName} · {item.triggerModule}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge className={cn("border", escalationClass(item.escalationLevel))}>
+                        {item.escalationLevel}
+                      </Badge>
+                      <Badge className={cn("border", deploymentClass(item.deploymentMode))}>
+                        {item.deploymentMode}
+                      </Badge>
+                      <Badge variant="outline">{item.operatingProtocol}</Badge>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center min-w-[92px]">
+                    <div className="text-[11px] text-muted-foreground uppercase">Score</div>
+                    <div className="text-2xl font-bold text-primary">{item.threatScore}</div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+                  <div className="text-[11px] uppercase tracking-widest text-primary mb-2">Directive</div>
+                  <div className="text-sm">{item.operatorDirective}</div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </Card>
+
     </div>
   );
 }
