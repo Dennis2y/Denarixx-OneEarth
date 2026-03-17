@@ -161,6 +161,7 @@ export default function ThreatGlobe({ sites, escalations = [] }: Props) {
             typeof row.latitude === "number" &&
             typeof row.longitude === "number"
         )
+        .slice(0, 10)
         .map((row) => ({
           ...row,
           lat: row.latitude as number,
@@ -168,16 +169,16 @@ export default function ThreatGlobe({ sites, escalations = [] }: Props) {
           color: modulePointColor(row.triggerModule, row.escalationLevel),
           altitude:
             row.escalationLevel === "global-command"
-              ? 0.3
-              : row.escalationLevel === "regional-command"
               ? 0.22
-              : 0.14,
+              : row.escalationLevel === "regional-command"
+              ? 0.17
+              : 0.11,
           radius:
             row.escalationLevel === "global-command"
-              ? 0.82
+              ? 0.52
               : row.escalationLevel === "regional-command"
-              ? 0.62
-              : 0.42,
+              ? 0.38
+              : 0.26,
         })),
     [escalations]
   );
@@ -219,7 +220,7 @@ export default function ThreatGlobe({ sites, escalations = [] }: Props) {
   const arcsData = useMemo(() => {
     if (!criticalSites.length || !safeSites.length) return [];
 
-    return safeSites.flatMap((safeSite, index) => {
+    return safeSites.slice(0, 4).flatMap((safeSite, index) => {
       const target = criticalSites[index % criticalSites.length];
       return [
         {
@@ -227,7 +228,7 @@ export default function ThreatGlobe({ sites, escalations = [] }: Props) {
           startLng: safeSite.lng,
           endLat: target.lat,
           endLng: target.lng,
-          color: ["rgba(34,197,94,0.9)", "rgba(239,68,68,0.9)"],
+          color: ["rgba(34,197,94,0.78)", "rgba(239,68,68,0.82)"],
         },
       ];
     });
@@ -283,18 +284,18 @@ export default function ThreatGlobe({ sites, escalations = [] }: Props) {
         </div>
       </div>
 
-      <div className="relative mx-auto h-[260px] w-full max-w-[430px] sm:h-[300px] lg:h-[330px]">
+      <div className="relative mx-auto h-[240px] w-full max-w-[400px] sm:h-[280px] lg:h-[305px]">
         <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.08),transparent_58%)] blur-2xl" />
 
         <Globe
           ref={globeRef}
-          width={430}
-          height={330}
+          width={400}
+          height={305}
           backgroundColor="rgba(0,0,0,0)"
           globeImageUrl="https://unpkg.com/three-globe/example/img/earth-night.jpg"
           bumpImageUrl="https://unpkg.com/three-globe/example/img/earth-topology.png"
-          atmosphereColor="#3b82f6"
-          atmosphereAltitude={0.18}
+          atmosphereColor="#2563eb"
+          atmosphereAltitude={0.24}
           polygonsData={countries}
           polygonCapColor={(feat: any) => {
             const country =
@@ -312,7 +313,7 @@ export default function ThreatGlobe({ sites, escalations = [] }: Props) {
           }}
           polygonSideColor={() => "rgba(14,165,233,0.06)"}
           polygonStrokeColor={() => "rgba(148,163,184,0.24)"}
-          polygonAltitude={0.008}
+          polygonAltitude={0.012}
           pointsData={[...globePoints, ...escalationPoints]}
           pointLat="lat"
           pointLng="lng"
@@ -338,9 +339,19 @@ export default function ThreatGlobe({ sites, escalations = [] }: Props) {
               ? "rgba(239,68,68,0.9)"
               : "rgba(245,158,11,0.85)";
           }}
-          ringMaxRadius={(d: any) => (d.threatLevel === "critical" ? 6 : 4)}
-          ringPropagationSpeed={() => 1.5}
-          ringRepeatPeriod={(d: any) => (d.threatLevel === "critical" ? 850 : 1300)}
+          ringMaxRadius={(d: any) => {
+            if (d?.triggerModule) {
+              return d.escalationLevel === "global-command" ? 5.5 : 3.8;
+            }
+            return d.threatLevel === "critical" ? 5 : 3.5;
+          }}
+          ringPropagationSpeed={() => 1.05}
+          ringRepeatPeriod={(d: any) => {
+            if (d?.triggerModule) {
+              return d.escalationLevel === "global-command" ? 1100 : 1500;
+            }
+            return d.threatLevel === "critical" ? 1000 : 1450;
+          }}
           arcsData={arcsData}
           arcStartLat="startLat"
           arcStartLng="startLng"
