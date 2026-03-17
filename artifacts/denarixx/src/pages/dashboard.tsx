@@ -37,6 +37,18 @@ type ThreatSite = {
   longitude?: number;
 };
 
+type EscalationHotspot = {
+  id: number;
+  scenarioId: string;
+  scenarioLabel: string;
+  triggerModule: string;
+  threatScore: number;
+  escalationLevel: "site" | "district" | "regional-command" | "global-command";
+  country?: string;
+  latitude?: number;
+  longitude?: number;
+};
+
 type DashboardStats = {
   totalSites: number;
   activeSites: number;
@@ -64,6 +76,7 @@ type DashboardStats = {
     responsePriority: ResponsePriority;
     recommendedAction: string;
   }>;
+  escalationHotspots?: EscalationHotspot[];
 };
 
 function threatClass(level: ThreatLevel) {
@@ -166,7 +179,7 @@ export default function DashboardPage() {
           ) : !stats || stats.topThreatSites.length === 0 ? (
             <div className="text-sm text-muted-foreground">No globe threat data available.</div>
           ) : (
-            <ThreatGlobe sites={stats.globeSites ?? stats.topThreatSites} />
+            <ThreatGlobe sites={stats.globeSites ?? stats.topThreatSites} escalations={stats.escalationHotspots ?? []} />
           )}
         </div>
       </Card>

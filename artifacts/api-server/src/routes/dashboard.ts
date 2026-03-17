@@ -6,6 +6,7 @@ import {
   protectedPersonsTable,
   energyMetricsTable,
   disasterAlertsTable,
+  escalationEventsTable,
 } from "@workspace/db";
 import { desc, eq } from "drizzle-orm";
 import { scoreAlert, scoreSite } from "../lib/threat-score.js";
@@ -14,13 +15,14 @@ const router = Router();
 
 router.get("/dashboard/stats", async (_req, res) => {
   try {
-    const [sites, alerts, persons, disasters] = await Promise.all([
+    const [sites, alerts, persons, disasters, escalations] = await Promise.all([
       db.select().from(sitesTable).orderBy(sitesTable.name),
       db.select().from(unifiedAlertsTable)
         .where(eq(unifiedAlertsTable.status, "active"))
         .orderBy(desc(unifiedAlertsTable.createdAt)),
       db.select().from(protectedPersonsTable),
       db.select().from(disasterAlertsTable).orderBy(desc(disasterAlertsTable.issuedAt)).limit(12),
+      db.select().from(escalationEventsTable).orderBy(desc(escalationEventsTable.createdAt)).limit(12),
     ]);
 
     const latestEnergyRows = await Promise.all(
@@ -142,6 +144,28 @@ router.get("/dashboard/stats", async (_req, res) => {
       .sort((a, b) => b.threatScore - a.threatScore)
       .slice(0, 8);
 
+
+    const escalationHotspots = escalations.map((row, index) => {
+      const matchedSite =
+        scoredSites.find((site) =>
+          row.scenarioLabel.toLowerCase().includes(site.country.toLowerCase()) ||
+          row.scenarioLabel.toLowerCase().includes(site.location.toLowerCase()) ||
+          row.scenarioLabel.toLowerCase().includes(site.name.toLowerCase())
+        ) ?? scoredSites[index % Math.max(scoredSites.length, 1)];
+
+      return {
+        id: row.id,
+        scenarioId: row.scenarioId,
+        scenarioLabel: row.scenarioLabel,
+        triggerModule: row.triggerModule,
+        threatScore: Number(row.threatScore),
+        escalationLevel: row.escalationLevel,
+        country: matchedSite?.country,
+        latitude: matchedSite?.latitude,
+        longitude: matchedSite?.longitude,
+      };
+    });
+
     const recentAlerts = scoredAlerts.slice(0, 10);
 
     return res.json({
@@ -157,6 +181,7 @@ router.get("/dashboard/stats", async (_req, res) => {
       criticalThreatSites,
       averageThreatScore,
       globeSites: scoredSites,
+      escalationHotspots,
       topThreatSites,
       urgentQueue,
       recentAlerts,
