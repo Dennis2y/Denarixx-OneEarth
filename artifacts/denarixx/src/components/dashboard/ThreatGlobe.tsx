@@ -2,6 +2,15 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import Globe from "react-globe.gl";
 import { motion } from "framer-motion";
 
+const THREAT_SWEEP_CSS = `
+@keyframes threatSweep {
+  0% { transform: translateX(-140%) rotate(12deg); opacity: 0; }
+  10% { opacity: 0.18; }
+  45% { opacity: 0.28; }
+  100% { transform: translateX(320%) rotate(12deg); opacity: 0; }
+}
+`;
+
 type ThreatLevel = "low" | "medium" | "high" | "critical";
 
 type ThreatSite = {
@@ -339,7 +348,9 @@ export default function ThreatGlobe({ sites, escalations = [], liveFlashToken }:
   }, [globePoints]);
 
   return (
-    <div className="rounded-3xl border border-primary/20 bg-[#04070d] p-3 sm:p-4 shadow-[0_0_40px_rgba(0,0,0,0.45)]">
+    <>
+      <style>{THREAT_SWEEP_CSS}</style>
+      <div className="rounded-3xl border border-primary/20 bg-[#04070d] p-3 sm:p-4 shadow-[0_0_40px_rgba(0,0,0,0.45)]">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
@@ -362,7 +373,11 @@ export default function ThreatGlobe({ sites, escalations = [], liveFlashToken }:
       </div>
 
       <div className="relative mx-auto h-[240px] w-full max-w-[400px] sm:h-[280px] lg:h-[305px]">
-        <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.08),transparent_58%)] blur-2xl" />
+        <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.10),rgba(14,165,233,0.04),transparent_62%)] blur-2xl" />
+        <div className="absolute inset-[10%] rounded-full border border-cyan-400/10 shadow-[0_0_80px_rgba(56,189,248,0.08)]" />
+        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
+          <div className="absolute -left-1/3 top-0 h-full w-[38%] rotate-12 bg-gradient-to-r from-transparent via-white/10 to-transparent blur-2xl animate-[threatSweep_7s_linear_infinite]" />
+        </div>
 
         <motion.div
           className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-[78%] w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full"
@@ -394,7 +409,7 @@ export default function ThreatGlobe({ sites, escalations = [], liveFlashToken }:
           globeImageUrl="https://unpkg.com/three-globe/example/img/earth-night.jpg"
           bumpImageUrl="https://unpkg.com/three-globe/example/img/earth-topology.png"
           atmosphereColor="#2563eb"
-          atmosphereAltitude={0.24}
+          atmosphereAltitude={0.14}
           polygonsData={countries}
           polygonCapColor={(feat: any) => {
             const country =
@@ -490,16 +505,7 @@ export default function ThreatGlobe({ sites, escalations = [], liveFlashToken }:
           <span>Response routes</span>
         </div>
       </div>
-    </div>
+      </div>
+        </>
   );
 }
-
-
-<style>{`
-@keyframes threatSweep {
-  0% { transform: translateX(-140%) rotate(12deg); opacity: 0; }
-  10% { opacity: 0.18; }
-  45% { opacity: 0.28; }
-  100% { transform: translateX(320%) rotate(12deg); opacity: 0; }
-}
-`}</style>
