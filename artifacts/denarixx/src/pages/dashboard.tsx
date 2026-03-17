@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Shield, Bell, Siren, RefreshCw, Activity, Globe2 } from "lucide-react";
+import { Shield, Bell, Siren, RefreshCw } from "lucide-react";
 import { PageHeader, Card, Badge, Button, cn } from "@/components/ui-core";
 import { apiFetch } from "@/lib/api";
 import ThreatGlobe from "@/components/dashboard/ThreatGlobe";
@@ -28,12 +28,12 @@ type ThreatSite = {
   currentRiskLevel: string;
   powerAvailability: number;
   population: number;
-  latitude: number;
-  longitude: number;
   threatScore: number;
   threatLevel: ThreatLevel;
   responsePriority: ResponsePriority;
   recommendedAction: string;
+  latitude?: number;
+  longitude?: number;
 };
 
 type DashboardStats = {
@@ -50,7 +50,6 @@ type DashboardStats = {
   averageThreatScore: number;
   topThreatSites: ThreatSite[];
   urgentQueue: QueueItem[];
-  globeSites: ThreatSite[];
   recentAlerts: Array<{
     id: number;
     title: string;
@@ -125,7 +124,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <PageHeader
         title="Command Dashboard"
-        description="Live planetary threat intelligence, rotating danger globe, and urgent AI response queue"
+        description="Executive AI threat overview, live globe intelligence, and urgent response queue"
         actions={
           <Button variant="secondary" size="sm" onClick={() => loadDashboard(true)} disabled={refreshing}>
             <RefreshCw className={cn("w-4 h-4 mr-2", refreshing && "animate-spin")} />
@@ -155,53 +154,18 @@ export default function DashboardPage() {
 
       <Card className="border border-border/60 bg-card/70 overflow-hidden">
         <div className="p-4 border-b border-border/50 flex items-center gap-2">
-          <Globe2 className="w-4 h-4 text-primary" />
-          <div className="text-sm font-semibold">Live Global Threat Globe</div>
+          <Siren className="w-4 h-4 text-primary" />
+          <div className="text-sm font-semibold">Live Threat Globe</div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-0">
-          <div className="p-4 md:p-6">
-            {loading ? (
-              <div className="text-sm text-muted-foreground">Loading global threat globe...</div>
-            ) : !stats ? (
-              <div className="text-sm text-muted-foreground">Dashboard data unavailable.</div>
-            ) : (
-              <ThreatGlobe sites={stats.globeSites} />
-            )}
-          </div>
-
-          <div className="border-l border-border/40 p-4 md:p-6 space-y-4 bg-black/10">
-            <div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Globe Intelligence</div>
-              <div className="text-sm text-muted-foreground leading-6">
-                Rotating AI globe showing live danger hotspots, stable regions, and connected strategic nodes across the planetary command network.
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3">
-              {(stats?.topThreatSites ?? []).slice(0, 5).map((site) => (
-                <div key={site.id} className="rounded-2xl border border-border/60 bg-background/40 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-2 min-w-0">
-                      <div className="font-semibold">{site.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {site.location}, {site.country}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge className={cn("border", threatClass(site.threatLevel))}>{site.threatLevel}</Badge>
-                        <Badge className={cn("border", priorityClass(site.responsePriority))}>{site.responsePriority}</Badge>
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center min-w-[92px]">
-                      <div className="text-[11px] text-muted-foreground uppercase">Score</div>
-                      <div className="text-2xl font-bold text-primary">{site.threatScore}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        <div className="p-4">
+          {loading ? (
+            <div className="text-sm text-muted-foreground">Loading real globe intelligence...</div>
+          ) : !stats || stats.topThreatSites.length === 0 ? (
+            <div className="text-sm text-muted-foreground">No globe threat data available.</div>
+          ) : (
+            <ThreatGlobe sites={stats.topThreatSites} />
+          )}
         </div>
       </Card>
 
@@ -245,31 +209,34 @@ export default function DashboardPage() {
 
         <Card className="border border-border/60 bg-card/70">
           <div className="p-4 border-b border-border/50 flex items-center gap-2">
-            <Bell className="w-4 h-4 text-primary" />
-            <div className="text-sm font-semibold">Recent Scored Alerts</div>
+            <Shield className="w-4 h-4 text-primary" />
+            <div className="text-sm font-semibold">Top Threat Sites</div>
           </div>
 
-          <div className="p-4 space-y-3">
+          <div className="p-4 space-y-4">
             {loading ? (
-              <div className="text-sm text-muted-foreground">Loading recent alerts...</div>
-            ) : !stats || stats.recentAlerts.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No recent alerts available.</div>
+              <div className="text-sm text-muted-foreground">Loading threat sites...</div>
+            ) : !stats || stats.topThreatSites.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No site data available.</div>
             ) : (
-              stats.recentAlerts.map((alert) => (
-                <div key={alert.id} className="rounded-xl border border-border/60 bg-background/40 p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="font-semibold">{alert.title}</div>
-                      <Badge className={cn("border", threatClass(alert.threatLevel))}>{alert.threatLevel}</Badge>
-                      <Badge className={cn("border", priorityClass(alert.responsePriority))}>{alert.responsePriority}</Badge>
-                      <Badge variant="outline">{alert.module}</Badge>
+              stats.topThreatSites.map((site) => (
+                <div key={site.id} className="rounded-2xl border border-border/60 bg-background/40 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-2 min-w-0">
+                      <div className="font-semibold">{site.name}</div>
+                      <div className="text-sm text-muted-foreground">{site.location}, {site.country}</div>
+                      <div className="flex flex-wrap gap-2">
+                        <Badge className={cn("border", threatClass(site.threatLevel))}>{site.threatLevel}</Badge>
+                        <Badge className={cn("border", priorityClass(site.responsePriority))}>{site.responsePriority}</Badge>
+                        <Badge variant="outline">{site.type}</Badge>
+                      </div>
+                      <div className="text-sm">{site.recommendedAction}</div>
                     </div>
-                    <div className="text-sm text-muted-foreground">{alert.location}</div>
-                  </div>
 
-                  <div className="rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center min-w-[92px]">
-                    <div className="text-[11px] text-muted-foreground uppercase">Score</div>
-                    <div className="text-2xl font-bold text-primary">{alert.threatScore}</div>
+                    <div className="rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center min-w-[92px]">
+                      <div className="text-[11px] text-muted-foreground uppercase">Score</div>
+                      <div className="text-2xl font-bold text-primary">{site.threatScore}</div>
+                    </div>
                   </div>
                 </div>
               ))
@@ -277,6 +244,40 @@ export default function DashboardPage() {
           </div>
         </Card>
       </div>
+
+      <Card className="border border-border/60 bg-card/70">
+        <div className="p-4 border-b border-border/50 flex items-center gap-2">
+          <Bell className="w-4 h-4 text-primary" />
+          <div className="text-sm font-semibold">Recent Scored Alerts</div>
+        </div>
+
+        <div className="p-4 space-y-3">
+          {loading ? (
+            <div className="text-sm text-muted-foreground">Loading recent alerts...</div>
+          ) : !stats || stats.recentAlerts.length === 0 ? (
+            <div className="text-sm text-muted-foreground">No recent alerts available.</div>
+          ) : (
+            stats.recentAlerts.map((alert) => (
+              <div key={alert.id} className="rounded-xl border border-border/60 bg-background/40 p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="font-semibold">{alert.title}</div>
+                    <Badge className={cn("border", threatClass(alert.threatLevel))}>{alert.threatLevel}</Badge>
+                    <Badge className={cn("border", priorityClass(alert.responsePriority))}>{alert.responsePriority}</Badge>
+                    <Badge variant="outline">{alert.module}</Badge>
+                  </div>
+                  <div className="text-sm text-muted-foreground">{alert.location}</div>
+                </div>
+
+                <div className="rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center min-w-[92px]">
+                  <div className="text-[11px] text-muted-foreground uppercase">Score</div>
+                  <div className="text-2xl font-bold text-primary">{alert.threatScore}</div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </Card>
     </div>
   );
 }
