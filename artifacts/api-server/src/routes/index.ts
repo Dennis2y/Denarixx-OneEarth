@@ -19,6 +19,7 @@ const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(authRouter);
+router.use(liveRouter);
 
 router.use(requireAuth);
 
@@ -33,6 +34,5 @@ router.use(commandCenterRouter);
 router.use(auditRouter);
 router.use(reportsRouter);
 router.use(mapRouter);
-router.use(liveRouter);
 
 export default router;
