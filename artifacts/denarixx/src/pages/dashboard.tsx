@@ -10,21 +10,25 @@ import {
   Zap,
   TriangleAlert,
   Radio,
+  Sparkles,
+  CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { Card, Badge, Button, cn } from "@/components/ui-core";
 import { apiFetch, apiStreamUrl } from "@/lib/api";
 
 const ThreatGlobe = lazy(() => import("@/components/dashboard/ThreatGlobe"));
 
-const DASHBOARD_TICKER_CSS = `
-@keyframes denTickerScroll {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-50%); }
-}
-`;
-
 type ThreatLevel = "low" | "medium" | "high" | "critical";
 type ResponsePriority = "routine" | "priority" | "urgent" | "immediate";
+type ConsoleAction = "recommend" | "escalate" | "dispatch";
+type CommandScenarioType =
+  | "flood_event"
+  | "severe_storm"
+  | "wildfire_risk"
+  | "clinic_power_outage"
+  | "multi_site_outage"
+  | "child_emergency_sos";
 
 type QueueItem = {
   kind: "alert" | "site";
@@ -73,24 +77,6 @@ type LiveFeedItem = {
   tone: "critical" | "warning" | "info";
 };
 
-type AutoResponseStatusCard = {
-  id: string;
-  title: string;
-  value: string;
-  detail: string;
-  tone: "critical" | "warning" | "stable" | "info";
-};
-
-type ConsoleAction = "recommend" | "escalate" | "dispatch";
-
-type CommandScenarioType =
-  | "flood_event"
-  | "severe_storm"
-  | "wildfire_risk"
-  | "clinic_power_outage"
-  | "multi_site_outage"
-  | "child_emergency_sos";
-
 type DashboardStats = {
   totalSites: number;
   activeSites: number;
@@ -135,13 +121,6 @@ function priorityClass(priority: ResponsePriority) {
   return "bg-green-500/15 text-green-400 border-green-500/30";
 }
 
-function responseCardToneClass(tone: "critical" | "warning" | "stable" | "info") {
-  if (tone === "critical") return "border-red-500/30 bg-red-500/10";
-  if (tone === "warning") return "border-amber-500/30 bg-amber-500/10";
-  if (tone === "info") return "border-blue-500/30 bg-blue-500/10";
-  return "border-green-500/30 bg-green-500/10";
-}
-
 function moduleTone(module: string) {
   const value = module.toLowerCase();
   if (value.includes("energy")) return "text-emerald-400 border-emerald-500/30 bg-emerald-500/10";
@@ -149,10 +128,30 @@ function moduleTone(module: string) {
   return "text-sky-400 border-sky-500/30 bg-sky-500/10";
 }
 
+function feedToneClass(tone: LiveFeedItem["tone"]) {
+  if (tone === "critical") return "border-red-500/25 bg-red-500/10 text-red-200";
+  if (tone === "warning") return "border-amber-500/25 bg-amber-500/10 text-amber-100";
+  return "border-sky-500/25 bg-sky-500/10 text-sky-100";
+}
+
+function deriveScenarioFromQueueItem(item: QueueItem | null): CommandScenarioType {
+  if (!item) return "multi_site_outage";
+
+  const combined = `${item.title} ${item.location}`.toLowerCase();
+
+  if (combined.includes("child") || combined.includes("sos")) return "child_emergency_sos";
+  if (combined.includes("clinic") || combined.includes("hospital")) return "clinic_power_outage";
+  if (combined.includes("flood")) return "flood_event";
+  if (combined.includes("storm")) return "severe_storm";
+  if (combined.includes("wildfire") || combined.includes("fire")) return "wildfire_risk";
+  return "multi_site_outage";
+}
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
   const [liveFlashToken, setLiveFlashToken] = useState("");
   const [liveAlertStrip, setLiveAlertStrip] = useState("AI voice channel online. Monitoring global threat grid...");
   const [liveFeed, setLiveFeed] = useState<LiveFeedItem[]>([
@@ -160,57 +159,120 @@ export default function DashboardPage() {
     { id: "boot-2", label: "LifeMesh response network connected", tone: "info" },
     { id: "boot-3", label: "Energy resilience intelligence online", tone: "info" },
   ]);
-  const [consoleCommand, setConsoleCommand] = useState("Analyze live threat posture and propose next action");
-  const [consoleResponse, setConsoleResponse] = useState("AI console ready. Awaiting command action.");
-  const [consoleMode, setConsoleMode] = useState<ConsoleAction>("recommend");
+
+  const [selectedQueueItem, setSelectedQueueItem] = useState<QueueItem | null>(null);
+  const [consolePreview, setConsolePreview] = useState<any | null>(null);
+  const [consoleResponse, setConsoleResponse] = useState("AI console ready. Select a live queue target to begin.");
   const [consoleBusy, setConsoleBusy] = useState(false);
+  const [consoleMode, setConsoleMode] = useState<ConsoleAction>("recommend");
+  const [consoleError, setConsoleError] = useState<string | null>(null);
 
-  const runConsoleAction = async (action: ConsoleAction) => {
-  try {
-    setConsoleBusy(true);
-    setConsoleMode(action);
-    setConsoleResponse(`AI processing "${action}" command...`);
-
-    const scenario: CommandScenarioType = "multi_site_outage";
-
-    const res = await apiFetch("/api/command-center/simulate", {
-      method: "POST",
-      body: JSON.stringify({ scenarioType: scenario }),
-    });
-
-    if (action === "recommend") {
-      setConsoleResponse(
-        `AI Recommendation: ${res?.autoEscalation?.operatorDirective || res?.scenarioLabel || "Deploy stabilization teams."}`
-      );
-    } else if (action === "escalate") {
-      setConsoleResponse(
-        `Escalation confirmed → ${res?.autoEscalation?.escalationLevel || "regional-command"} / ${res?.autoEscalation?.deploymentMode || "immediate-deployment"}`
-      );
-    } else if (action === "dispatch") {
-      setConsoleResponse(
-        `Dispatch initiated → ${res?.autoEscalation?.recommendedActions?.[0] || "Field response units deployed across affected regions."}`
-      );
-    }
-
-    await loadDashboard(true);
-  } catch {
-    setConsoleResponse("AI command failed. Check command-center backend route.");
-  } finally {
-    setConsoleBusy(false);
-  }
-};
   const loadDashboard = async (silent = false) => {
     try {
       if (silent) setRefreshing(true);
       else setLoading(true);
 
       const json = await apiFetch("/api/dashboard/stats");
-      setStats(json as DashboardStats);
+      const nextStats = json as DashboardStats;
+      setStats(nextStats);
+
+      setSelectedQueueItem((current) => {
+        if (!nextStats.urgentQueue?.length) return current;
+        if (!current) return nextStats.urgentQueue[0];
+        return (
+          nextStats.urgentQueue.find((item) => item.kind === current.kind && item.id === current.id) ||
+          nextStats.urgentQueue[0]
+        );
+      });
     } catch {
       if (!silent) setStats(null);
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const runConsolePreview = async (item: QueueItem) => {
+    try {
+      setConsoleBusy(true);
+      setConsoleError(null);
+      setConsolePreview(null);
+      setConsoleResponse(`AI preview running for ${item.title}...`);
+
+      const scenarioType = deriveScenarioFromQueueItem(item);
+
+      const res = await apiFetch("/api/command-center/simulate", {
+        method: "POST",
+        body: JSON.stringify({
+          scenarioType,
+          item,
+        }),
+      });
+
+      setConsolePreview(res);
+      setConsoleResponse(
+        `Preview complete → ${res?.autoEscalation?.operatorDirective || item.recommendedAction || "Operator review ready."}`
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Preview failed";
+      setConsoleError(message);
+      setConsoleResponse("AI preview failed. Check command-center integration.");
+    } finally {
+      setConsoleBusy(false);
+    }
+  };
+
+  const runConsoleAction = async (action: ConsoleAction) => {
+    if (!selectedQueueItem) {
+      setConsoleError("No active queue target selected.");
+      setConsoleResponse("Select a queue target before executing an action.");
+      return;
+    }
+
+    try {
+      setConsoleBusy(true);
+      setConsoleError(null);
+      setConsoleMode(action);
+      setConsoleResponse(`AI processing "${action}" for ${selectedQueueItem.title}...`);
+
+      const scenarioType = deriveScenarioFromQueueItem(selectedQueueItem);
+
+      const res = await apiFetch("/api/command-center/orchestrate", {
+        method: "POST",
+        body: JSON.stringify({
+          action,
+          item: selectedQueueItem,
+          scenarioType,
+        }),
+      });
+
+      setConsoleResponse(
+        String(
+          res?.message ||
+            res?.operatorDirective ||
+            "Operator action completed successfully."
+        )
+      );
+
+      if (!consolePreview) {
+        setConsolePreview({
+          scenarioType,
+          autoEscalation: {
+            escalationLevel: res?.escalationLevel,
+            deploymentMode: res?.deploymentMode,
+            operatorDirective: res?.operatorDirective,
+          },
+          threatScore: res?.threatScore,
+        });
+      }
+
+      await loadDashboard(true);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Execution failed";
+      setConsoleError(message);
+      setConsoleResponse(`AI command failed: ${message}`);
+    } finally {
+      setConsoleBusy(false);
     }
   };
 
@@ -230,13 +292,12 @@ export default function DashboardPage() {
         const payload = JSON.parse(event.data);
 
         const type = String(payload?.type ?? "");
-        const message =
-          String(payload?.message ?? "").trim() || "Live command event detected";
+        const message = String(payload?.message ?? "").trim() || "Live command event detected";
 
         const tone: "critical" | "warning" | "info" =
-          type.includes("auto-escalation")
+          type.includes("auto-escalation") || type.includes("dispatch")
             ? "critical"
-            : type.includes("alert")
+            : type.includes("alert") || type.includes("escalate")
               ? "warning"
               : "info";
 
@@ -271,11 +332,31 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    if (!stats || selectedQueueItem) return;
+    if (stats.urgentQueue?.length) {
+      setSelectedQueueItem(stats.urgentQueue[0]);
+    }
+  }, [stats, selectedQueueItem]);
+
+  useEffect(() => {
+    if (!selectedQueueItem) {
+      setConsolePreview(null);
+      return;
+    }
+
+    void runConsolePreview(selectedQueueItem);
+  }, [selectedQueueItem?.id, selectedQueueItem?.kind]);
+
+  useEffect(() => {
     if (!stats) return;
-    setConsoleResponse(
-      `AI console synced. Tracking ${stats.activeAlerts} active alerts, ${stats.criticalThreatSites} critical sites, and ${stats.escalationHotspots?.length ?? 0} escalation hotspots.`
-    );
-  }, [stats]);
+    if (consoleBusy) return;
+
+    if (!selectedQueueItem) {
+      setConsoleResponse(
+        `AI console synced. Tracking ${stats.activeAlerts} active alerts, ${stats.criticalThreatSites} critical sites, and ${stats.escalationHotspots?.length ?? 0} escalation hotspots.`
+      );
+    }
+  }, [stats, consoleBusy, selectedQueueItem]);
 
   useEffect(() => {
     if (!stats?.escalationHotspots?.length) return;
@@ -303,57 +384,24 @@ export default function DashboardPage() {
     };
   }, [stats]);
 
-  const commandActions = useMemo(
-    () => [
-      {
-        title: "Emergency Drill",
-        description: "Initiate network-wide response protocol.",
-        icon: TriangleAlert,
-        tone: "border-red-500/25 bg-red-500/10 text-red-300",
-      },
-      {
-        title: "Deploy Node",
-        description: "Register new infrastructure hardware.",
-        icon: Globe,
-        tone: "border-amber-500/20 bg-white/5 text-amber-300",
-      },
-      {
-        title: "Generate Report",
-        description: "Export executive threat intelligence summary.",
-        icon: Bell,
-        tone: "border-white/10 bg-white/5 text-slate-200",
-      },
-      {
-        title: "Broadcast Alert",
-        description: "Send live priority notification to all regions.",
-        icon: Radio,
-        tone: "border-white/10 bg-white/5 text-amber-300",
-      },
-    ],
-    []
-  );
-
   const moduleCards = useMemo(() => {
     if (!stats) return [];
     return [
       {
         title: "Denarixx Energy Grid",
         subtitle: `${Math.round(stats.energyAvailability)}% grid availability`,
-        value: `${Math.round(stats.energyAvailability)}%`,
         tone: "from-emerald-500/10 to-transparent",
         accent: "bg-emerald-400",
       },
       {
         title: "Denarixx LifeMesh",
         subtitle: `${stats.protectedPeople || stats.protectedPersons} persons protected`,
-        value: `${stats.protectedPeople || stats.protectedPersons}`,
         tone: "from-amber-500/10 to-transparent",
         accent: "bg-amber-400",
       },
       {
         title: "EarthShield Intel",
         subtitle: `${stats.criticalThreatSites} risk zones active`,
-        value: `${stats.criticalThreatSites}`,
         tone: "from-sky-500/10 to-transparent",
         accent: "bg-sky-400",
       },
@@ -362,7 +410,33 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[28px] border border-red-500/20 bg-[radial-gradient(circle_at_top,rgba(127,29,29,0.35),rgba(9,9,11,0.95)_60%)] overflow-hidden shadow-[0_0_60px_rgba(127,29,29,0.18)]">
+      <div className="rounded-2xl border border-amber-500/20 bg-[linear-gradient(90deg,rgba(120,53,15,0.22),rgba(7,10,18,0.95),rgba(12,74,110,0.18))] px-4 py-3 shadow-[0_0_40px_rgba(245,158,11,0.08)]">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-3">
+            <span className="mt-1 h-2.5 w-2.5 rounded-full bg-amber-300 shadow-[0_0_14px_rgba(252,211,77,0.95)]" />
+            <div>
+              <div className="text-[11px] uppercase tracking-[0.35em] text-amber-200/80">Live Command Strip</div>
+              <div className="mt-1 text-sm text-white">{liveAlertStrip}</div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {liveFeed.slice(0, 3).map((item) => (
+              <div
+                key={item.id}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-[11px] font-medium",
+                  feedToneClass(item.tone)
+                )}
+              >
+                {item.label}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-[28px] overflow-hidden border border-red-500/20 bg-[radial-gradient(circle_at_top,rgba(127,29,29,0.35),rgba(9,9,11,0.95)_60%)] shadow-[0_0_60px_rgba(127,29,29,0.18)]">
         <div className="flex items-center justify-between border-b border-red-500/15 px-6 py-4">
           <div className="flex items-center gap-3">
             <span className="h-2.5 w-2.5 rounded-full bg-red-400 shadow-[0_0_12px_rgba(248,113,113,0.9)]" />
@@ -498,42 +572,122 @@ export default function DashboardPage() {
             Operator Command Console
           </div>
 
-          <Card className="p-5 border border-primary/20 bg-black/40 backdrop-blur-xl">
-            <div className="text-sm font-semibold text-white mb-3">
-              AI Command Console
+          <Card className="overflow-hidden border border-cyan-500/15 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.08),transparent_35%),linear-gradient(180deg,rgba(10,14,25,0.95),rgba(4,7,15,0.98))] p-5 backdrop-blur-xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="mb-2 flex items-center gap-2">
+                  <Badge className="border-cyan-400/20 bg-cyan-400/10 text-cyan-200">
+                    AI Orchestration Console
+                  </Badge>
+                  <Badge className="border-white/10 bg-white/5 text-slate-300">
+                    {consoleBusy ? "Processing" : "Operational"}
+                  </Badge>
+                </div>
+                <div className="text-sm font-semibold text-white">Command Layer</div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  Recommend · Escalate · Dispatch against a selected live queue target
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2 text-right">
+                <div className="text-[10px] uppercase tracking-[0.28em] text-slate-500">Selected Target</div>
+                <div className="mt-1 text-sm font-medium text-white">
+                  {selectedQueueItem?.title ?? "No target selected"}
+                </div>
+                <div className="text-xs text-slate-400">
+                  {selectedQueueItem?.location ?? "Choose an urgent queue item"}
+                </div>
+              </div>
             </div>
 
-            <div className="text-xs text-muted-foreground mb-4">
-              Voice-style AI orchestration · Recommend · Escalate · Dispatch
-            </div>
+            <div className="mt-4 grid gap-4">
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div className="flex items-center gap-2 text-sm text-white">
+                  <Sparkles className="h-4 w-4 text-cyan-300" />
+                  AI Preview
+                </div>
 
-            <div className="rounded-xl border border-border/60 bg-background/40 p-3 text-sm mb-4 min-h-[70px]">
-              {consoleResponse}
-            </div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                    <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">Threat</div>
+                    <div className="mt-1 text-sm font-semibold text-white">
+                      {consolePreview?.threatScore ?? selectedQueueItem?.threatScore ?? "—"}
+                    </div>
+                  </div>
 
-            <div className="grid grid-cols-3 gap-2">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                    <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">Escalation</div>
+                    <div className="mt-1 text-sm font-semibold text-white">
+                      {consolePreview?.autoEscalation?.escalationLevel ?? "—"}
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                    <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">Deployment</div>
+                    <div className="mt-1 text-sm font-semibold text-white">
+                      {consolePreview?.autoEscalation?.deploymentMode ?? "—"}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-sm text-slate-300 min-h-[68px]">
+                  {consoleResponse}
+                </div>
+
+                {consoleError ? (
+                  <div className="mt-3 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                    <TriangleAlert className="h-4 w-4" />
+                    {consoleError}
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <Button
+                  onClick={() => runConsoleAction("recommend")}
+                  disabled={consoleBusy || !selectedQueueItem}
+                  className={cn(
+                    "w-full min-w-0 rounded-xl bg-blue-600 text-white hover:bg-blue-700",
+                    consoleMode === "recommend" && "ring-1 ring-blue-300/50"
+                  )}
+                >
+                  {consoleBusy && consoleMode === "recommend" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  Recommend
+                </Button>
+
+                <Button
+                  onClick={() => runConsoleAction("escalate")}
+                  disabled={consoleBusy || !selectedQueueItem}
+                  className={cn(
+                    "w-full min-w-0 rounded-xl bg-amber-600 text-white hover:bg-amber-700",
+                    consoleMode === "escalate" && "ring-1 ring-amber-300/50"
+                  )}
+                >
+                  {consoleBusy && consoleMode === "escalate" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  Escalate
+                </Button>
+
+                <Button
+                  onClick={() => runConsoleAction("dispatch")}
+                  disabled={consoleBusy || !selectedQueueItem}
+                  className={cn(
+                    "w-full min-w-0 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700",
+                    consoleMode === "dispatch" && "ring-1 ring-emerald-300/50"
+                  )}
+                >
+                  {consoleBusy && consoleMode === "dispatch" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  Dispatch
+                </Button>
+              </div>
+
               <Button
-                onClick={() => runConsoleAction("recommend")}
-                disabled={consoleBusy}
-                className="w-full min-w-0 bg-blue-600 hover:bg-blue-700 text-white"
+                variant="secondary"
+                onClick={() => selectedQueueItem && runConsolePreview(selectedQueueItem)}
+                disabled={consoleBusy || !selectedQueueItem}
+                className="w-full rounded-xl border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
               >
-                Recommend
-              </Button>
-
-              <Button
-                onClick={() => runConsoleAction("escalate")}
-                disabled={consoleBusy}
-                className="w-full min-w-0 bg-amber-600 hover:bg-amber-700 text-white"
-              >
-                Escalate
-              </Button>
-
-              <Button
-                onClick={() => runConsoleAction("dispatch")}
-                disabled={consoleBusy}
-                className="w-full min-w-0 bg-green-600 hover:bg-green-700 text-white"
-              >
-                Dispatch
+                {consoleBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Activity className="mr-2 h-4 w-4" />}
+                Refresh AI Preview
               </Button>
             </div>
           </Card>
@@ -567,8 +721,8 @@ export default function DashboardPage() {
                       module.title.includes("Energy")
                         ? `${Math.min(100, overview.energyAvailability)}%`
                         : module.title.includes("LifeMesh")
-                        ? `${Math.min(100, Math.max(18, Math.round((overview.protectedPeople / Math.max(overview.totalNodes || 1, 1)) * 10)))}%`
-                        : `${Math.min(100, Math.max(22, 100 - overview.riskZones * 4))}%`,
+                          ? `${Math.min(100, Math.max(18, Math.round((overview.protectedPeople / Math.max(overview.totalNodes || 1, 1)) * 10)))}%`
+                          : `${Math.min(100, Math.max(22, 100 - overview.riskZones * 4))}%`,
                   }}
                 />
               </div>
@@ -577,7 +731,7 @@ export default function DashboardPage() {
         </div>
 
         <Card className="border border-border/60 bg-card/70">
-          <div className="border-b border-border/50 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center justify-between border-b border-border/50 px-6 py-4">
             <div className="text-[11px] uppercase tracking-[0.35em] text-amber-300/80">
               Active Threat Feed
             </div>
@@ -614,9 +768,7 @@ export default function DashboardPage() {
 
                     <div className="text-right">
                       <div className="text-4xl font-semibold text-amber-300">{alert.threatScore}</div>
-                      <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">
-                        Threat
-                      </div>
+                      <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">Threat</div>
                     </div>
                   </div>
                 </div>
@@ -628,7 +780,7 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <Card className="border border-border/60 bg-card/70">
-          <div className="border-b border-border/50 px-6 py-4 flex items-center gap-2">
+          <div className="flex items-center gap-2 border-b border-border/50 px-6 py-4">
             <Shield className="h-4 w-4 text-primary" />
             <div className="text-sm font-semibold">Top Threat Sites</div>
           </div>
@@ -639,34 +791,66 @@ export default function DashboardPage() {
             ) : !stats || stats.topThreatSites.length === 0 ? (
               <div className="text-sm text-muted-foreground">No site data available.</div>
             ) : (
-              stats.topThreatSites.slice(0, 4).map((site) => (
-                <div key={site.id} className="rounded-2xl border border-border/60 bg-background/40 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 space-y-2">
-                      <div className="text-xl font-semibold text-white">{site.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {site.location}, {site.country}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge className={cn("border", threatClass(site.threatLevel))}>{site.threatLevel}</Badge>
-                        <Badge className={cn("border", priorityClass(site.responsePriority))}>{site.responsePriority}</Badge>
-                        <Badge variant="outline">{site.type}</Badge>
-                      </div>
-                    </div>
+              stats.topThreatSites.slice(0, 4).map((site) => {
+                const selected =
+                  selectedQueueItem?.kind === "site" &&
+                  selectedQueueItem?.id === site.id;
 
-                    <div className="min-w-[92px] rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center">
-                      <div className="text-[11px] uppercase text-muted-foreground">Score</div>
-                      <div className="text-2xl font-bold text-primary">{site.threatScore}</div>
+                return (
+                  <button
+                    key={site.id}
+                    type="button"
+                    onClick={() =>
+                      setSelectedQueueItem({
+                        kind: "site",
+                        id: site.id,
+                        title: site.name,
+                        location: `${site.location}, ${site.country}`,
+                        threatScore: site.threatScore,
+                        threatLevel: site.threatLevel,
+                        responsePriority: site.responsePriority,
+                        recommendedAction: site.recommendedAction,
+                      })
+                    }
+                    className={cn(
+                      "block w-full rounded-2xl border bg-background/40 p-4 text-left transition-all",
+                      selected
+                        ? "border-cyan-400/40 shadow-[0_0_0_1px_rgba(34,211,238,0.22)]"
+                        : "border-border/60 hover:border-cyan-400/20"
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 space-y-2">
+                        <div className="text-xl font-semibold text-white">{site.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {site.location}, {site.country}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge className={cn("border", threatClass(site.threatLevel))}>{site.threatLevel}</Badge>
+                          <Badge className={cn("border", priorityClass(site.responsePriority))}>{site.responsePriority}</Badge>
+                          <Badge variant="outline">{site.type}</Badge>
+                          {selected ? (
+                            <Badge className="border-cyan-400/20 bg-cyan-400/10 text-cyan-200">
+                              Selected
+                            </Badge>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      <div className="min-w-[92px] rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center">
+                        <div className="text-[11px] uppercase text-muted-foreground">Score</div>
+                        <div className="text-2xl font-bold text-primary">{site.threatScore}</div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))
+                  </button>
+                );
+              })
             )}
           </div>
         </Card>
 
         <Card className="border border-border/60 bg-card/70">
-          <div className="border-b border-border/50 px-6 py-4 flex items-center gap-2">
+          <div className="flex items-center gap-2 border-b border-border/50 px-6 py-4">
             <Bell className="h-4 w-4 text-primary" />
             <div className="text-sm font-semibold">Urgent Response Queue</div>
           </div>
@@ -677,31 +861,82 @@ export default function DashboardPage() {
             ) : !stats || stats.urgentQueue.length === 0 ? (
               <div className="text-sm text-muted-foreground">No urgent items in queue.</div>
             ) : (
-              stats.urgentQueue.slice(0, 4).map((item) => (
-                <div key={`${item.kind}-${item.id}`} className="rounded-2xl border border-border/60 bg-background/40 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-2">
-                      <div className="text-xl font-semibold text-white">{item.title}</div>
-                      <div className="text-sm text-muted-foreground">{item.location}</div>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant="outline">{item.kind}</Badge>
-                        <Badge className={cn("border", threatClass(item.threatLevel))}>{item.threatLevel}</Badge>
-                        <Badge className={cn("border", priorityClass(item.responsePriority))}>{item.responsePriority}</Badge>
-                      </div>
-                      <div className="text-sm text-slate-300">{item.recommendedAction}</div>
-                    </div>
+              stats.urgentQueue.slice(0, 4).map((item) => {
+                const selected =
+                  selectedQueueItem?.kind === item.kind &&
+                  selectedQueueItem?.id === item.id;
 
-                    <div className="min-w-[92px] rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center">
-                      <div className="text-[11px] uppercase text-muted-foreground">Score</div>
-                      <div className="text-2xl font-bold text-primary">{item.threatScore}</div>
+                return (
+                  <button
+                    key={`${item.kind}-${item.id}`}
+                    type="button"
+                    onClick={() => setSelectedQueueItem(item)}
+                    className={cn(
+                      "block w-full rounded-2xl border bg-background/40 p-4 text-left transition-all",
+                      selected
+                        ? "border-cyan-400/40 shadow-[0_0_0_1px_rgba(34,211,238,0.22)]"
+                        : "border-border/60 hover:border-cyan-400/20"
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="text-xl font-semibold text-white">{item.title}</div>
+                          {selected ? (
+                            <Badge className="border-cyan-400/20 bg-cyan-400/10 text-cyan-200">
+                              Selected
+                            </Badge>
+                          ) : null}
+                        </div>
+                        <div className="text-sm text-muted-foreground">{item.location}</div>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="outline">{item.kind}</Badge>
+                          <Badge className={cn("border", threatClass(item.threatLevel))}>{item.threatLevel}</Badge>
+                          <Badge className={cn("border", priorityClass(item.responsePriority))}>{item.responsePriority}</Badge>
+                        </div>
+                        <div className="text-sm text-slate-300">{item.recommendedAction}</div>
+                      </div>
+
+                      <div className="min-w-[92px] rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center">
+                        <div className="text-[11px] uppercase text-muted-foreground">Score</div>
+                        <div className="text-2xl font-bold text-primary">{item.threatScore}</div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))
+                  </button>
+                );
+              })
             )}
           </div>
         </Card>
       </div>
+
+      <Card className="border border-border/60 bg-card/70">
+        <div className="flex items-center gap-2 border-b border-border/50 px-6 py-4">
+          <Radio className="h-4 w-4 text-primary" />
+          <div className="text-sm font-semibold">Live Event Feed</div>
+        </div>
+
+        <div className="grid gap-3 p-5 md:grid-cols-2 xl:grid-cols-4">
+          {liveFeed.slice(0, 8).map((item) => (
+            <div
+              key={item.id}
+              className={cn("rounded-2xl border p-4 text-sm", feedToneClass(item.tone))}
+            >
+              <div className="flex items-center gap-2 font-medium">
+                {item.tone === "critical" ? (
+                  <TriangleAlert className="h-4 w-4" />
+                ) : item.tone === "warning" ? (
+                  <Bell className="h-4 w-4" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4" />
+                )}
+                Live update
+              </div>
+              <div className="mt-2 leading-6">{item.label}</div>
+            </div>
+          ))}
+        </div>
+      </Card>
     </div>
   );
 }

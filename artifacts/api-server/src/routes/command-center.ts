@@ -27,6 +27,20 @@ const VALID_SCENARIOS = [
 ] as const;
 
 type ScenarioType = typeof VALID_SCENARIOS[number];
+type ConsoleAction = "recommend" | "escalate" | "dispatch";
+type ThreatLevel = "low" | "medium" | "high" | "critical";
+type ResponsePriority = "routine" | "priority" | "urgent" | "immediate";
+
+type QueueItemPayload = {
+  kind: "alert" | "site";
+  id: number;
+  title: string;
+  location: string;
+  threatScore: number;
+  threatLevel: ThreatLevel;
+  responsePriority: ResponsePriority;
+  recommendedAction?: string;
+};
 
 type ScenarioMeta = {
   label: string;
@@ -178,6 +192,169 @@ const SCENARIO_META: Record<ScenarioType, ScenarioMeta> = {
   },
 };
 
+function deriveScenarioFromItem(item?: QueueItemPayload | null): ScenarioType {
+  if (!item) return "multi_site_outage";
+
+  const title = item.title.toLowerCase();
+  const location = item.location.toLowerCase();
+  const combined = `${title} ${location}`;
+
+  if (combined.includes("child") || combined.includes("sos")) return "child_emergency_sos";
+  if (combined.includes("clinic") || combined.includes("hospital")) return "clinic_power_outage";
+  if (combined.includes("flood")) return "flood_event";
+  if (combined.includes("storm")) return "severe_storm";
+  if (combined.includes("wildfire") || combined.includes("fire")) return "wildfire_risk";
+  if (item.threatLevel === "critical" || item.responsePriority === "immediate") return "multi_site_outage";
+
+  return "multi_site_outage";
+}
+
+function validateQueueItem(item: unknown): item is QueueItemPayload {
+  if (!item || typeof item !== "object") return false;
+
+  const value = item as QueueItemPayload;
+
+  return (
+    (value.kind === "alert" || value.kind === "site") &&
+    typeof value.id === "number" &&
+    typeof value.title === "string" &&
+    typeof value.location === "string" &&
+    typeof value.threatScore === "number" &&
+    ["low", "medium", "high", "critical"].includes(value.threatLevel) &&
+    ["routine", "priority", "urgent", "immediate"].includes(value.responsePriority)
+  );
+}
+
+async function buildSimulation(scenarioType: ScenarioType, operator: NonNullable<AuthRequest["sessionUser"]>) {
+  const meta = SCENARIO_META[scenarioType];
+
+  const [allSites, allPersons, recentAlerts, latestMetrics] = await Promise.all([
+    db.select().from(sitesTable),
+    db.select().from(protectedPersonsTable),
+    db
+      .select()
+      .from(unifiedAlertsTable)
+      .where(eq(unifiedAlertsTable.status, "active"))
+      .orderBy(desc(unifiedAlertsTable.createdAt))
+      .limit(20),
+    db.select().from(energyMetricsTable).orderBy(desc(energyMetricsTable.recordedAt)).limit(50),
+  ]);
+
+  const affectedSites = allSites
+    .filter(
+      (s) =>
+        meta.siteTypesAffected.includes(s.type) ||
+        s.currentRiskLevel === "critical" ||
+        s.currentRiskLevel === "high"
+    )
+    .slice(0, 5);
+
+  const affectedSiteIds = new Set(affectedSites.map((s) => s.id));
+  const affectedPersons = allPersons.filter((p) => affectedSiteIds.has(p.siteId));
+  const atRiskPersons = affectedPersons.filter((p) => p.status === "at-risk" || p.status === "emergency");
+  const criticalFacilities = affectedSites.filter((s) => s.type === "clinic" || s.type === "shelter");
+
+  const relevantMetrics = latestMetrics.filter((m) => affectedSiteIds.has(m.siteId));
+  const avgBattery =
+    relevantMetrics.length > 0
+      ? relevantMetrics.reduce((sum, m) => sum + m.batteryLevel, 0) / relevantMetrics.length
+      : 65;
+  const avgSolar =
+    relevantMetrics.length > 0
+      ? relevantMetrics.reduce((sum, m) => sum + m.solarGeneration, 0) / relevantMetrics.length
+      : 45;
+
+  const baseReadiness = 100 - meta.readinessPenalty;
+  const batteryPenalty = avgBattery < 30 ? 15 : avgBattery < 60 ? 5 : 0;
+  const criticalPenalty = criticalFacilities.length * 3;
+  const readinessScore = Math.max(20, Math.min(99, baseReadiness - batteryPenalty - criticalPenalty));
+  const estimatedPopulationAtRisk = affectedSites.reduce((sum, s) => sum + s.population, 0);
+  const backupHoursEstimate = avgBattery > 0 ? Math.round((avgBattery / 100) * 12) : 0;
+
+  const threatScore = Math.max(
+    25,
+    Math.min(
+      100,
+      Math.round(
+        (100 - readinessScore) * 0.55 +
+          (meta.baseRisk === "critical" ? 22 : meta.baseRisk === "warning" ? 12 : 5) +
+          atRiskPersons.length * 4 +
+          criticalFacilities.length * 6
+      )
+    )
+  );
+
+  const autoEscalation = buildAutoEscalation({
+    threatScore,
+    riskSeverity: meta.baseRisk,
+    triggerModule: meta.module,
+    affectedSitesCount: affectedSites.length,
+    atRiskPersonsCount: atRiskPersons.length,
+    criticalFacilitiesCount: criticalFacilities.length,
+    estimatedPopulationAtRisk,
+  });
+
+  const autoResponse = buildAutoResponse({
+    triggerModule: meta.module,
+    threatScore,
+    escalationLevel: autoEscalation.escalationLevel,
+    deploymentMode: autoEscalation.deploymentMode,
+    affectedSitesCount: affectedSites.length,
+    atRiskPersonsCount: atRiskPersons.length,
+    estimatedPopulationAtRisk,
+  });
+
+  const scenarioId = `SIM-${Date.now()}`;
+
+  return {
+    scenarioId,
+    scenarioType,
+    scenarioLabel: meta.label,
+    triggerModule: meta.module,
+    riskSeverity: meta.baseRisk,
+    readinessScore,
+    threatScore,
+    operator: {
+      email: operator.email,
+      name: operator.name,
+      role: operator.role,
+    },
+    affectedSites: affectedSites.map((s) => ({
+      id: s.id,
+      name: s.name,
+      type: s.type,
+      location: s.location,
+      country: s.country,
+      status: s.status,
+      population: s.population,
+      powerAvailability: s.powerAvailability,
+      currentRiskLevel: s.currentRiskLevel,
+    })),
+    affectedPersonsTotal: affectedPersons.length,
+    atRiskPersonsCount: atRiskPersons.length,
+    criticalFacilitiesCount: criticalFacilities.length,
+    criticalFacilities: criticalFacilities.map((f) => ({
+      id: f.id,
+      name: f.name,
+      type: f.type,
+      location: f.location,
+    })),
+    estimatedPopulationAtRisk,
+    energyStatus: {
+      avgBatteryLevel: Math.round(avgBattery),
+      avgSolarGeneration: Math.round(avgSolar),
+      backupHoursEstimate,
+      gridStressLevel: avgBattery < 30 ? "critical" : avgBattery < 60 ? "warning" : "stable",
+    },
+    recommendedActions: meta.actions,
+    escalationTimeline: meta.timelineEvents,
+    activeAlertCount: recentAlerts.filter((a) => a.module === meta.module).length,
+    autoEscalation,
+    autoResponse,
+    simulatedAt: new Date().toISOString(),
+  };
+}
+
 router.get("/command-center/history", async (_req, res) => {
   try {
     const rows = await db
@@ -233,7 +410,6 @@ router.get("/command-center/history/:id", async (req, res) => {
   }
 });
 
-
 router.get("/command-center/escalations", async (_req, res) => {
   try {
     const rows = await db
@@ -270,173 +446,64 @@ router.get("/command-center/escalations", async (_req, res) => {
 
 router.post("/command-center/simulate", async (req: AuthRequest, res) => {
   try {
-    const { scenarioType } = req.body as { scenarioType?: string };
+    const { scenarioType, item } = req.body as { scenarioType?: string; item?: QueueItemPayload };
+    const operator = req.sessionUser;
 
-    if (!scenarioType || !(VALID_SCENARIOS as readonly string[]).includes(scenarioType)) {
-      return res.status(400).json({ error: "Invalid scenario type", valid: VALID_SCENARIOS });
+    if (!operator) {
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const meta = SCENARIO_META[scenarioType as ScenarioType];
-    const operator = req.sessionUser!;
+    const resolvedScenarioType =
+      scenarioType && (VALID_SCENARIOS as readonly string[]).includes(scenarioType)
+        ? (scenarioType as ScenarioType)
+        : deriveScenarioFromItem(item);
 
-    const [allSites, allPersons, recentAlerts, latestMetrics] = await Promise.all([
-      db.select().from(sitesTable),
-      db.select().from(protectedPersonsTable),
-      db.select().from(unifiedAlertsTable).where(eq(unifiedAlertsTable.status, "active")).orderBy(desc(unifiedAlertsTable.createdAt)).limit(20),
-      db.select().from(energyMetricsTable).orderBy(desc(energyMetricsTable.recordedAt)).limit(50),
-    ]);
+    const result = await buildSimulation(resolvedScenarioType, operator);
 
-    const affectedSites = allSites.filter((s) =>
-      meta.siteTypesAffected.includes(s.type) || s.currentRiskLevel === "critical" || s.currentRiskLevel === "high"
-    ).slice(0, 5);
-
-    const affectedSiteIds = new Set(affectedSites.map((s) => s.id));
-    const affectedPersons = allPersons.filter((p) => affectedSiteIds.has(p.siteId));
-    const atRiskPersons = affectedPersons.filter((p) => p.status === "at-risk" || p.status === "emergency");
-    const criticalFacilities = affectedSites.filter((s) => s.type === "clinic" || s.type === "shelter");
-
-    const relevantMetrics = latestMetrics.filter((m) => affectedSiteIds.has(m.siteId));
-    const avgBattery = relevantMetrics.length > 0
-      ? relevantMetrics.reduce((sum, m) => sum + m.batteryLevel, 0) / relevantMetrics.length
-      : 65;
-    const avgSolar = relevantMetrics.length > 0
-      ? relevantMetrics.reduce((sum, m) => sum + m.solarGeneration, 0) / relevantMetrics.length
-      : 45;
-
-    const baseReadiness = 100 - meta.readinessPenalty;
-    const batteryPenalty = avgBattery < 30 ? 15 : avgBattery < 60 ? 5 : 0;
-    const criticalPenalty = criticalFacilities.length * 3;
-    const readinessScore = Math.max(20, Math.min(99, baseReadiness - batteryPenalty - criticalPenalty));
-    const estimatedPopulationAtRisk = affectedSites.reduce((sum, s) => sum + s.population, 0);
-    const backupHoursEstimate = avgBattery > 0 ? Math.round((avgBattery / 100) * 12) : 0;
-
-    const threatScore = Math.max(
-      25,
-      Math.min(
-        100,
-        Math.round(
-          (100 - readinessScore) * 0.55 +
-          (meta.baseRisk === "critical" ? 22 : meta.baseRisk === "warning" ? 12 : 5) +
-          atRiskPersons.length * 4 +
-          criticalFacilities.length * 6
-        )
-      )
-    );
-
-    const autoEscalation = buildAutoEscalation({
-      threatScore,
-      riskSeverity: meta.baseRisk,
-      triggerModule: meta.module,
-      affectedSitesCount: affectedSites.length,
-      atRiskPersonsCount: atRiskPersons.length,
-      criticalFacilitiesCount: criticalFacilities.length,
-      estimatedPopulationAtRisk,
-    });
-
-    const autoResponse = buildAutoResponse({
-      triggerModule: meta.module,
-      threatScore,
-      escalationLevel: autoEscalation.escalationLevel,
-      deploymentMode: autoEscalation.deploymentMode,
-      affectedSitesCount: affectedSites.length,
-      atRiskPersonsCount: atRiskPersons.length,
-      estimatedPopulationAtRisk,
-    });
-
-    const scenarioId = `SIM-${Date.now()}`;
-
-    const result = {
-      scenarioId,
-      scenarioType,
-      scenarioLabel: meta.label,
-      triggerModule: meta.module,
-      riskSeverity: meta.baseRisk,
-      readinessScore,
-      threatScore,
-      operator: {
-        email: operator.email,
-        name: operator.name,
-        role: operator.role,
-      },
-      affectedSites: affectedSites.map((s) => ({
-        id: s.id,
-        name: s.name,
-        type: s.type,
-        location: s.location,
-        country: s.country,
-        status: s.status,
-        population: s.population,
-        powerAvailability: s.powerAvailability,
-        currentRiskLevel: s.currentRiskLevel,
-      })),
-      affectedPersonsTotal: affectedPersons.length,
-      atRiskPersonsCount: atRiskPersons.length,
-      criticalFacilitiesCount: criticalFacilities.length,
-      criticalFacilities: criticalFacilities.map((f) => ({
-        id: f.id,
-        name: f.name,
-        type: f.type,
-        location: f.location,
-      })),
-      estimatedPopulationAtRisk,
-      energyStatus: {
-        avgBatteryLevel: Math.round(avgBattery),
-        avgSolarGeneration: Math.round(avgSolar),
-        backupHoursEstimate,
-        gridStressLevel: avgBattery < 30 ? "critical" : avgBattery < 60 ? "warning" : "stable",
-      },
-      recommendedActions: meta.actions,
-      escalationTimeline: meta.timelineEvents,
-      activeAlertCount: recentAlerts.filter((a) => a.module === meta.module).length,
-      autoEscalation,
-      autoResponse,
-      simulatedAt: new Date().toISOString(),
-    };
-
-      const [saved] = await db
-        .insert(simulationHistoryTable)
-        .values({
-          scenarioId,
-          scenarioType,
-          scenarioLabel: result.scenarioLabel,
-          operatorEmail: operator.email,
-          operatorName: operator.name,
-          operatorRole: operator.role,
-          riskSeverity: result.riskSeverity,
-          readinessScore: result.readinessScore,
-          affectedSitesCount: result.affectedSites.length,
-          affectedPersonsCount: result.affectedPersonsTotal,
-          estimatedPopulationAtRisk: result.estimatedPopulationAtRisk,
-          resultJson: JSON.stringify(result),
-        })
-        .returning();
+    const [saved] = await db
+      .insert(simulationHistoryTable)
+      .values({
+        scenarioId: result.scenarioId,
+        scenarioType: result.scenarioType,
+        scenarioLabel: result.scenarioLabel,
+        operatorEmail: operator.email,
+        operatorName: operator.name,
+        operatorRole: operator.role,
+        riskSeverity: result.riskSeverity,
+        readinessScore: result.readinessScore,
+        affectedSitesCount: result.affectedSites.length,
+        affectedPersonsCount: result.affectedPersonsTotal,
+        estimatedPopulationAtRisk: result.estimatedPopulationAtRisk,
+        resultJson: JSON.stringify(result),
+      })
+      .returning();
 
     await db.insert(auditLogTable).values({
       actor: operator.email,
       action: "command_center_simulation",
       details: JSON.stringify({
-        scenarioId,
-        scenarioType,
+        scenarioId: result.scenarioId,
+        scenarioType: result.scenarioType,
         simulationId: String(saved.id),
-        threatScore,
-        escalationLevel: autoEscalation.escalationLevel,
-        deploymentMode: autoEscalation.deploymentMode,
+        threatScore: result.threatScore,
+        escalationLevel: result.autoEscalation.escalationLevel,
+        deploymentMode: result.autoEscalation.deploymentMode,
         connectedClients: getLiveClientCount(),
       }),
     });
 
     await db.insert(escalationEventsTable).values({
-      scenarioId,
-      scenarioType,
+      scenarioId: result.scenarioId,
+      scenarioType: result.scenarioType,
       scenarioLabel: result.scenarioLabel,
       triggerModule: result.triggerModule,
       threatScore: String(result.threatScore),
-      escalationLevel: autoEscalation.escalationLevel,
-      deploymentMode: autoEscalation.deploymentMode,
-      operatingProtocol: autoEscalation.operatingProtocol,
-      operatorDirective: autoEscalation.operatorDirective,
-      recommendedTeamsJson: JSON.stringify(autoEscalation.recommendedTeams),
-      recommendedActionsJson: JSON.stringify(autoEscalation.recommendedActions),
+      escalationLevel: result.autoEscalation.escalationLevel,
+      deploymentMode: result.autoEscalation.deploymentMode,
+      operatingProtocol: result.autoEscalation.operatingProtocol,
+      operatorDirective: result.autoEscalation.operatorDirective,
+      recommendedTeamsJson: JSON.stringify(result.autoEscalation.recommendedTeams),
+      recommendedActionsJson: JSON.stringify(result.autoEscalation.recommendedActions),
       actorEmail: operator.email,
       actorName: operator.name,
       actorRole: operator.role,
@@ -444,14 +511,14 @@ router.post("/command-center/simulate", async (req: AuthRequest, res) => {
 
     const livePayload = makeLivePayload(
       "command-center:auto-escalation",
-      `${meta.label} simulation triggered ${autoEscalation.escalationLevel} escalation`,
+      `${result.scenarioLabel} simulation triggered ${result.autoEscalation.escalationLevel} escalation`,
       {
-        scenarioId,
-        scenarioType,
-        threatScore,
-        escalationLevel: autoEscalation.escalationLevel,
-        deploymentMode: autoEscalation.deploymentMode,
-        operatingProtocol: autoEscalation.operatingProtocol,
+        scenarioId: result.scenarioId,
+        scenarioType: result.scenarioType,
+        threatScore: result.threatScore,
+        escalationLevel: result.autoEscalation.escalationLevel,
+        deploymentMode: result.autoEscalation.deploymentMode,
+        operatingProtocol: result.autoEscalation.operatingProtocol,
         connectedClients: getLiveClientCount(),
       }
     );
@@ -459,6 +526,120 @@ router.post("/command-center/simulate", async (req: AuthRequest, res) => {
     broadcastLiveEvent("map-update", livePayload);
 
     return res.json(result);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/command-center/orchestrate", async (req: AuthRequest, res) => {
+  try {
+    const { action, item, scenarioType } = req.body as {
+      action?: ConsoleAction;
+      item?: QueueItemPayload;
+      scenarioType?: string;
+    };
+
+    const operator = req.sessionUser;
+
+    if (!operator) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!action || !["recommend", "escalate", "dispatch"].includes(action)) {
+      return res.status(400).json({ error: "Invalid action" });
+    }
+
+    if (!validateQueueItem(item)) {
+      return res.status(400).json({ error: "Invalid queue item payload" });
+    }
+
+    const resolvedScenarioType =
+      scenarioType && (VALID_SCENARIOS as readonly string[]).includes(scenarioType)
+        ? (scenarioType as ScenarioType)
+        : deriveScenarioFromItem(item);
+
+    const simulation = await buildSimulation(resolvedScenarioType, operator);
+
+    const actionMessage =
+      action === "recommend"
+        ? simulation.autoEscalation.operatorDirective ||
+          item.recommendedAction ||
+          `AI recommendation issued for ${item.title}.`
+        : action === "escalate"
+          ? `Escalation confirmed → ${simulation.autoEscalation.escalationLevel} / ${simulation.autoEscalation.deploymentMode}`
+          : `Dispatch initiated → ${simulation.autoEscalation.recommendedActions?.[0] || `Response units assigned to ${item.title}.`}`;
+
+    await db.insert(auditLogTable).values({
+      actor: operator.email,
+      action: `command_center_${action}`,
+      details: JSON.stringify({
+        scenarioId: simulation.scenarioId,
+        scenarioType: simulation.scenarioType,
+        targetKind: item.kind,
+        targetId: item.id,
+        targetTitle: item.title,
+        threatScore: simulation.threatScore,
+        escalationLevel: simulation.autoEscalation.escalationLevel,
+        deploymentMode: simulation.autoEscalation.deploymentMode,
+      }),
+    });
+
+    if (action !== "recommend") {
+      await db.insert(escalationEventsTable).values({
+        scenarioId: simulation.scenarioId,
+        scenarioType: simulation.scenarioType,
+        scenarioLabel: simulation.scenarioLabel,
+        triggerModule: simulation.triggerModule,
+        threatScore: String(simulation.threatScore),
+        escalationLevel: simulation.autoEscalation.escalationLevel,
+        deploymentMode: simulation.autoEscalation.deploymentMode,
+        operatingProtocol: simulation.autoEscalation.operatingProtocol,
+        operatorDirective: actionMessage,
+        recommendedTeamsJson: JSON.stringify(simulation.autoEscalation.recommendedTeams),
+        recommendedActionsJson: JSON.stringify(simulation.autoEscalation.recommendedActions),
+        actorEmail: operator.email,
+        actorName: operator.name,
+        actorRole: operator.role,
+      });
+    }
+
+    const livePayload = makeLivePayload(
+      `command-center:${action}`,
+      `${operator.name || operator.email} executed ${action} on ${item.title}`,
+      {
+        action,
+        scenarioId: simulation.scenarioId,
+        scenarioType: simulation.scenarioType,
+        scenarioLabel: simulation.scenarioLabel,
+        targetKind: item.kind,
+        targetId: item.id,
+        targetTitle: item.title,
+        location: item.location,
+        threatScore: simulation.threatScore,
+        escalationLevel: simulation.autoEscalation.escalationLevel,
+        deploymentMode: simulation.autoEscalation.deploymentMode,
+        connectedClients: getLiveClientCount(),
+      }
+    );
+
+    broadcastLiveEvent("map-update", livePayload);
+
+    return res.json({
+      ok: true,
+      action,
+      scenarioId: simulation.scenarioId,
+      scenarioType: simulation.scenarioType,
+      scenarioLabel: simulation.scenarioLabel,
+      target: item,
+      threatScore: simulation.threatScore,
+      escalationLevel: simulation.autoEscalation.escalationLevel,
+      deploymentMode: simulation.autoEscalation.deploymentMode,
+      operatorDirective: simulation.autoEscalation.operatorDirective,
+      recommendedActions: simulation.autoEscalation.recommendedActions,
+      message: actionMessage,
+      executedAt: new Date().toISOString(),
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Internal server error" });

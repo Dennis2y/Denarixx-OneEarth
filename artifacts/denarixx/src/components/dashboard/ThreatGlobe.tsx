@@ -5,9 +5,14 @@ import { motion } from "framer-motion";
 const THREAT_SWEEP_CSS = `
 @keyframes threatSweep {
   0% { transform: translateX(-140%) rotate(12deg); opacity: 0; }
-  10% { opacity: 0.18; }
-  45% { opacity: 0.28; }
+  12% { opacity: 0.12; }
+  42% { opacity: 0.18; }
   100% { transform: translateX(320%) rotate(12deg); opacity: 0; }
+}
+@keyframes denarixxFloat {
+  0% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-5px) scale(1.003); }
+  100% { transform: translateY(0px) scale(1); }
 }
 `;
 
@@ -54,12 +59,12 @@ type CountryLabelPoint = {
 };
 
 const CONTINENT_LABELS: CountryLabelPoint[] = [
-  { lat: 7, lng: 21, text: "Africa", size: 1.9, color: "rgba(255,255,255,0.72)" },
-  { lat: 54, lng: 15, text: "Europe", size: 1.45, color: "rgba(255,255,255,0.62)" },
-  { lat: 34, lng: 95, text: "Asia", size: 1.9, color: "rgba(255,255,255,0.68)" },
-  { lat: 45, lng: -102, text: "North America", size: 1.35, color: "rgba(255,255,255,0.58)" },
-  { lat: -18, lng: -60, text: "South America", size: 1.3, color: "rgba(255,255,255,0.58)" },
-  { lat: -24, lng: 134, text: "Oceania", size: 1.25, color: "rgba(255,255,255,0.56)" },
+  { lat: 7, lng: 21, text: "Africa", size: 1.8, color: "rgba(255,255,255,0.58)" },
+  { lat: 54, lng: 15, text: "Europe", size: 1.35, color: "rgba(255,255,255,0.52)" },
+  { lat: 34, lng: 95, text: "Asia", size: 1.75, color: "rgba(255,255,255,0.58)" },
+  { lat: 45, lng: -102, text: "North America", size: 1.2, color: "rgba(255,255,255,0.46)" },
+  { lat: -18, lng: -60, text: "South America", size: 1.15, color: "rgba(255,255,255,0.46)" },
+  { lat: -24, lng: 134, text: "Oceania", size: 1.05, color: "rgba(255,255,255,0.44)" },
 ];
 
 type Props = {
@@ -89,17 +94,17 @@ function pointColor(level: ThreatLevel) {
 }
 
 function pointAltitude(score: number) {
-  if (score >= 90) return 0.22;
-  if (score >= 75) return 0.16;
-  if (score >= 55) return 0.11;
+  if (score >= 90) return 0.18;
+  if (score >= 75) return 0.14;
+  if (score >= 55) return 0.1;
   return 0.06;
 }
 
 function pointRadius(score: number) {
-  if (score >= 90) return 0.65;
-  if (score >= 75) return 0.5;
-  if (score >= 55) return 0.38;
-  return 0.28;
+  if (score >= 90) return 0.56;
+  if (score >= 75) return 0.46;
+  if (score >= 55) return 0.34;
+  return 0.24;
 }
 
 function escalationColor(moduleName: string) {
@@ -112,19 +117,18 @@ function escalationColor(moduleName: string) {
 function moduleGlowColor(moduleName: string, escalationLevel: EscalationLevel) {
   const alpha =
     escalationLevel === "global-command"
-      ? 0.95
+      ? 0.82
       : escalationLevel === "regional-command"
-        ? 0.85
+        ? 0.72
         : escalationLevel === "district"
-          ? 0.7
-          : 0.55;
+          ? 0.56
+          : 0.4;
 
   if (moduleName === "earthshield") return `rgba(251,146,60,${alpha})`;
   if (moduleName === "energy") return `rgba(56,189,248,${alpha})`;
   if (moduleName === "lifemesh") return `rgba(34,197,94,${alpha})`;
   return `rgba(245,158,11,${alpha})`;
 }
-
 
 function featureCenter(feature: any): { lat: number; lng: number } | null {
   const geometry = feature?.geometry;
@@ -135,11 +139,7 @@ function featureCenter(feature: any): { lat: number; lng: number } | null {
   const walk = (node: any) => {
     if (!Array.isArray(node)) return;
 
-    if (
-      node.length >= 2 &&
-      typeof node[0] === "number" &&
-      typeof node[1] === "number"
-    ) {
+    if (node.length >= 2 && typeof node[0] === "number" && typeof node[1] === "number") {
       coords.push([node[1], node[0]]);
       return;
     }
@@ -190,7 +190,7 @@ export default function ThreatGlobe({
     const controls = globe.controls?.();
     if (controls) {
       controls.autoRotate = true;
-      controls.autoRotateSpeed = 0.45;
+      controls.autoRotateSpeed = 0.22;
       controls.enablePan = false;
       controls.minDistance = 170;
       controls.maxDistance = 290;
@@ -202,11 +202,7 @@ export default function ThreatGlobe({
   const globePoints = useMemo(
     () =>
       (sites ?? [])
-        .filter(
-          (site) =>
-            typeof site.latitude === "number" &&
-            typeof site.longitude === "number"
-        )
+        .filter((site) => typeof site.latitude === "number" && typeof site.longitude === "number")
         .map((site) => ({
           ...site,
           lat: site.latitude as number,
@@ -221,11 +217,7 @@ export default function ThreatGlobe({
   const escalationPoints = useMemo(
     () =>
       (escalations ?? [])
-        .filter(
-          (item) =>
-            typeof item.latitude === "number" &&
-            typeof item.longitude === "number"
-        )
+        .filter((item) => typeof item.latitude === "number" && typeof item.longitude === "number")
         .map((item) => ({
           ...item,
           lat: item.latitude as number,
@@ -233,16 +225,16 @@ export default function ThreatGlobe({
           color: escalationColor(item.triggerModule),
           altitude:
             item.escalationLevel === "global-command"
-              ? 0.24
+              ? 0.2
               : item.escalationLevel === "regional-command"
-                ? 0.18
-                : 0.12,
+                ? 0.16
+                : 0.11,
           radius:
             item.escalationLevel === "global-command"
-              ? 0.7
+              ? 0.62
               : item.escalationLevel === "regional-command"
-                ? 0.58
-                : 0.42,
+                ? 0.5
+                : 0.36,
           name: item.scenarioLabel,
           location: item.country ?? "Escalation hotspot",
           country: item.country ?? "Unknown",
@@ -252,20 +244,17 @@ export default function ThreatGlobe({
   );
 
   const ringSites = useMemo(
-    () =>
-      globePoints.filter(
-        (site) => site.threatLevel === "critical" || site.threatLevel === "high"
-      ),
+    () => globePoints.filter((site) => site.threatLevel === "critical" || site.threatLevel === "high"),
     [globePoints]
   );
 
   const criticalSites = useMemo(
-    () => globePoints.filter((site) => site.threatLevel === "critical").slice(0, 6),
+    () => globePoints.filter((site) => site.threatLevel === "critical").slice(0, 4),
     [globePoints]
   );
 
   const safeSites = useMemo(
-    () => globePoints.filter((site) => site.threatLevel === "low").slice(0, 8),
+    () => globePoints.filter((site) => site.threatLevel === "low").slice(0, 5),
     [globePoints]
   );
 
@@ -279,19 +268,16 @@ export default function ThreatGlobe({
         startLng: safeSite.lng,
         endLat: target.lat,
         endLng: target.lng,
-        color: ["rgba(34,197,94,0.9)", "rgba(239,68,68,0.9)"],
+        color: ["rgba(34,197,94,0.58)", "rgba(239,68,68,0.74)"],
       };
     });
   }, [criticalSites, safeSites]);
 
   const labelsData = useMemo(
     () =>
-      [...globePoints, ...escalationPoints]
-        .filter(
-          (site: any) =>
-            site.threatLevel === "critical" || Number(site.threatScore) >= 75
-        )
-        .slice(0, 8)
+      [...escalationPoints, ...globePoints]
+        .filter((site: any) => site.triggerModule || site.threatLevel === "critical" || Number(site.threatScore) >= 85)
+        .slice(0, 5)
         .map((site: any) => ({
           lat: site.lat,
           lng: site.lng,
@@ -304,7 +290,6 @@ export default function ThreatGlobe({
         })),
     [globePoints, escalationPoints]
   );
-
 
   const hotCountries = useMemo(() => {
     const map = new Map<string, "low" | "medium" | "high" | "critical">();
@@ -328,11 +313,7 @@ export default function ThreatGlobe({
     for (const escalation of escalations) {
       const key = normalizeCountry(escalation.country ?? "");
       if (!key) continue;
-
-      const current = map.get(key);
-      if (!current || current !== "critical") {
-        map.set(key, "critical");
-      }
+      map.set(key, "critical");
     }
 
     return map;
@@ -348,10 +329,11 @@ export default function ThreatGlobe({
   }, [escalations]);
 
   const countryLabelPoints = useMemo(() => {
-    const hotSet = new Set([
-      ...globePoints.map((site) => normalizeCountry(site.country)),
-      ...escalationPoints.map((site: any) => normalizeCountry(site.country || "")),
-    ]);
+    const hotEntries = [...hotCountries.entries()]
+      .filter(([, level]) => level === "critical" || level === "high")
+      .slice(0, 6);
+
+    const hotSet = new Set(hotEntries.map(([key]) => key));
 
     return countries
       .map((feature: any) => {
@@ -370,16 +352,21 @@ export default function ThreatGlobe({
         const center = featureCenter(feature);
         if (!center) return null;
 
+        const level = hotCountries.get(key);
+
         return {
           lat: center.lat,
           lng: center.lng,
           text: name,
-          size: 0.6,
-          color: "rgba(255,255,255,0.28)",
+          size: 0.56,
+          color:
+            level === "critical"
+              ? "rgba(255,244,244,0.82)"
+              : "rgba(255,248,220,0.68)",
         };
       })
       .filter(Boolean) as CountryLabelPoint[];
-  }, [countries, globePoints, escalationPoints]);
+  }, [countries, hotCountries]);
 
   const continentLabelPoints = useMemo(() => CONTINENT_LABELS, []);
 
@@ -392,7 +379,7 @@ export default function ThreatGlobe({
 
     const timeout = window.setTimeout(() => {
       setFlashCountryKeys([]);
-    }, 1800);
+    }, 1600);
 
     return () => window.clearTimeout(timeout);
   }, [liveFlashToken, matchedCountryKeys]);
@@ -410,10 +397,7 @@ export default function ThreatGlobe({
 
     if (!target) return;
 
-    globe.pointOfView(
-      { lat: target.lat, lng: target.lng, altitude: 1.35 },
-      1200
-    );
+    globe.pointOfView({ lat: target.lat, lng: target.lng, altitude: 1.35 }, 1200);
 
     const timeout = window.setTimeout(() => {
       globe.pointOfView({ lat: 10, lng: 15, altitude: 2.0 }, 1800);
@@ -426,21 +410,21 @@ export default function ThreatGlobe({
     <>
       <style>{THREAT_SWEEP_CSS}</style>
 
-      <div className="rounded-3xl border border-primary/20 bg-[#04070d] p-3 sm:p-4 shadow-[0_0_40px_rgba(0,0,0,0.45)]">
+      <div className="rounded-3xl border border-primary/20 bg-[#04070d] p-3 shadow-[0_0_40px_rgba(0,0,0,0.45)] sm:p-4">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
               <div className="text-sm font-semibold text-white">Live World Threat Globe</div>
               <motion.div
                 className="rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary"
-                animate={{ opacity: [0.7, 1, 0.7] }}
-                transition={{ duration: 2.2, repeat: Infinity }}
+                animate={{ opacity: [0.74, 1, 0.74] }}
+                transition={{ duration: 2.8, repeat: Infinity }}
               >
-                Sweep Active
+                Cinematic Sweep
               </motion.div>
             </div>
             <div className="text-xs text-muted-foreground">
-              Rotating global surface with country lighting, live escalation hotspots, and response links
+              Premium globe view with reduced clutter, priority hotspots, and response arcs
             </div>
           </div>
 
@@ -449,32 +433,22 @@ export default function ThreatGlobe({
           </div>
         </div>
 
-        <div className="relative mx-auto h-[240px] w-full max-w-[400px] sm:h-[280px] lg:h-[305px]">
-          <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.10),rgba(14,165,233,0.04),transparent_62%)] blur-2xl" />
-          <div className="absolute inset-[10%] rounded-full border border-cyan-400/10 shadow-[0_0_80px_rgba(56,189,248,0.08)]" />
+        <div className="relative mx-auto h-[240px] w-full max-w-[400px] animate-[denarixxFloat_10s_ease-in-out_infinite] sm:h-[280px] lg:h-[305px]">
+          <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.08),rgba(14,165,233,0.03),transparent_62%)] blur-2xl" />
+          <div className="absolute inset-[10%] rounded-full border border-cyan-400/8 shadow-[0_0_56px_rgba(56,189,248,0.06)]" />
           <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
-            <div className="absolute -left-1/3 top-0 h-full w-[38%] rotate-12 bg-gradient-to-r from-transparent via-white/10 to-transparent blur-2xl animate-[threatSweep_7s_linear_infinite]" />
+            <div className="absolute -left-1/3 top-0 h-full w-[34%] rotate-12 bg-gradient-to-r from-transparent via-white/8 to-transparent blur-2xl animate-[threatSweep_8s_linear_infinite]" />
           </div>
 
           <motion.div
-            className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-[78%] w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+            className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-[76%] w-[76%] -translate-x-1/2 -translate-y-1/2 rounded-full"
             animate={{ rotate: 360 }}
-            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+            transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
             style={{
               background:
-                "conic-gradient(from 0deg, transparent 0deg, transparent 300deg, rgba(59,130,246,0.06) 328deg, rgba(250,204,21,0.22) 344deg, rgba(255,255,255,0.08) 352deg, transparent 360deg)",
+                "conic-gradient(from 0deg, transparent 0deg, transparent 306deg, rgba(59,130,246,0.05) 330deg, rgba(250,204,21,0.14) 346deg, rgba(255,255,255,0.05) 354deg, transparent 360deg)",
               filter: "blur(1px)",
-              boxShadow: "0 0 60px rgba(37,99,235,0.08) inset",
-            }}
-          />
-
-          <motion.div
-            className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-[64%] w-[64%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/10"
-            animate={{ rotate: -360 }}
-            transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
-            style={{
-              background:
-                "conic-gradient(from 0deg, transparent 0deg, transparent 312deg, rgba(34,197,94,0.08) 332deg, rgba(59,130,246,0.10) 346deg, transparent 360deg)",
+              boxShadow: "0 0 46px rgba(37,99,235,0.05) inset",
             }}
           />
 
@@ -486,7 +460,7 @@ export default function ThreatGlobe({
             globeImageUrl="https://unpkg.com/three-globe/example/img/earth-night.jpg"
             bumpImageUrl="https://unpkg.com/three-globe/example/img/earth-topology.png"
             atmosphereColor="#2563eb"
-            atmosphereAltitude={0.14}
+            atmosphereAltitude={0.11}
             polygonsData={countries}
             polygonCapColor={(feat: any) => {
               const country =
@@ -498,16 +472,16 @@ export default function ThreatGlobe({
               const level = hotCountries.get(key);
               const flashing = flashCountryKeys.includes(key);
 
-              if (flashing) return "rgba(250,204,21,0.75)";
-              if (level === "critical") return "rgba(239,68,68,0.55)";
-              if (level === "high") return "rgba(245,158,11,0.40)";
-              if (level === "medium") return "rgba(96,165,250,0.30)";
-              if (level === "low") return "rgba(34,197,94,0.22)";
-              return "rgba(17,24,39,0.18)";
+              if (flashing) return "rgba(250,204,21,0.58)";
+              if (level === "critical") return "rgba(239,68,68,0.42)";
+              if (level === "high") return "rgba(245,158,11,0.28)";
+              if (level === "medium") return "rgba(96,165,250,0.22)";
+              if (level === "low") return "rgba(34,197,94,0.16)";
+              return "rgba(17,24,39,0.14)";
             }}
-            polygonSideColor={() => "rgba(14,165,233,0.06)"}
-            polygonStrokeColor={() => "rgba(148,163,184,0.24)"}
-            polygonAltitude={0.012}
+            polygonSideColor={() => "rgba(14,165,233,0.04)"}
+            polygonStrokeColor={() => "rgba(148,163,184,0.14)"}
+            polygonAltitude={0.009}
             onPolygonClick={(feat: any) => {
               const globe = globeRef.current;
               if (!globe) return;
@@ -515,10 +489,7 @@ export default function ThreatGlobe({
               const center = featureCenter(feat);
               if (!center) return;
 
-              globe.pointOfView(
-                { lat: center.lat, lng: center.lng, altitude: 1.2 },
-                1000
-              );
+              globe.pointOfView({ lat: center.lat, lng: center.lng, altitude: 1.2 }, 1000);
 
               window.setTimeout(() => {
                 globe.pointOfView({ lat: 10, lng: 15, altitude: 2.0 }, 1800);
@@ -535,19 +506,16 @@ export default function ThreatGlobe({
               const globe = globeRef.current;
               if (!globe) return;
 
-              globe.pointOfView(
-                { lat: d.lat, lng: d.lng, altitude: 1.15 },
-                900
-              );
+              globe.pointOfView({ lat: d.lat, lng: d.lng, altitude: 1.15 }, 900);
 
               window.setTimeout(() => {
                 globe.pointOfView({ lat: 10, lng: 15, altitude: 2.0 }, 1800);
               }, 2400);
             }}
             pointLabel={(d: any) => `
-              <div style="padding:8px 10px; border-radius:12px; background:rgba(3,7,18,0.92); color:white; min-width:180px; border:1px solid rgba(255,255,255,0.12)">
+              <div style="padding:8px 10px; border-radius:12px; background:rgba(3,7,18,0.92); color:white; min-width:180px; border:1px solid rgba(255,255,255,0.10); box-shadow:0 0 24px rgba(0,0,0,0.25)">
                 <div style="font-weight:700; margin-bottom:4px;">${d.name}</div>
-                <div style="font-size:12px; opacity:0.8;">${d.location}, ${d.country}</div>
+                <div style="font-size:12px; opacity:0.78;">${d.location}, ${d.country}</div>
                 <div style="font-size:12px; margin-top:6px;">Threat: <b>${d.threatScore}</b></div>
               </div>
             `}
@@ -559,21 +527,21 @@ export default function ThreatGlobe({
                 return moduleGlowColor(d.triggerModule, d.escalationLevel ?? "district");
               }
               return d.threatLevel === "critical"
-                ? "rgba(239,68,68,0.9)"
-                : "rgba(245,158,11,0.85)";
+                ? "rgba(239,68,68,0.68)"
+                : "rgba(245,158,11,0.52)";
             }}
             ringMaxRadius={(d: any) => {
               if (d?.triggerModule) {
-                return d.escalationLevel === "global-command" ? 5.5 : 3.8;
+                return d.escalationLevel === "global-command" ? 4.8 : 3.4;
               }
-              return d.threatLevel === "critical" ? 5 : 3.5;
+              return d.threatLevel === "critical" ? 4.2 : 2.9;
             }}
-            ringPropagationSpeed={() => 1.05}
+            ringPropagationSpeed={() => 0.88}
             ringRepeatPeriod={(d: any) => {
               if (d?.triggerModule) {
-                return d.escalationLevel === "global-command" ? 1100 : 1500;
+                return d.escalationLevel === "global-command" ? 1400 : 1800;
               }
-              return d.threatLevel === "critical" ? 1000 : 1450;
+              return d.threatLevel === "critical" ? 1350 : 1850;
             }}
             arcsData={arcsData}
             arcStartLat="startLat"
@@ -581,17 +549,17 @@ export default function ThreatGlobe({
             arcEndLat="endLat"
             arcEndLng="endLng"
             arcColor="color"
-            arcDashLength={0.35}
-            arcDashGap={0.18}
-            arcDashAnimateTime={1800}
-            arcStroke={0.4}
+            arcDashLength={0.28}
+            arcDashGap={0.22}
+            arcDashAnimateTime={2200}
+            arcStroke={0.32}
             labelsData={labelsData}
             labelLat="lat"
             labelLng="lng"
             labelText="text"
             labelColor="color"
-            labelSize={() => 1.35}
-            labelDotRadius={() => 0.25}
+            labelSize={() => 1.12}
+            labelDotRadius={() => 0.2}
             labelResolution={2}
             htmlElementsData={[...countryLabelPoints, ...continentLabelPoints]}
             htmlLat="lat"
@@ -603,10 +571,10 @@ export default function ThreatGlobe({
               el.style.fontSize = `${(d.size ?? 0.7) * 10}px`;
               el.style.fontWeight = d.size > 1 ? "700" : "500";
               el.style.letterSpacing = d.size > 1 ? "0.08em" : "0.03em";
-              el.style.textShadow = "0 0 10px rgba(0,0,0,0.8)";
+              el.style.textShadow = "0 0 10px rgba(0,0,0,0.82)";
               el.style.whiteSpace = "nowrap";
               el.style.pointerEvents = "none";
-              el.style.opacity = "0.95";
+              el.style.opacity = "0.86";
               return el;
             }}
           />
@@ -614,15 +582,15 @@ export default function ThreatGlobe({
 
         <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-orange-400 shadow-[0_0_14px_rgba(251,146,60,0.9)]" />
+            <span className="h-3 w-3 rounded-full bg-orange-400 shadow-[0_0_12px_rgba(251,146,60,0.75)]" />
             <span>EarthShield hotspot</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-sky-400 shadow-[0_0_14px_rgba(56,189,248,0.9)]" />
+            <span className="h-3 w-3 rounded-full bg-sky-400 shadow-[0_0_12px_rgba(56,189,248,0.75)]" />
             <span>Energy hotspot</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-green-500 shadow-[0_0_14px_rgba(34,197,94,0.9)]" />
+            <span className="h-3 w-3 rounded-full bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.75)]" />
             <span>LifeMesh hotspot</span>
           </div>
           <div className="flex items-center gap-2">
