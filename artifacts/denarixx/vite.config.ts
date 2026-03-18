@@ -40,6 +40,55 @@ export default defineConfig(async () => ({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 900,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+
+          if (
+            id.includes("react-globe.gl") ||
+            id.includes("three-globe") ||
+            id.includes("/three/")
+          ) {
+            return "globe-vendor";
+          }
+
+          if (id.includes("framer-motion")) {
+            return "motion-vendor";
+          }
+
+          if (id.includes("recharts") || id.includes("d3-")) {
+            return "charts-vendor";
+          }
+
+          if (
+            id.includes("@radix-ui") ||
+            id.includes("cmdk") ||
+            id.includes("vaul")
+          ) {
+            return "ui-vendor";
+          }
+
+          if (
+            id.includes("react") ||
+            id.includes("react-dom") ||
+            id.includes("scheduler")
+          ) {
+            return "react-vendor";
+          }
+
+          if (
+            id.includes("@tanstack/react-query") ||
+            id.includes("wouter") ||
+            id.includes("i18next") ||
+            id.includes("react-i18next")
+          ) {
+            return "app-vendor";
+          }
+        },
+      },
+    },
   },
   server: {
     port,
