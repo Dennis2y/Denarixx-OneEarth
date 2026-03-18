@@ -12,9 +12,16 @@ import {
   Radio,
 } from "lucide-react";
 import { Card, Badge, Button, cn } from "@/components/ui-core";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, apiStreamUrl } from "@/lib/api";
 
 const ThreatGlobe = lazy(() => import("@/components/dashboard/ThreatGlobe"));
+
+const DASHBOARD_TICKER_CSS = `
+@keyframes denTickerScroll {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+`;
 
 type ThreatLevel = "low" | "medium" | "high" | "critical";
 type ResponsePriority = "routine" | "priority" | "urgent" | "immediate";
@@ -58,6 +65,12 @@ type EscalationHotspot = {
   country?: string;
   latitude?: number;
   longitude?: number;
+};
+
+type LiveFeedItem = {
+  id: string;
+  label: string;
+  tone: "critical" | "warning" | "info";
 };
 
 type DashboardStats = {
@@ -116,6 +129,12 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [liveFlashToken, setLiveFlashToken] = useState("");
+  const [liveAlertStrip, setLiveAlertStrip] = useState("AI voice channel online. Monitoring global threat grid...");
+  const [liveFeed, setLiveFeed] = useState<LiveFeedItem[]>([
+    { id: "boot-1", label: "EarthShield monitoring active", tone: "info" },
+    { id: "boot-2", label: "LifeMesh response network connected", tone: "info" },
+    { id: "boot-3", label: "Energy resilience intelligence online", tone: "info" },
+  ]);
 
   const loadDashboard = async (silent = false) => {
     try {
@@ -134,6 +153,58 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadDashboard(false);
+  }, []);
+
+  useEffect(() => {
+    const stream = new EventSource(apiStreamUrl("/api/live/stream"), { withCredentials: true });
+
+    stream.addEventListener("connected", () => {
+      setLiveAlertStrip("AI voice channel connected. Live intelligence stream active.");
+    });
+
+    stream.addEventListener("map-update", async (event: MessageEvent) => {
+      try {
+        const payload = JSON.parse(event.data);
+
+        const type = String(payload?.type ?? "");
+        const message =
+          String(payload?.message ?? "").trim() || "Live command event detected";
+
+        const tone: "critical" | "warning" | "info" =
+          type.includes("auto-escalation")
+            ? "critical"
+            : type.includes("alert")
+              ? "warning"
+              : "info";
+
+        setLiveAlertStrip(message);
+        setLiveFlashToken(String(Date.now()));
+
+        setLiveFeed((current) => {
+          const next = [
+            {
+              id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+              label: message,
+              tone,
+            },
+            ...current,
+          ];
+          return next.slice(0, 8);
+        });
+
+        await loadDashboard(true);
+      } catch {
+        setLiveAlertStrip("Live intelligence update received.");
+        setLiveFlashToken(String(Date.now()));
+        await loadDashboard(true);
+      }
+    });
+
+    stream.onerror = () => {
+      setLiveAlertStrip("AI voice channel unstable. Reconnecting to live command stream...");
+    };
+
+    return () => stream.close();
   }, []);
 
   useEffect(() => {
