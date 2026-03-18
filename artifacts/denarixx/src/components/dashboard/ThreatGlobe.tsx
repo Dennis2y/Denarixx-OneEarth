@@ -45,6 +45,23 @@ type CountryFeature = {
   geometry: unknown;
 };
 
+type CountryLabelPoint = {
+  lat: number;
+  lng: number;
+  text: string;
+  size: number;
+  color: string;
+};
+
+const CONTINENT_LABELS: CountryLabelPoint[] = [
+  { lat: 7, lng: 21, text: "Africa", size: 1.9, color: "rgba(255,255,255,0.72)" },
+  { lat: 54, lng: 15, text: "Europe", size: 1.45, color: "rgba(255,255,255,0.62)" },
+  { lat: 34, lng: 95, text: "Asia", size: 1.9, color: "rgba(255,255,255,0.68)" },
+  { lat: 45, lng: -102, text: "North America", size: 1.35, color: "rgba(255,255,255,0.58)" },
+  { lat: -18, lng: -60, text: "South America", size: 1.3, color: "rgba(255,255,255,0.58)" },
+  { lat: -24, lng: 134, text: "Oceania", size: 1.25, color: "rgba(255,255,255,0.56)" },
+];
+
 type Props = {
   sites: ThreatSite[];
   escalations?: EscalationHotspot[];
