@@ -81,6 +81,8 @@ type AutoResponseStatusCard = {
   tone: "critical" | "warning" | "stable" | "info";
 };
 
+type ConsoleAction = "recommend" | "escalate" | "dispatch";
+
 type DashboardStats = {
   totalSites: number;
   activeSites: number;
@@ -150,6 +152,9 @@ export default function DashboardPage() {
     { id: "boot-2", label: "LifeMesh response network connected", tone: "info" },
     { id: "boot-3", label: "Energy resilience intelligence online", tone: "info" },
   ]);
+  const [consoleCommand, setConsoleCommand] = useState("Analyze live threat posture and propose next action");
+  const [consoleResponse, setConsoleResponse] = useState("AI console ready. Awaiting command action.");
+  const [consoleMode, setConsoleMode] = useState<ConsoleAction>("recommend");
 
   const loadDashboard = async (silent = false) => {
     try {
@@ -221,6 +226,13 @@ export default function DashboardPage() {
 
     return () => stream.close();
   }, []);
+
+  useEffect(() => {
+    if (!stats) return;
+    setConsoleResponse(
+      `AI console synced. Tracking ${stats.activeAlerts} active alerts, ${stats.criticalThreatSites} critical sites, and ${stats.escalationHotspots?.length ?? 0} escalation hotspots.`
+    );
+  }, [stats]);
 
   useEffect(() => {
     if (!stats?.escalationHotspots?.length) return;
