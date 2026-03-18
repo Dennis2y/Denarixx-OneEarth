@@ -63,14 +63,6 @@ export default defineConfig(async () => ({
           }
 
           if (
-            id.includes("@radix-ui") ||
-            id.includes("cmdk") ||
-            id.includes("vaul")
-          ) {
-            return "ui-vendor";
-          }
-
-          if (
             id.includes("react") ||
             id.includes("react-dom") ||
             id.includes("scheduler")
