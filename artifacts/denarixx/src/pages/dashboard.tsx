@@ -18,6 +18,10 @@ import { Card, Badge, Button, cn } from "@/components/ui-core";
 import { apiFetch, apiStreamUrl } from "@/lib/api";
 
 const ThreatGlobe = lazy(() => import("@/components/dashboard/ThreatGlobe"));
+import CommandTimelinePanel, {
+  type HistoryRow,
+  type EscalationFeedRow,
+} from "@/components/dashboard/CommandTimelinePanel";
 
 type ThreatLevel = "low" | "medium" | "high" | "critical";
 type ResponsePriority = "routine" | "priority" | "urgent" | "immediate";
@@ -109,6 +113,9 @@ type DashboardStats = {
   escalationHotspots?: EscalationHotspot[];
 };
 
+type DashboardHistoryRow = HistoryRow;
+type DashboardEscalationRow = EscalationFeedRow;
+
 type ConsolePreview = {
   scenarioType: CommandScenarioType;
   threatScore?: number;
@@ -196,6 +203,10 @@ export default function DashboardPage() {
     { id: "boot-3", label: "Energy resilience intelligence online", tone: "info" },
   ]);
 
+  const [history, setHistory] = useState<DashboardHistoryRow[]>([]);
+  const [escalations, setEscalations] = useState<DashboardEscalationRow[]>([]);
+  const [timelineLoading, setTimelineLoading] = useState(false);
+
   const [selectedQueueItem, setSelectedQueueItem] = useState<QueueItem | null>(null);
   const [consolePreview, setConsolePreview] = useState<ConsolePreview | null>(null);
   const [consoleResponse, setConsoleResponse] = useState("AI console ready. Select a live queue target to begin.");
@@ -221,6 +232,30 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const loadHistory = async (silent = false) => {
+    try {
+      if (!silent) setTimelineLoading(true);
+      const json = (await apiFetch("/api/command-center/history")) as DashboardHistoryRow[];
+      setHistory(json);
+    } catch {
+      if (!silent) setHistory([]);
+    } finally {
+      if (!silent) setTimelineLoading(false);
+    }
+  };
+
+  const loadEscalations = async (silent = false) => {
+    try {
+      if (!silent) setTimelineLoading(true);
+      const json = (await apiFetch("/api/command-center/escalations")) as DashboardEscalationRow[];
+      setEscalations(json);
+    } catch {
+      if (!silent) setEscalations([]);
+    } finally {
+      if (!silent) setTimelineLoading(false);
     }
   };
 
@@ -304,6 +339,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     void loadDashboard(false);
+    void loadHistory(false);
+    void loadEscalations(false);
   }, []);
 
   useEffect(() => {
@@ -934,6 +971,12 @@ export default function DashboardPage() {
           </div>
         </Card>
       </div>
+
+      <CommandTimelinePanel
+        history={history}
+        escalations={escalations}
+        loading={timelineLoading}
+      />
 
       <Card className="border border-border/60 bg-card/70">
         <div className="flex items-center gap-2 border-b border-border/50 px-6 py-4">
