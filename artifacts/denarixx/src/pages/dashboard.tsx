@@ -165,6 +165,54 @@ export default function DashboardPage() {
   const [consoleMode, setConsoleMode] = useState<ConsoleAction>("recommend");
   const [consoleBusy, setConsoleBusy] = useState(false);
 
+  const runConsoleAction = async (action: ConsoleAction) => {
+  try {
+    setConsoleBusy(true);
+    setConsoleMode(action);
+
+    setConsoleResponse(`AI processing "${action}" command...`);
+
+    const scenario: CommandScenarioType = "multi_site_outage";
+
+    if (action === "recommend") {
+      const res = await apiFetch("/api/command-center/simulate", {
+        method: "POST",
+        body: JSON.stringify({ scenarioType: scenario }),
+      });
+
+      setConsoleResponse(
+        `AI Recommendation: ${res?.scenarioLabel || "Deploy multi-node stabilization teams immediately."}`
+      );
+    }
+
+    if (action === "escalate") {
+      const res = await apiFetch("/api/command-center/escalations", {
+        method: "POST",
+        body: JSON.stringify({
+          scenarioType: scenario,
+          priority: "high",
+        }),
+      });
+
+      setConsoleResponse(
+        `Escalation triggered → ${res?.status || "Regional command notified"}`
+      );
+    }
+
+    if (action === "dispatch") {
+      setConsoleResponse(
+        "Dispatch initiated → Field response units deployed across affected regions."
+      );
+    }
+
+    await loadDashboard(true);
+  } catch (err) {
+    setConsoleResponse("AI command failed. Retrying or check backend.");
+  } finally {
+    setConsoleBusy(false);
+  }
+};
+
   const loadDashboard = async (silent = false) => {
     try {
       if (silent) setRefreshing(true);
@@ -464,16 +512,45 @@ export default function DashboardPage() {
             Operator Command Console
           </div>
 
-          {commandActions.map((action) => {
-            const Icon = action.icon;
-            return (
-              <Card key={action.title} className={cn("p-6", action.tone)}>
-                <Icon className="mb-6 h-7 w-7" />
-                <div className="text-3xl font-semibold text-white">{action.title}</div>
-                <div className="mt-2 text-base text-slate-400">{action.description}</div>
-              </Card>
-            );
-          })}
+          <Card className="p-5 border border-primary/20 bg-black/40 backdrop-blur-xl">
+            <div className="text-sm font-semibold text-white mb-3">
+              AI Command Console
+            </div>
+
+            <div className="text-xs text-muted-foreground mb-4">
+              Voice-style AI orchestration · Recommend · Escalate · Dispatch
+            </div>
+
+            <div className="rounded-xl border border-border/60 bg-background/40 p-3 text-sm mb-4 min-h-[70px]">
+              {consoleResponse}
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                onClick={() => runConsoleAction("recommend")}
+                disabled={consoleBusy}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Recommend
+              </Button>
+
+              <Button
+                onClick={() => runConsoleAction("escalate")}
+                disabled={consoleBusy}
+                className="bg-amber-600 hover:bg-amber-700"
+              >
+                Escalate
+              </Button>
+
+              <Button
+                onClick={() => runConsoleAction("dispatch")}
+                disabled={consoleBusy}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Dispatch
+              </Button>
+            </div>
+          </Card>
         </div>
       </div>
 
