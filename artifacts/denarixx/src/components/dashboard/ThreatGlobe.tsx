@@ -125,6 +125,38 @@ function moduleGlowColor(moduleName: string, escalationLevel: EscalationLevel) {
   return `rgba(245,158,11,${alpha})`;
 }
 
+
+function featureCenter(feature: any): { lat: number; lng: number } | null {
+  const geometry = feature?.geometry;
+  if (!geometry?.coordinates) return null;
+
+  const coords: Array<[number, number]> = [];
+
+  const walk = (node: any) => {
+    if (!Array.isArray(node)) return;
+
+    if (
+      node.length >= 2 &&
+      typeof node[0] === "number" &&
+      typeof node[1] === "number"
+    ) {
+      coords.push([node[1], node[0]]);
+      return;
+    }
+
+    for (const child of node) walk(child);
+  };
+
+  walk(geometry.coordinates);
+
+  if (!coords.length) return null;
+
+  const lat = coords.reduce((sum, [v]) => sum + v, 0) / coords.length;
+  const lng = coords.reduce((sum, [, v]) => sum + v, 0) / coords.length;
+
+  return { lat, lng };
+}
+
 export default function ThreatGlobe({
   sites,
   escalations = [],
@@ -133,6 +165,7 @@ export default function ThreatGlobe({
   const globeRef = useRef<any>(null);
   const [countries, setCountries] = useState<CountryFeature[]>([]);
   const [flashCountryKeys, setFlashCountryKeys] = useState<string[]>([]);
+  const [focusToken, setFocusToken] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -272,6 +305,7 @@ export default function ThreatGlobe({
     [globePoints, escalationPoints]
   );
 
+
   const hotCountries = useMemo(() => {
     const map = new Map<string, "low" | "medium" | "high" | "critical">();
 
@@ -313,11 +347,48 @@ export default function ThreatGlobe({
     return keys;
   }, [escalations]);
 
+  const countryLabelPoints = useMemo(() => {
+    const hotSet = new Set([
+      ...globePoints.map((site) => normalizeCountry(site.country)),
+      ...escalationPoints.map((site: any) => normalizeCountry(site.country || "")),
+    ]);
+
+    return countries
+      .map((feature: any) => {
+        const rawName =
+          feature?.properties?.name ||
+          feature?.properties?.NAME ||
+          feature?.properties?.admin ||
+          "";
+
+        const name = String(rawName).trim();
+        if (!name) return null;
+
+        const key = normalizeCountry(name);
+        if (!hotSet.has(key)) return null;
+
+        const center = featureCenter(feature);
+        if (!center) return null;
+
+        return {
+          lat: center.lat,
+          lng: center.lng,
+          text: name,
+          size: 0.6,
+          color: "rgba(255,255,255,0.28)",
+        };
+      })
+      .filter(Boolean) as CountryLabelPoint[];
+  }, [countries, globePoints, escalationPoints]);
+
+  const continentLabelPoints = useMemo(() => CONTINENT_LABELS, []);
+
   useEffect(() => {
     if (!liveFlashToken || !matchedCountryKeys.size) return;
 
     const keys = Array.from(matchedCountryKeys);
     setFlashCountryKeys(keys);
+    setFocusToken(String(Date.now()));
 
     const timeout = window.setTimeout(() => {
       setFlashCountryKeys([]);
@@ -325,6 +396,31 @@ export default function ThreatGlobe({
 
     return () => window.clearTimeout(timeout);
   }, [liveFlashToken, matchedCountryKeys]);
+
+  useEffect(() => {
+    if (!focusToken) return;
+
+    const globe = globeRef.current;
+    if (!globe) return;
+
+    const target =
+      escalationPoints[0] ??
+      globePoints.find((site) => site.threatLevel === "critical") ??
+      globePoints[0];
+
+    if (!target) return;
+
+    globe.pointOfView(
+      { lat: target.lat, lng: target.lng, altitude: 1.35 },
+      1200
+    );
+
+    const timeout = window.setTimeout(() => {
+      globe.pointOfView({ lat: 10, lng: 15, altitude: 2.0 }, 1800);
+    }, 2600);
+
+    return () => window.clearTimeout(timeout);
+  }, [focusToken, escalationPoints, globePoints]);
 
   return (
     <>
@@ -412,6 +508,22 @@ export default function ThreatGlobe({
             polygonSideColor={() => "rgba(14,165,233,0.06)"}
             polygonStrokeColor={() => "rgba(148,163,184,0.24)"}
             polygonAltitude={0.012}
+            onPolygonClick={(feat: any) => {
+              const globe = globeRef.current;
+              if (!globe) return;
+
+              const center = featureCenter(feat);
+              if (!center) return;
+
+              globe.pointOfView(
+                { lat: center.lat, lng: center.lng, altitude: 1.2 },
+                1000
+              );
+
+              window.setTimeout(() => {
+                globe.pointOfView({ lat: 10, lng: 15, altitude: 2.0 }, 1800);
+              }, 2500);
+            }}
             pointsData={[...globePoints, ...escalationPoints]}
             pointLat="lat"
             pointLng="lng"
@@ -419,6 +531,19 @@ export default function ThreatGlobe({
             pointRadius="radius"
             pointColor="color"
             pointResolution={18}
+            onPointClick={(d: any) => {
+              const globe = globeRef.current;
+              if (!globe) return;
+
+              globe.pointOfView(
+                { lat: d.lat, lng: d.lng, altitude: 1.15 },
+                900
+              );
+
+              window.setTimeout(() => {
+                globe.pointOfView({ lat: 10, lng: 15, altitude: 2.0 }, 1800);
+              }, 2400);
+            }}
             pointLabel={(d: any) => `
               <div style="padding:8px 10px; border-radius:12px; background:rgba(3,7,18,0.92); color:white; min-width:180px; border:1px solid rgba(255,255,255,0.12)">
                 <div style="font-weight:700; margin-bottom:4px;">${d.name}</div>
@@ -468,6 +593,22 @@ export default function ThreatGlobe({
             labelSize={() => 1.35}
             labelDotRadius={() => 0.25}
             labelResolution={2}
+            htmlElementsData={[...countryLabelPoints, ...continentLabelPoints]}
+            htmlLat="lat"
+            htmlLng="lng"
+            htmlElement={(d: any) => {
+              const el = document.createElement("div");
+              el.textContent = d.text;
+              el.style.color = d.color;
+              el.style.fontSize = `${(d.size ?? 0.7) * 10}px`;
+              el.style.fontWeight = d.size > 1 ? "700" : "500";
+              el.style.letterSpacing = d.size > 1 ? "0.08em" : "0.03em";
+              el.style.textShadow = "0 0 10px rgba(0,0,0,0.8)";
+              el.style.whiteSpace = "nowrap";
+              el.style.pointerEvents = "none";
+              el.style.opacity = "0.95";
+              return el;
+            }}
           />
         </div>
 
