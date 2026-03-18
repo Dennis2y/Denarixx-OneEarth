@@ -145,8 +145,8 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0(leaflet@1.9.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       three:
-        specifier: ^0.183.2
-        version: 0.183.2
+        specifier: ^0.182.0
+        version: 0.182.0
     devDependencies:
       '@hookform/resolvers':
         specifier: ^3.10.0
@@ -3725,6 +3725,9 @@ packages:
     peerDependencies:
       three: '>=0.154'
 
+  three@0.182.0:
+    resolution: {integrity: sha512-GbHabT+Irv+ihI1/f5kIIsZ+Ef9Sl5A1Y7imvS5RQjWgtTPfPnZ43JmlYI7NtCRDK9zir20lQpfg8/9Yd02OvQ==}
+
   three@0.183.2:
     resolution: {integrity: sha512-di3BsL2FEQ1PA7Hcvn4fyJOlxRRgFYBpMTcyOgkwJIaDOdJMebEFPA+t98EvjuljDx4hNulAGwF6KIjtwI5jgQ==}
 
@@ -6947,6 +6950,8 @@ snapshots:
       d3-octree: 1.1.0
       d3-scale: 4.0.2
       three: 0.183.2
+
+  three@0.182.0: {}
 
   three@0.183.2: {}
 
