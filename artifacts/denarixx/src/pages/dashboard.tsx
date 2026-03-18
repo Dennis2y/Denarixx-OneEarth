@@ -77,6 +77,19 @@ type LiveFeedItem = {
   tone: "critical" | "warning" | "info";
 };
 
+type AlertItem = {
+  id: number;
+  title: string;
+  module: string;
+  severity: string;
+  status: string;
+  location: string;
+  threatScore: number;
+  threatLevel: ThreatLevel;
+  responsePriority: ResponsePriority;
+  recommendedAction: string;
+};
+
 type DashboardStats = {
   totalSites: number;
   activeSites: number;
@@ -92,19 +105,27 @@ type DashboardStats = {
   globeSites: ThreatSite[];
   topThreatSites: ThreatSite[];
   urgentQueue: QueueItem[];
-  recentAlerts: Array<{
-    id: number;
-    title: string;
-    module: string;
-    severity: string;
-    status: string;
-    location: string;
-    threatScore: number;
-    threatLevel: ThreatLevel;
-    responsePriority: ResponsePriority;
-    recommendedAction: string;
-  }>;
+  recentAlerts: AlertItem[];
   escalationHotspots?: EscalationHotspot[];
+};
+
+type ConsolePreview = {
+  scenarioType: CommandScenarioType;
+  threatScore?: number;
+  autoEscalation?: {
+    escalationLevel?: string;
+    deploymentMode?: string;
+    operatorDirective?: string;
+  };
+};
+
+type ConsoleActionResult = {
+  ok?: boolean;
+  message?: string;
+  operatorDirective?: string;
+  escalationLevel?: string;
+  deploymentMode?: string;
+  threatScore?: number;
 };
 
 function threatClass(level: ThreatLevel) {
@@ -147,6 +168,21 @@ function deriveScenarioFromQueueItem(item: QueueItem | null): CommandScenarioTyp
   return "multi_site_outage";
 }
 
+function buildFallbackPreview(
+  scenarioType: CommandScenarioType,
+  result: ConsoleActionResult,
+): ConsolePreview {
+  return {
+    scenarioType,
+    threatScore: result.threatScore,
+    autoEscalation: {
+      escalationLevel: result.escalationLevel,
+      deploymentMode: result.deploymentMode,
+      operatorDirective: result.operatorDirective,
+    },
+  };
+}
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -161,7 +197,7 @@ export default function DashboardPage() {
   ]);
 
   const [selectedQueueItem, setSelectedQueueItem] = useState<QueueItem | null>(null);
-  const [consolePreview, setConsolePreview] = useState<any | null>(null);
+  const [consolePreview, setConsolePreview] = useState<ConsolePreview | null>(null);
   const [consoleResponse, setConsoleResponse] = useState("AI console ready. Select a live queue target to begin.");
   const [consoleBusy, setConsoleBusy] = useState(false);
   const [consoleMode, setConsoleMode] = useState<ConsoleAction>("recommend");
@@ -172,17 +208,13 @@ export default function DashboardPage() {
       if (silent) setRefreshing(true);
       else setLoading(true);
 
-      const json = await apiFetch("/api/dashboard/stats");
-      const nextStats = json as DashboardStats;
-      setStats(nextStats);
+      const json = (await apiFetch("/api/dashboard/stats")) as DashboardStats;
+      setStats(json);
 
       setSelectedQueueItem((current) => {
-        if (!nextStats.urgentQueue?.length) return current;
-        if (!current) return nextStats.urgentQueue[0];
-        return (
-          nextStats.urgentQueue.find((item) => item.kind === current.kind && item.id === current.id) ||
-          nextStats.urgentQueue[0]
-        );
+        if (!json.urgentQueue?.length) return current;
+        if (!current) return json.urgentQueue[0];
+        return json.urgentQueue.find((item) => item.kind === current.kind && item.id === current.id) ?? json.urgentQueue[0];
       });
     } catch {
       if (!silent) setStats(null);
@@ -201,17 +233,23 @@ export default function DashboardPage() {
 
       const scenarioType = deriveScenarioFromQueueItem(item);
 
-      const res = await apiFetch("/api/command-center/simulate", {
+      const res = (await apiFetch("/api/command-center/simulate", {
         method: "POST",
         body: JSON.stringify({
           scenarioType,
           item,
         }),
-      });
+      })) as ConsolePreview & {
+        autoEscalation?: {
+          operatorDirective?: string;
+          escalationLevel?: string;
+          deploymentMode?: string;
+        };
+      };
 
       setConsolePreview(res);
       setConsoleResponse(
-        `Preview complete → ${res?.autoEscalation?.operatorDirective || item.recommendedAction || "Operator review ready."}`
+        `Preview complete → ${res?.autoEscalation?.operatorDirective || item.recommendedAction || "Operator review ready."}`,
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : "Preview failed";
@@ -237,33 +275,21 @@ export default function DashboardPage() {
 
       const scenarioType = deriveScenarioFromQueueItem(selectedQueueItem);
 
-      const res = await apiFetch("/api/command-center/orchestrate", {
+      const res = (await apiFetch("/api/command-center/orchestrate", {
         method: "POST",
         body: JSON.stringify({
           action,
           item: selectedQueueItem,
           scenarioType,
         }),
-      });
+      })) as ConsoleActionResult;
 
       setConsoleResponse(
-        String(
-          res?.message ||
-            res?.operatorDirective ||
-            "Operator action completed successfully."
-        )
+        String(res.message || res.operatorDirective || "Operator action completed successfully."),
       );
 
       if (!consolePreview) {
-        setConsolePreview({
-          scenarioType,
-          autoEscalation: {
-            escalationLevel: res?.escalationLevel,
-            deploymentMode: res?.deploymentMode,
-            operatorDirective: res?.operatorDirective,
-          },
-          threatScore: res?.threatScore,
-        });
+        setConsolePreview(buildFallbackPreview(scenarioType, res));
       }
 
       await loadDashboard(true);
@@ -277,7 +303,7 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    loadDashboard(false);
+    void loadDashboard(false);
   }, []);
 
   useEffect(() => {
@@ -289,12 +315,12 @@ export default function DashboardPage() {
 
     stream.addEventListener("map-update", async (event: MessageEvent) => {
       try {
-        const payload = JSON.parse(event.data);
+        const payload = JSON.parse(event.data) as { type?: string; message?: string };
 
         const type = String(payload?.type ?? "");
         const message = String(payload?.message ?? "").trim() || "Live command event detected";
 
-        const tone: "critical" | "warning" | "info" =
+        const tone: LiveFeedItem["tone"] =
           type.includes("auto-escalation") || type.includes("dispatch")
             ? "critical"
             : type.includes("alert") || type.includes("escalate")
@@ -348,12 +374,11 @@ export default function DashboardPage() {
   }, [selectedQueueItem?.id, selectedQueueItem?.kind]);
 
   useEffect(() => {
-    if (!stats) return;
-    if (consoleBusy) return;
+    if (!stats || consoleBusy) return;
 
     if (!selectedQueueItem) {
       setConsoleResponse(
-        `AI console synced. Tracking ${stats.activeAlerts} active alerts, ${stats.criticalThreatSites} critical sites, and ${stats.escalationHotspots?.length ?? 0} escalation hotspots.`
+        `AI console synced. Tracking ${stats.activeAlerts} active alerts, ${stats.criticalThreatSites} critical sites, and ${stats.escalationHotspots?.length ?? 0} escalation hotspots.`,
       );
     }
   }, [stats, consoleBusy, selectedQueueItem]);
@@ -426,7 +451,7 @@ export default function DashboardPage() {
                 key={item.id}
                 className={cn(
                   "rounded-full border px-3 py-1 text-[11px] font-medium",
-                  feedToneClass(item.tone)
+                  feedToneClass(item.tone),
                 )}
               >
                 {item.label}
@@ -449,7 +474,7 @@ export default function DashboardPage() {
             <Badge className="border border-red-500/20 bg-red-500/10 text-red-300">
               Threat Elevated
             </Badge>
-            <Button variant="secondary" size="sm" onClick={() => loadDashboard(true)} disabled={refreshing}>
+            <Button variant="secondary" size="sm" onClick={() => void loadDashboard(true)} disabled={refreshing}>
               <RefreshCw className={cn("mr-2 h-4 w-4", refreshing && "animate-spin")} />
               Refresh
             </Button>
@@ -644,11 +669,11 @@ export default function DashboardPage() {
 
               <div className="grid grid-cols-3 gap-2">
                 <Button
-                  onClick={() => runConsoleAction("recommend")}
+                  onClick={() => void runConsoleAction("recommend")}
                   disabled={consoleBusy || !selectedQueueItem}
                   className={cn(
                     "w-full min-w-0 rounded-xl bg-blue-600 text-white hover:bg-blue-700",
-                    consoleMode === "recommend" && "ring-1 ring-blue-300/50"
+                    consoleMode === "recommend" && "ring-1 ring-blue-300/50",
                   )}
                 >
                   {consoleBusy && consoleMode === "recommend" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -656,11 +681,11 @@ export default function DashboardPage() {
                 </Button>
 
                 <Button
-                  onClick={() => runConsoleAction("escalate")}
+                  onClick={() => void runConsoleAction("escalate")}
                   disabled={consoleBusy || !selectedQueueItem}
                   className={cn(
                     "w-full min-w-0 rounded-xl bg-amber-600 text-white hover:bg-amber-700",
-                    consoleMode === "escalate" && "ring-1 ring-amber-300/50"
+                    consoleMode === "escalate" && "ring-1 ring-amber-300/50",
                   )}
                 >
                   {consoleBusy && consoleMode === "escalate" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -668,11 +693,11 @@ export default function DashboardPage() {
                 </Button>
 
                 <Button
-                  onClick={() => runConsoleAction("dispatch")}
+                  onClick={() => void runConsoleAction("dispatch")}
                   disabled={consoleBusy || !selectedQueueItem}
                   className={cn(
                     "w-full min-w-0 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700",
-                    consoleMode === "dispatch" && "ring-1 ring-emerald-300/50"
+                    consoleMode === "dispatch" && "ring-1 ring-emerald-300/50",
                   )}
                 >
                   {consoleBusy && consoleMode === "dispatch" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -682,7 +707,7 @@ export default function DashboardPage() {
 
               <Button
                 variant="secondary"
-                onClick={() => selectedQueueItem && runConsolePreview(selectedQueueItem)}
+                onClick={() => selectedQueueItem && void runConsolePreview(selectedQueueItem)}
                 disabled={consoleBusy || !selectedQueueItem}
                 className="w-full rounded-xl border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
               >
@@ -816,7 +841,7 @@ export default function DashboardPage() {
                       "block w-full rounded-2xl border bg-background/40 p-4 text-left transition-all",
                       selected
                         ? "border-cyan-400/40 shadow-[0_0_0_1px_rgba(34,211,238,0.22)]"
-                        : "border-border/60 hover:border-cyan-400/20"
+                        : "border-border/60 hover:border-cyan-400/20",
                     )}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -875,7 +900,7 @@ export default function DashboardPage() {
                       "block w-full rounded-2xl border bg-background/40 p-4 text-left transition-all",
                       selected
                         ? "border-cyan-400/40 shadow-[0_0_0_1px_rgba(34,211,238,0.22)]"
-                        : "border-border/60 hover:border-cyan-400/20"
+                        : "border-border/60 hover:border-cyan-400/20",
                     )}
                   >
                     <div className="flex items-start justify-between gap-3">

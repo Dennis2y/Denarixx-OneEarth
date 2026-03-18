@@ -47,7 +47,9 @@ type EscalationHotspot = {
 type CountryFeature = {
   type: string;
   properties?: Record<string, unknown>;
-  geometry: unknown;
+  geometry?: {
+    coordinates?: unknown;
+  };
 };
 
 type CountryLabelPoint = {
@@ -55,6 +57,41 @@ type CountryLabelPoint = {
   lng: number;
   text: string;
   size: number;
+  color: string;
+};
+
+type GlobePoint = ThreatSite & {
+  lat: number;
+  lng: number;
+  color: string;
+  altitude: number;
+  radius: number;
+};
+
+type EscalationPoint = EscalationHotspot & {
+  lat: number;
+  lng: number;
+  color: string;
+  altitude: number;
+  radius: number;
+  name: string;
+  location: string;
+  country: string;
+  threatLevel: ThreatLevel;
+};
+
+type ArcPoint = {
+  startLat: number;
+  startLng: number;
+  endLat: number;
+  endLng: number;
+  color: [string, string];
+};
+
+type LabelPoint = {
+  lat: number;
+  lng: number;
+  text: string;
   color: string;
 };
 
@@ -130,16 +167,20 @@ function moduleGlowColor(moduleName: string, escalationLevel: EscalationLevel) {
   return `rgba(245,158,11,${alpha})`;
 }
 
-function featureCenter(feature: any): { lat: number; lng: number } | null {
-  const geometry = feature?.geometry;
-  if (!geometry?.coordinates) return null;
+function featureCenter(feature: CountryFeature): { lat: number; lng: number } | null {
+  const coordinates = feature?.geometry?.coordinates;
+  if (!coordinates) return null;
 
   const coords: Array<[number, number]> = [];
 
-  const walk = (node: any) => {
+  const walk = (node: unknown) => {
     if (!Array.isArray(node)) return;
 
-    if (node.length >= 2 && typeof node[0] === "number" && typeof node[1] === "number") {
+    if (
+      node.length >= 2 &&
+      typeof node[0] === "number" &&
+      typeof node[1] === "number"
+    ) {
       coords.push([node[1], node[0]]);
       return;
     }
@@ -147,7 +188,7 @@ function featureCenter(feature: any): { lat: number; lng: number } | null {
     for (const child of node) walk(child);
   };
 
-  walk(geometry.coordinates);
+  walk(coordinates);
 
   if (!coords.length) return null;
 
@@ -172,7 +213,7 @@ export default function ThreatGlobe({
 
     fetch(COUNTRIES_URL, { signal: controller.signal })
       .then((res) => res.json())
-      .then((json) => {
+      .then((json: { features?: CountryFeature[] }) => {
         const features = Array.isArray(json?.features) ? json.features : [];
         setCountries(features);
       })
@@ -199,7 +240,7 @@ export default function ThreatGlobe({
     globe.pointOfView({ lat: 10, lng: 15, altitude: 2.0 }, 0);
   }, [countries.length]);
 
-  const globePoints = useMemo(
+  const globePoints = useMemo<GlobePoint[]>(
     () =>
       (sites ?? [])
         .filter((site) => typeof site.latitude === "number" && typeof site.longitude === "number")
@@ -211,10 +252,10 @@ export default function ThreatGlobe({
           altitude: pointAltitude(site.threatScore),
           radius: pointRadius(site.threatScore),
         })),
-    [sites]
+    [sites],
   );
 
-  const escalationPoints = useMemo(
+  const escalationPoints = useMemo<EscalationPoint[]>(
     () =>
       (escalations ?? [])
         .filter((item) => typeof item.latitude === "number" && typeof item.longitude === "number")
@@ -240,25 +281,25 @@ export default function ThreatGlobe({
           country: item.country ?? "Unknown",
           threatLevel: "critical" as ThreatLevel,
         })),
-    [escalations]
+    [escalations],
   );
 
   const ringSites = useMemo(
     () => globePoints.filter((site) => site.threatLevel === "critical" || site.threatLevel === "high"),
-    [globePoints]
+    [globePoints],
   );
 
   const criticalSites = useMemo(
     () => globePoints.filter((site) => site.threatLevel === "critical").slice(0, 4),
-    [globePoints]
+    [globePoints],
   );
 
   const safeSites = useMemo(
     () => globePoints.filter((site) => site.threatLevel === "low").slice(0, 5),
-    [globePoints]
+    [globePoints],
   );
 
-  const arcsData = useMemo(() => {
+  const arcsData = useMemo<ArcPoint[]>(() => {
     if (!criticalSites.length || !safeSites.length) return [];
 
     return safeSites.map((safeSite, index) => {
@@ -273,22 +314,22 @@ export default function ThreatGlobe({
     });
   }, [criticalSites, safeSites]);
 
-  const labelsData = useMemo(
+  const labelsData = useMemo<LabelPoint[]>(
     () =>
       [...escalationPoints, ...globePoints]
-        .filter((site: any) => site.triggerModule || site.threatLevel === "critical" || Number(site.threatScore) >= 85)
+        .filter((site) => Boolean((site as EscalationPoint).triggerModule) || site.threatLevel === "critical" || Number(site.threatScore) >= 85)
         .slice(0, 5)
-        .map((site: any) => ({
+        .map((site) => ({
           lat: site.lat,
           lng: site.lng,
           text: `${site.name} · ${site.threatScore}`,
-          color: site.triggerModule
-            ? escalationColor(site.triggerModule)
+          color: (site as EscalationPoint).triggerModule
+            ? escalationColor((site as EscalationPoint).triggerModule)
             : site.threatLevel === "critical"
               ? "#fca5a5"
               : "#fde68a",
         })),
-    [globePoints, escalationPoints]
+    [globePoints, escalationPoints],
   );
 
   const hotCountries = useMemo(() => {
@@ -336,7 +377,7 @@ export default function ThreatGlobe({
     const hotSet = new Set(hotEntries.map(([key]) => key));
 
     return countries
-      .map((feature: any) => {
+      .map((feature) => {
         const rawName =
           feature?.properties?.name ||
           feature?.properties?.NAME ||
@@ -462,7 +503,7 @@ export default function ThreatGlobe({
             atmosphereColor="#2563eb"
             atmosphereAltitude={0.11}
             polygonsData={countries}
-            polygonCapColor={(feat: any) => {
+            polygonCapColor={(feat: CountryFeature) => {
               const country =
                 feat?.properties?.name ||
                 feat?.properties?.NAME ||
@@ -482,7 +523,7 @@ export default function ThreatGlobe({
             polygonSideColor={() => "rgba(14,165,233,0.04)"}
             polygonStrokeColor={() => "rgba(148,163,184,0.14)"}
             polygonAltitude={0.009}
-            onPolygonClick={(feat: any) => {
+            onPolygonClick={(feat: CountryFeature) => {
               const globe = globeRef.current;
               if (!globe) return;
 
@@ -502,7 +543,7 @@ export default function ThreatGlobe({
             pointRadius="radius"
             pointColor="color"
             pointResolution={18}
-            onPointClick={(d: any) => {
+            onPointClick={(d: GlobePoint | EscalationPoint) => {
               const globe = globeRef.current;
               if (!globe) return;
 
@@ -512,7 +553,7 @@ export default function ThreatGlobe({
                 globe.pointOfView({ lat: 10, lng: 15, altitude: 2.0 }, 1800);
               }, 2400);
             }}
-            pointLabel={(d: any) => `
+            pointLabel={(d: GlobePoint | EscalationPoint) => `
               <div style="padding:8px 10px; border-radius:12px; background:rgba(3,7,18,0.92); color:white; min-width:180px; border:1px solid rgba(255,255,255,0.10); box-shadow:0 0 24px rgba(0,0,0,0.25)">
                 <div style="font-weight:700; margin-bottom:4px;">${d.name}</div>
                 <div style="font-size:12px; opacity:0.78;">${d.location}, ${d.country}</div>
@@ -522,23 +563,23 @@ export default function ThreatGlobe({
             ringsData={[...ringSites, ...escalationPoints]}
             ringLat="lat"
             ringLng="lng"
-            ringColor={(d: any) => {
-              if (d?.triggerModule) {
+            ringColor={(d: GlobePoint | EscalationPoint) => {
+              if ("triggerModule" in d) {
                 return moduleGlowColor(d.triggerModule, d.escalationLevel ?? "district");
               }
               return d.threatLevel === "critical"
                 ? "rgba(239,68,68,0.68)"
                 : "rgba(245,158,11,0.52)";
             }}
-            ringMaxRadius={(d: any) => {
-              if (d?.triggerModule) {
+            ringMaxRadius={(d: GlobePoint | EscalationPoint) => {
+              if ("triggerModule" in d) {
                 return d.escalationLevel === "global-command" ? 4.8 : 3.4;
               }
               return d.threatLevel === "critical" ? 4.2 : 2.9;
             }}
             ringPropagationSpeed={() => 0.88}
-            ringRepeatPeriod={(d: any) => {
-              if (d?.triggerModule) {
+            ringRepeatPeriod={(d: GlobePoint | EscalationPoint) => {
+              if ("triggerModule" in d) {
                 return d.escalationLevel === "global-command" ? 1400 : 1800;
               }
               return d.threatLevel === "critical" ? 1350 : 1850;
@@ -564,7 +605,7 @@ export default function ThreatGlobe({
             htmlElementsData={[...countryLabelPoints, ...continentLabelPoints]}
             htmlLat="lat"
             htmlLng="lng"
-            htmlElement={(d: any) => {
+            htmlElement={(d: CountryLabelPoint) => {
               const el = document.createElement("div");
               el.textContent = d.text;
               el.style.color = d.color;
