@@ -9,6 +9,8 @@ import {
   Activity,
   Users,
   Globe,
+  Loader2,
+  CheckCircle2,
 } from "lucide-react";
 import { PageHeader, Card, Badge, Button, cn } from "@/components/ui-core";
 import { apiFetch, apiStreamUrl } from "@/lib/api";
@@ -103,6 +105,7 @@ type HistoryRow = {
   estimatedPopulationAtRisk: number;
   simulatedAt: string;
 };
+
 type EscalationFeedRow = {
   id: number;
   scenarioId: string;
@@ -137,8 +140,6 @@ function severityClass(value: string) {
   return "bg-blue-500/15 text-blue-400 border-blue-500/30";
 }
 
-
-
 function responseTierClass(tier: string) {
   if (tier === "global") return "bg-red-500/15 text-red-400 border-red-500/30";
   if (tier === "regional") return "bg-amber-500/15 text-amber-400 border-amber-500/30";
@@ -147,7 +148,7 @@ function responseTierClass(tier: string) {
 }
 
 function responseModeClass(mode: string) {
-  if (mode === "crisis") return "bg-red-500/20 text-red-300 border-red-500/40 animate-pulse";
+  if (mode === "crisis") return "bg-red-500/20 text-red-300 border-red-500/40";
   if (mode === "dispatch") return "bg-amber-500/20 text-amber-300 border-amber-500/40";
   if (mode === "prepare") return "bg-blue-500/20 text-blue-300 border-blue-500/40";
   return "bg-green-500/20 text-green-300 border-green-500/40";
@@ -167,43 +168,94 @@ function deploymentClass(mode: DeploymentMode) {
   return "bg-green-500/15 text-green-400 border-green-500/30";
 }
 
-
 function escalationPulseClass(level: EscalationLevel) {
-  if (level === "global-command") return "animate-pulse border-red-500/40 bg-red-500/10";
-  if (level === "regional-command") return "animate-pulse border-amber-500/40 bg-amber-500/10";
+  if (level === "global-command") return "border-red-500/40 bg-red-500/10";
+  if (level === "regional-command") return "border-amber-500/40 bg-amber-500/10";
   if (level === "district") return "border-blue-500/40 bg-blue-500/10";
   return "border-green-500/30 bg-green-500/10";
+}
+
+function moduleClass(value: string) {
+  const v = value.toLowerCase();
+  if (v.includes("energy")) return "border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
+  if (v.includes("life")) return "border-amber-500/30 bg-amber-500/10 text-amber-300";
+  return "border-sky-500/30 bg-sky-500/10 text-sky-300";
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString();
 }
 
 export default function CommandCenterPage() {
   const [selectedScenario, setSelectedScenario] = useState<ScenarioType>("flood_event");
   const [running, setRunning] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [history, setHistory] = useState<HistoryRow[]>([]);
   const [escalations, setEscalations] = useState<EscalationFeedRow[]>([]);
-  const [liveEscalationStatus, setLiveEscalationStatus] = useState("Waiting for escalation events...");
-  const [liveEvent, setLiveEvent] = useState<string>("Connecting to command live stream...");
-  const [liveStatus, setLiveStatus] = useState<"connecting" | "live" | "disconnected">("connecting");
 
+  const [selectedHistoryId, setSelectedHistoryId] = useState<number | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  const [liveEscalationStatus, setLiveEscalationStatus] = useState("Waiting for escalation events...");
+  const [liveEvent, setLiveEvent] = useState("Connecting to command live stream...");
+  const [liveStatus, setLiveStatus] = useState<"connecting" | "live" | "disconnected">("connecting");
 
   const loadHistory = async (silent = false) => {
     try {
-      if (silent) setRefreshing(true);
-      const json = await apiFetch("/api/command-center/history");
-      setHistory(json as HistoryRow[]);
+      if (!silent) setRefreshing(true);
+      const json = (await apiFetch("/api/command-center/history")) as HistoryRow[];
+      setHistory(json);
+
+      setSelectedHistoryId((current) => {
+        if (!json.length) return null;
+        if (current && json.some((row) => row.id === current)) return current;
+        return json[0].id;
+      });
     } catch {
       if (!silent) setHistory([]);
     } finally {
-      setRefreshing(false);
+      if (!silent) setRefreshing(false);
+    }
+  };
+
+  const loadEscalations = async (silent = false) => {
+    try {
+      if (!silent) setRefreshing(true);
+      const json = (await apiFetch("/api/command-center/escalations")) as EscalationFeedRow[];
+      setEscalations(json);
+    } catch {
+      if (!silent) setEscalations([]);
+    } finally {
+      if (!silent) setRefreshing(false);
+    }
+  };
+
+  const loadSimulationDetail = async (id: number, silent = false) => {
+    try {
+      if (!silent) setDetailLoading(true);
+      const detail = (await apiFetch(`/api/command-center/history/${id}`)) as { result?: SimulationResult };
+      if (detail?.result) {
+        setResult(detail.result);
+      }
+    } catch {
+      // keep current result
+    } finally {
+      if (!silent) setDetailLoading(false);
     }
   };
 
   useEffect(() => {
-    loadHistory(false);
-    loadEscalations(false);
+    void Promise.all([loadHistory(false), loadEscalations(false)]);
   }, []);
 
+  useEffect(() => {
+    if (!selectedHistoryId) return;
+    void loadSimulationDetail(selectedHistoryId, false);
+  }, [selectedHistoryId]);
 
   useEffect(() => {
     const stream = new EventSource(apiStreamUrl("/api/live/stream"), { withCredentials: true });
@@ -221,120 +273,66 @@ export default function CommandCenterPage() {
       try {
         const payload = JSON.parse(event.data);
 
-        if (payload?.type !== "command-center:auto-escalation") {
+        if (
+          payload?.type !== "command-center:auto-escalation" &&
+          payload?.type !== "command-center:recommend" &&
+          payload?.type !== "command-center:escalate" &&
+          payload?.type !== "command-center:dispatch"
+        ) {
           return;
         }
 
         setLiveStatus("live");
-        setLiveEvent(
-          payload?.message ??
-            "Auto-escalation event received"
-        );
+        setLiveEvent(payload?.message ?? "Live command event received");
+        setLiveEscalationStatus(payload?.message ?? "Live escalation event received");
 
-        await loadHistory(true);
+        await Promise.all([loadHistory(true), loadEscalations(true)]);
 
         if (payload?.scenarioId) {
           try {
-            const latest = await apiFetch("/api/command-center/history");
-            const rows = latest as HistoryRow[];
-            const matched = rows.find((row) => row.scenarioId === payload.scenarioId);
-
+            const latest = (await apiFetch("/api/command-center/history")) as HistoryRow[];
+            const matched = latest.find((row) => row.scenarioId === payload.scenarioId);
             if (matched) {
-              const detail = await apiFetch(`/api/command-center/history/${matched.id}`);
-              if ((detail as any)?.result) {
-                setResult((detail as any).result as SimulationResult);
+              setSelectedHistoryId(matched.id);
+              const detail = (await apiFetch(`/api/command-center/history/${matched.id}`)) as { result?: SimulationResult };
+              if (detail?.result) {
+                setResult(detail.result);
               }
             }
           } catch {}
         }
       } catch {
         setLiveStatus("live");
-        setLiveEvent("Auto-escalation event received");
-        await loadHistory(true);
+        setLiveEvent("Live command event received");
       }
     });
 
     stream.onerror = () => {
       setLiveStatus("disconnected");
       setLiveEvent("Live command stream disconnected — retrying");
-    };
-
-    return () => stream.close();
-  }, []);
-
-
-  useEffect(() => {
-    if (!result) return;
-
-    setLiveEscalationStatus(
-      `${result.scenarioLabel} · ${result.autoEscalation.escalationLevel} · ${result.autoEscalation.deploymentMode}`
-    );
-  }, [result]);
-
-  const escalationOverview = useMemo(() => {
-    const rows = escalations ?? [];
-
-    const totalEvents = rows.length;
-    const globalCommand = rows.filter((row) => row.escalationLevel === "global-command").length;
-    const immediateDeployments = rows.filter((row) => row.deploymentMode === "immediate-deployment").length;
-    const averageThreat = totalEvents
-      ? Math.round(rows.reduce((sum, row) => sum + Number(row.threatScore || 0), 0) / totalEvents)
-      : 0;
-
-    return {
-      totalEvents,
-      globalCommand,
-      immediateDeployments,
-      averageThreat,
-    };
-  }, [escalations]);
-
-
-
-  useEffect(() => {
-    const stream = new EventSource(apiStreamUrl("/api/live/stream"), { withCredentials: true });
-
-    stream.addEventListener("map-update", async (event: MessageEvent) => {
-      try {
-        const payload = JSON.parse(event.data);
-        if (payload?.type !== "command-center:auto-escalation") return;
-
-        setLiveEscalationStatus(payload?.message ?? "Live escalation event received");
-        await loadEscalations(true);
-      } catch {}
-    });
-
-    stream.onerror = () => {
       setLiveEscalationStatus("Live escalation stream disconnected — retrying");
     };
 
     return () => stream.close();
   }, []);
 
-
-
-
-  const loadEscalations = async (silent = false) => {
-    try {
-      if (silent) setRefreshing(true);
-      const json = await apiFetch("/api/command-center/escalations");
-      setEscalations(json as EscalationFeedRow[]);
-    } catch {
-      if (!silent) setEscalations([]);
-    } finally {
-      setRefreshing(false);
-    }
-  };
+  useEffect(() => {
+    if (!result) return;
+    setLiveEscalationStatus(
+      `${result.scenarioLabel} · ${result.autoEscalation.escalationLevel} · ${result.autoEscalation.deploymentMode}`
+    );
+  }, [result]);
 
   const runSimulation = async () => {
     try {
       setRunning(true);
-      const json = await apiFetch("/api/command-center/simulate", {
+      const json = (await apiFetch("/api/command-center/simulate", {
         method: "POST",
         body: JSON.stringify({ scenarioType: selectedScenario }),
-      });
-      setResult(json as SimulationResult);
-      await loadHistory(true);
+      })) as SimulationResult;
+
+      setResult(json);
+      await Promise.all([loadHistory(true), loadEscalations(true)]);
     } finally {
       setRunning(false);
     }
@@ -362,22 +360,43 @@ export default function CommandCenterPage() {
     };
   }, [result]);
 
+  const escalationOverview = useMemo(() => {
+    const rows = escalations ?? [];
+    const totalEvents = rows.length;
+    const globalCommand = rows.filter((row) => row.escalationLevel === "global-command").length;
+    const immediateDeployments = rows.filter((row) => row.deploymentMode === "immediate-deployment").length;
+    const averageThreat = totalEvents
+      ? Math.round(rows.reduce((sum, row) => sum + Number(row.threatScore || 0), 0) / totalEvents)
+      : 0;
+
+    return {
+      totalEvents,
+      globalCommand,
+      immediateDeployments,
+      averageThreat,
+    };
+  }, [escalations]);
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="AI Command Center"
-        description="Run simulations, generate auto-escalation, and prepare command actions"
+        description="Run simulations, inspect escalation intelligence, and monitor live command activity"
         actions={
-          <Button variant="secondary" size="sm" onClick={() => loadHistory(true)} disabled={refreshing}>
-            <RefreshCw className={cn("w-4 h-4 mr-2", refreshing && "animate-spin")} />
-            Refresh History
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => void Promise.all([loadHistory(false), loadEscalations(false)])}
+            disabled={refreshing}
+          >
+            <RefreshCw className={cn("mr-2 h-4 w-4", refreshing && "animate-spin")} />
+            Refresh
           </Button>
         }
       />
 
-
       <Card className="border border-border/60 bg-card/70 p-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
           <div>
             <div className="text-sm font-semibold">Live Auto-Escalation Stream</div>
             <div className="text-sm text-muted-foreground">{liveEvent}</div>
@@ -390,20 +409,17 @@ export default function CommandCenterPage() {
                 liveStatus === "live"
                   ? "bg-green-500 shadow-[0_0_14px_rgba(34,197,94,0.85)]"
                   : liveStatus === "connecting"
-                  ? "bg-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.85)]"
-                  : "bg-red-500 shadow-[0_0_14px_rgba(239,68,68,0.85)]"
+                    ? "bg-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.85)]"
+                    : "bg-red-500 shadow-[0_0_14px_rgba(239,68,68,0.85)]"
               )}
             />
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">
-              {liveStatus}
-            </span>
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">{liveStatus}</span>
           </div>
         </div>
       </Card>
 
-
       <Card className="border border-border/60 bg-card/70 p-4">
-        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+        <div className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-center">
           <div className="space-y-2">
             <div className="text-sm font-semibold">Scenario Simulation</div>
             <div className="text-sm text-muted-foreground">
@@ -411,7 +427,7 @@ export default function CommandCenterPage() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+          <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
             <select
               value={selectedScenario}
               onChange={(e) => setSelectedScenario(e.target.value as ScenarioType)}
@@ -424,19 +440,18 @@ export default function CommandCenterPage() {
               ))}
             </select>
 
-            <Button onClick={runSimulation} isLoading={running}>
-              <Play className="w-4 h-4 mr-2" />
+            <Button onClick={() => void runSimulation()} disabled={running}>
+              {running ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
               Run AI Simulation
             </Button>
           </div>
         </div>
       </Card>
 
-
       <Card className="border border-primary/20 bg-primary/5 p-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
           <div>
-            <div className="text-[11px] uppercase tracking-[0.25em] text-primary mb-1">Live Escalation Feed</div>
+            <div className="mb-1 text-[11px] uppercase tracking-[0.25em] text-primary">Live Escalation Feed</div>
             <div className="text-sm text-white">{liveEscalationStatus}</div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -450,63 +465,58 @@ export default function CommandCenterPage() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-4 border border-border/60 bg-card/70">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <Card className="border border-border/60 bg-card/70 p-4">
           <div className="text-xs text-muted-foreground">Threat Score</div>
           <div className="text-2xl font-bold text-primary">{overview.threatScore}</div>
         </Card>
-        <Card className="p-4 border border-border/60 bg-card/70">
+        <Card className="border border-border/60 bg-card/70 p-4">
           <div className="text-xs text-muted-foreground">Readiness Score</div>
           <div className="text-2xl font-bold">{overview.readinessScore}</div>
         </Card>
-        <Card className="p-4 border border-border/60 bg-card/70">
+        <Card className="border border-border/60 bg-card/70 p-4">
           <div className="text-xs text-muted-foreground">Affected Sites</div>
           <div className="text-2xl font-bold">{overview.affectedSites}</div>
         </Card>
-        <Card className="p-4 border border-border/60 bg-card/70">
+        <Card className="border border-border/60 bg-card/70 p-4">
           <div className="text-xs text-muted-foreground">Population at Risk</div>
           <div className="text-2xl font-bold">{overview.population.toLocaleString()}</div>
         </Card>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-4 border border-red-500/20 bg-red-500/5">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <Card className="border border-red-500/20 bg-red-500/5 p-4">
           <div className="text-xs text-muted-foreground">Escalation Events</div>
           <div className="text-2xl font-bold text-white">{escalationOverview.totalEvents}</div>
         </Card>
-
-        <Card className="p-4 border border-red-500/30 bg-red-500/10">
+        <Card className="border border-red-500/30 bg-red-500/10 p-4">
           <div className="text-xs text-muted-foreground">Global Command</div>
           <div className="text-2xl font-bold text-red-400">{escalationOverview.globalCommand}</div>
         </Card>
-
-        <Card className="p-4 border border-amber-500/30 bg-amber-500/10">
+        <Card className="border border-amber-500/30 bg-amber-500/10 p-4">
           <div className="text-xs text-muted-foreground">Immediate Deployments</div>
           <div className="text-2xl font-bold text-amber-300">{escalationOverview.immediateDeployments}</div>
         </Card>
-
-        <Card className="p-4 border border-primary/30 bg-primary/10">
+        <Card className="border border-primary/30 bg-primary/10 p-4">
           <div className="text-xs text-muted-foreground">Avg Escalation Threat</div>
           <div className="text-2xl font-bold text-primary">{escalationOverview.averageThreat}</div>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="border border-border/60 bg-card/70">
-          <div className="p-4 border-b border-border/50 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-primary" />
+          <div className="flex items-center gap-2 border-b border-border/50 p-4">
+            <Shield className="h-4 w-4 text-primary" />
             <div className="text-sm font-semibold">Auto-Escalation Decision</div>
           </div>
 
-          <div className="p-4 space-y-4">
+          <div className="space-y-4 p-4">
             {!result ? (
-              <div className="text-sm text-muted-foreground">Run a simulation to view escalation output.</div>
+              <div className="text-sm text-muted-foreground">Run or select a simulation to view escalation output.</div>
             ) : (
               <>
                 <div className="flex flex-wrap gap-2">
-                  <Badge className={cn("border", severityClass(result.riskSeverity))}>
-                    {result.riskSeverity.toUpperCase()}
-                  </Badge>
+                  <Badge className={cn("border", severityClass(result.riskSeverity))}>{result.riskSeverity.toUpperCase()}</Badge>
                   <Badge className={cn("border", escalationClass(result.autoEscalation.escalationLevel))}>
                     {result.autoEscalation.escalationLevel.toUpperCase()}
                   </Badge>
@@ -518,14 +528,14 @@ export default function CommandCenterPage() {
                 </div>
 
                 <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-                  <div className="text-[11px] uppercase tracking-widest text-primary mb-2">Operator Directive</div>
+                  <div className="mb-2 text-[11px] uppercase tracking-widest text-primary">Operator Directive</div>
                   <div className="text-sm">{result.autoEscalation.operatorDirective}</div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card className="p-4 border border-border/60 bg-background/40">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Users className="w-4 h-4 text-primary" />
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <Card className="border border-border/60 bg-background/40 p-4">
+                    <div className="mb-3 flex items-center gap-2">
+                      <Users className="h-4 w-4 text-primary" />
                       <div className="text-sm font-semibold">Recommended Teams</div>
                     </div>
                     <div className="space-y-2">
@@ -535,9 +545,9 @@ export default function CommandCenterPage() {
                     </div>
                   </Card>
 
-                  <Card className="p-4 border border-border/60 bg-background/40">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Activity className="w-4 h-4 text-primary" />
+                  <Card className="border border-border/60 bg-background/40 p-4">
+                    <div className="mb-3 flex items-center gap-2">
+                      <Activity className="h-4 w-4 text-primary" />
                       <div className="text-sm font-semibold">Escalation Actions</div>
                     </div>
                     <div className="space-y-2">
@@ -553,38 +563,49 @@ export default function CommandCenterPage() {
         </Card>
 
         <Card className="border border-border/60 bg-card/70">
-          <div className="p-4 border-b border-border/50 flex items-center gap-2">
-            <Radio className="w-4 h-4 text-primary" />
+          <div className="flex items-center gap-2 border-b border-border/50 p-4">
+            <Radio className="h-4 w-4 text-primary" />
             <div className="text-sm font-semibold">Scenario Snapshot</div>
           </div>
 
-          <div className="p-4 space-y-4">
+          <div className="space-y-4 p-4">
             {!result ? (
               <div className="text-sm text-muted-foreground">No simulation selected.</div>
             ) : (
               <>
                 <div className="text-lg font-semibold">{result.scenarioLabel}</div>
-                <div className="text-sm text-muted-foreground">
-                  {new Date(result.simulatedAt).toLocaleString()}
-                </div>
+                <div className="text-sm text-muted-foreground">{formatDate(result.simulatedAt)}</div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <Card className="p-3 border border-border/60 bg-background/40">
-                    <div className="text-[11px] text-muted-foreground uppercase">At-Risk Persons</div>
+                  <Card className="border border-border/60 bg-background/40 p-3">
+                    <div className="text-[11px] uppercase text-muted-foreground">At-Risk Persons</div>
                     <div className="text-xl font-bold">{result.atRiskPersonsCount}</div>
                   </Card>
-                  <Card className="p-3 border border-border/60 bg-background/40">
-                    <div className="text-[11px] text-muted-foreground uppercase">Critical Facilities</div>
+                  <Card className="border border-border/60 bg-background/40 p-3">
+                    <div className="text-[11px] uppercase text-muted-foreground">Critical Facilities</div>
                     <div className="text-xl font-bold">{result.criticalFacilitiesCount}</div>
                   </Card>
-                  <Card className="p-3 border border-border/60 bg-background/40">
-                    <div className="text-[11px] text-muted-foreground uppercase">Battery Avg</div>
+                  <Card className="border border-border/60 bg-background/40 p-3">
+                    <div className="text-[11px] uppercase text-muted-foreground">Battery Avg</div>
                     <div className="text-xl font-bold">{result.energyStatus.avgBatteryLevel}%</div>
                   </Card>
-                  <Card className="p-3 border border-border/60 bg-background/40">
-                    <div className="text-[11px] text-muted-foreground uppercase">Backup Hours</div>
+                  <Card className="border border-border/60 bg-background/40 p-3">
+                    <div className="text-[11px] uppercase text-muted-foreground">Backup Hours</div>
                     <div className="text-xl font-bold">{result.energyStatus.backupHoursEstimate}</div>
                   </Card>
+                </div>
+
+                <div className="rounded-2xl border border-border/60 bg-background/40 p-4">
+                  <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-slate-500">Auto Response</div>
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    <Badge className={cn("border", responseTierClass(result.autoResponse.responseTier))}>
+                      {result.autoResponse.responseTier}
+                    </Badge>
+                    <Badge className={cn("border", responseModeClass(result.autoResponse.responseMode))}>
+                      {result.autoResponse.responseMode}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-slate-300">{result.autoResponse.commandMessage}</div>
                 </div>
               </>
             )}
@@ -592,16 +613,16 @@ export default function CommandCenterPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr] gap-6">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_1fr]">
         <Card className="border border-border/60 bg-card/70">
-          <div className="p-4 border-b border-border/50 flex items-center gap-2">
-            <TriangleAlert className="w-4 h-4 text-primary" />
+          <div className="flex items-center gap-2 border-b border-border/50 p-4">
+            <TriangleAlert className="h-4 w-4 text-primary" />
             <div className="text-sm font-semibold">Escalation Timeline</div>
           </div>
 
-          <div className="p-4 space-y-3">
+          <div className="space-y-3 p-4">
             {!result ? (
-              <div className="text-sm text-muted-foreground">Run a simulation to view timeline events.</div>
+              <div className="text-sm text-muted-foreground">Run or select a simulation to view timeline events.</div>
             ) : (
               result.escalationTimeline.map((step, idx) => (
                 <div key={`${step.time}-${idx}`} className="rounded-xl border border-border/60 bg-background/40 p-4">
@@ -609,7 +630,7 @@ export default function CommandCenterPage() {
                     <div className="font-semibold">{step.time}</div>
                     <Badge className={cn("border", severityClass(step.severity))}>{step.severity}</Badge>
                   </div>
-                  <div className="text-sm text-muted-foreground mt-2">{step.event}</div>
+                  <div className="mt-2 text-sm text-muted-foreground">{step.event}</div>
                 </div>
               ))
             )}
@@ -617,145 +638,182 @@ export default function CommandCenterPage() {
         </Card>
 
         <Card className="border border-border/60 bg-card/70">
-          <div className="p-4 border-b border-border/50 flex items-center gap-2">
-            <Globe className="w-4 h-4 text-primary" />
-            <div className="text-sm font-semibold">Simulation History</div>
+          <div className="flex items-center justify-between border-b border-border/50 p-4">
+            <div className="flex items-center gap-2">
+              <Globe className="h-4 w-4 text-primary" />
+              <div className="text-sm font-semibold">Simulation History</div>
+            </div>
+            <Badge className="border border-white/10 bg-white/5 text-slate-300">
+              {history.length} entries
+            </Badge>
           </div>
 
-          <div className="p-4 space-y-3">
+          <div className="space-y-3 p-4">
             {history.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No simulation history available.</div>
+              <div className="text-sm text-muted-foreground">No simulation history yet.</div>
             ) : (
-              history.map((item) => (
-                <div key={item.id} className="rounded-xl border border-border/60 bg-background/40 p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <div className="font-semibold">{item.scenarioType}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {new Date(item.simulatedAt).toLocaleString()}
+              history.map((item) => {
+                const selected = selectedHistoryId === item.id;
+
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setSelectedHistoryId(item.id)}
+                    className={cn(
+                      "block w-full rounded-xl border bg-background/40 p-4 text-left transition-all",
+                      selected
+                        ? "border-cyan-400/40 shadow-[0_0_0_1px_rgba(34,211,238,0.22)]"
+                        : "border-border/60 hover:border-cyan-400/20"
+                    )}
+                  >
+                    <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="font-semibold text-white">{item.scenarioLabel ?? item.scenarioType}</div>
+                          <Badge className={cn("border", severityClass(item.riskSeverity))}>
+                            {item.riskSeverity.toUpperCase()}
+                          </Badge>
+                          <Badge variant="outline">READINESS {item.readinessScore}</Badge>
+                          {selected ? (
+                            <Badge className="border-cyan-400/20 bg-cyan-400/10 text-cyan-200">Selected</Badge>
+                          ) : null}
+                        </div>
+
+                        <div className="text-sm text-muted-foreground">
+                          {item.affectedSites} sites · {item.affectedPersons} persons · population at risk{" "}
+                          {item.estimatedPopulationAtRisk.toLocaleString()}
+                        </div>
+
+                        <div className="text-xs text-muted-foreground">
+                          {formatDate(item.simulatedAt)}
+                          {item.operatorName ? ` · ${item.operatorName}` : item.operatorEmail ? ` · ${item.operatorEmail}` : ""}
+                        </div>
+                      </div>
+
+                      <div className="min-w-[120px] rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center">
+                        <div className="text-[11px] uppercase text-muted-foreground">Scenario ID</div>
+                        <div className="text-sm font-semibold text-primary">{item.scenarioId}</div>
                       </div>
                     </div>
-                    <Badge className={cn("border", severityClass(item.riskSeverity))}>{item.riskSeverity}</Badge>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3 mt-3">
-                    <div>
-                      <div className="text-[11px] uppercase text-muted-foreground">Readiness</div>
-                      <div className="font-semibold">{item.readinessScore}</div>
-                    </div>
-                    <div>
-                      <div className="text-[11px] uppercase text-muted-foreground">Sites</div>
-                      <div className="font-semibold">{item.affectedSites}</div>
-                    </div>
-                    <div>
-                      <div className="text-[11px] uppercase text-muted-foreground">Population</div>
-                      <div className="font-semibold">{item.estimatedPopulationAtRisk.toLocaleString()}</div>
-                    </div>
-                  </div>
-                </div>
-              ))
+                  </button>
+                );
+              })
             )}
           </div>
         </Card>
-
-      <Card className="border border-border/60 bg-card/70">
-        <div className="p-4 border-b border-border/50 flex items-center gap-2">
-          <Globe className="w-4 h-4 text-primary" />
-          <div className="text-sm font-semibold">Simulation History</div>
-        </div>
-
-        <div className="p-4 space-y-3">
-          {history.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No simulation history yet.</div>
-          ) : (
-            history.map((item) => (
-              <div
-                key={item.id}
-                className="rounded-xl border border-border/60 bg-background/40 p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3"
-              >
-                <div className="space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="font-semibold">{item.scenarioLabel ?? item.scenarioType}</div>
-                    <Badge className={cn("border", severityClass(item.riskSeverity))}>
-                      {item.riskSeverity.toUpperCase()}
-                    </Badge>
-                    <Badge variant="outline">READINESS {item.readinessScore}</Badge>
-                  </div>
-
-                  <div className="text-sm text-muted-foreground">
-                    {item.affectedSites} sites · {item.affectedPersons} persons · population at risk {item.estimatedPopulationAtRisk.toLocaleString()}
-                  </div>
-
-                  <div className="text-xs text-muted-foreground">
-                    {new Date(item.simulatedAt).toLocaleString()}
-                    {item.operatorName ? ` · ${item.operatorName}` : ""}
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center min-w-[120px]">
-                  <div className="text-[11px] text-muted-foreground uppercase">Scenario ID</div>
-                  <div className="text-sm font-semibold text-primary">{item.scenarioId}</div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </Card>
-
-
       </div>
 
       <Card className="border border-border/60 bg-card/70">
-        <div className="p-4 border-b border-border/50 flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2 border-b border-border/50 p-4">
           <div className="flex items-center gap-2">
-            <Siren className="w-4 h-4 text-primary" />
+            <Siren className="h-4 w-4 text-primary" />
             <div className="text-sm font-semibold">Escalation Event Feed</div>
           </div>
           <div className="text-xs text-muted-foreground">{liveEscalationStatus}</div>
         </div>
 
-        <div className="p-4 space-y-3">
+        <div className="space-y-3 p-4">
           {!escalations.length ? (
             <div className="text-sm text-muted-foreground">No escalation events yet.</div>
           ) : (
             escalations.map((item) => (
               <div
                 key={item.id}
-                className="rounded-2xl border border-border/60 bg-background/40 p-4 space-y-3"
+                className={cn("space-y-3 rounded-2xl border p-4", escalationPulseClass(item.escalationLevel))}
               >
-                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-3">
+                <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-start">
                   <div className="space-y-2">
-                    <div className="font-semibold">{item.scenarioLabel}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {new Date(item.createdAt).toLocaleString()} · {item.actorName} · {item.triggerModule}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="font-semibold">{item.scenarioLabel}</div>
+                      <Badge className={cn("border", moduleClass(item.triggerModule))}>{item.triggerModule}</Badge>
                     </div>
+
+                    <div className="text-sm text-muted-foreground">
+                      {formatDate(item.createdAt)} · {item.actorName || item.actorEmail}
+                    </div>
+
                     <div className="flex flex-wrap gap-2">
-                      <Badge className={cn("border", escalationClass(item.escalationLevel))}>
-                        {item.escalationLevel}
-                      </Badge>
-                      <Badge className={cn("border", deploymentClass(item.deploymentMode))}>
-                        {item.deploymentMode}
-                      </Badge>
+                      <Badge className={cn("border", escalationClass(item.escalationLevel))}>{item.escalationLevel}</Badge>
+                      <Badge className={cn("border", deploymentClass(item.deploymentMode))}>{item.deploymentMode}</Badge>
                       <Badge variant="outline">{item.operatingProtocol}</Badge>
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center min-w-[92px]">
-                    <div className="text-[11px] text-muted-foreground uppercase">Score</div>
+                  <div className="min-w-[92px] rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center">
+                    <div className="text-[11px] uppercase text-muted-foreground">Score</div>
                     <div className="text-2xl font-bold text-primary">{item.threatScore}</div>
                   </div>
                 </div>
 
                 <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-                  <div className="text-[11px] uppercase tracking-widest text-primary mb-2">Directive</div>
+                  <div className="mb-2 text-[11px] uppercase tracking-widest text-primary">Directive</div>
                   <div className="text-sm">{item.operatorDirective}</div>
                 </div>
+
+                {!!item.recommendedActions?.length && (
+                  <div className="grid gap-2 md:grid-cols-2">
+                    {item.recommendedActions.slice(0, 4).map((action) => (
+                      <div
+                        key={action}
+                        className="rounded-xl border border-border/60 bg-background/40 px-3 py-2 text-sm text-slate-300"
+                      >
+                        <CheckCircle2 className="mr-2 inline h-4 w-4 text-emerald-300" />
+                        {action}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))
           )}
         </div>
       </Card>
 
+      <Card className="border border-border/60 bg-card/70">
+        <div className="flex items-center gap-2 border-b border-border/50 p-4">
+          <Radio className="h-4 w-4 text-primary" />
+          <div className="text-sm font-semibold">Selected Simulation Detail</div>
+        </div>
+
+        <div className="p-4">
+          {detailLoading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading simulation detail...
+            </div>
+          ) : !result ? (
+            <div className="text-sm text-muted-foreground">Select a history row or run a new simulation.</div>
+          ) : (
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="rounded-2xl border border-border/60 bg-background/40 p-4">
+                <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-slate-500">Affected Sites</div>
+                <div className="space-y-2">
+                  {result.affectedSites.slice(0, 5).map((site) => (
+                    <div key={site.id} className="rounded-xl border border-border/60 bg-card/50 p-3">
+                      <div className="font-medium text-white">{site.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {site.location}, {site.country} · {site.type}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-border/60 bg-background/40 p-4">
+                <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-slate-500">Machine Actions</div>
+                <div className="space-y-2">
+                  {result.autoResponse.machineActions.map((action) => (
+                    <div key={action} className="rounded-xl border border-border/60 bg-card/50 p-3 text-sm text-slate-300">
+                      {action}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </Card>
     </div>
   );
 }
