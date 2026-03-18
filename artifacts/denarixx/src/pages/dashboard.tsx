@@ -73,6 +73,14 @@ type LiveFeedItem = {
   tone: "critical" | "warning" | "info";
 };
 
+type AutoResponseStatusCard = {
+  id: string;
+  title: string;
+  value: string;
+  detail: string;
+  tone: "critical" | "warning" | "stable" | "info";
+};
+
 type DashboardStats = {
   totalSites: number;
   activeSites: number;
@@ -115,6 +123,13 @@ function priorityClass(priority: ResponsePriority) {
   if (priority === "urgent") return "bg-amber-500/15 text-amber-400 border-amber-500/30";
   if (priority === "priority") return "bg-blue-500/15 text-blue-400 border-blue-500/30";
   return "bg-green-500/15 text-green-400 border-green-500/30";
+}
+
+function responseCardToneClass(tone: "critical" | "warning" | "stable" | "info") {
+  if (tone === "critical") return "border-red-500/30 bg-red-500/10";
+  if (tone === "warning") return "border-amber-500/30 bg-amber-500/10";
+  if (tone === "info") return "border-blue-500/30 bg-blue-500/10";
+  return "border-green-500/30 bg-green-500/10";
 }
 
 function moduleTone(module: string) {
