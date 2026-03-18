@@ -143,15 +143,9 @@ export default function CommandTimelinePanel({
                         <Badge className={cn("border", severityClass(item.riskSeverity))}>
                           {item.riskSeverity}
                         </Badge>
-                        <Badge variant="outline">
-                          Readiness {item.readinessScore}
-                        </Badge>
-                        <Badge variant="outline">
-                          Sites {item.affectedSites}
-                        </Badge>
-                        <Badge variant="outline">
-                          Persons {item.affectedPersons}
-                        </Badge>
+                        <Badge variant="outline">Readiness {item.readinessScore}</Badge>
+                        <Badge variant="outline">Sites {item.affectedSites}</Badge>
+                        <Badge variant="outline">Persons {item.affectedPersons}</Badge>
                       </div>
                     </div>
 
@@ -213,9 +207,7 @@ export default function CommandTimelinePanel({
                       <Badge className={cn("border", deploymentClass(item.deploymentMode))}>
                         {item.deploymentMode}
                       </Badge>
-                      <Badge variant="outline">
-                        Threat {item.threatScore}
-                      </Badge>
+                      <Badge variant="outline">Threat {item.threatScore}</Badge>
                     </div>
 
                     <div className="mt-3 text-sm text-slate-300">
