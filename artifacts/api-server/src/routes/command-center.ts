@@ -26,10 +26,14 @@ const VALID_SCENARIOS = [
   "child_emergency_sos",
 ] as const;
 
+const VALID_ACTIONS = ["recommend", "escalate", "dispatch"] as const;
+const VALID_THREAT_LEVELS = ["low", "medium", "high", "critical"] as const;
+const VALID_RESPONSE_PRIORITIES = ["routine", "priority", "urgent", "immediate"] as const;
+
 type ScenarioType = typeof VALID_SCENARIOS[number];
-type ConsoleAction = "recommend" | "escalate" | "dispatch";
-type ThreatLevel = "low" | "medium" | "high" | "critical";
-type ResponsePriority = "routine" | "priority" | "urgent" | "immediate";
+type ConsoleAction = typeof VALID_ACTIONS[number];
+type ThreatLevel = typeof VALID_THREAT_LEVELS[number];
+type ResponsePriority = typeof VALID_RESPONSE_PRIORITIES[number];
 
 type QueueItemPayload = {
   kind: "alert" | "site";
@@ -50,6 +54,17 @@ type ScenarioMeta = {
   readinessPenalty: number;
   actions: string[];
   timelineEvents: Array<{ time: string; event: string; severity: string }>;
+};
+
+type SimulateBody = {
+  scenarioType?: unknown;
+  item?: unknown;
+};
+
+type OrchestrateBody = {
+  action?: unknown;
+  item?: unknown;
+  scenarioType?: unknown;
 };
 
 const SCENARIO_META: Record<ScenarioType, ScenarioMeta> = {
@@ -192,6 +207,14 @@ const SCENARIO_META: Record<ScenarioType, ScenarioMeta> = {
   },
 };
 
+function isValidScenarioType(value: unknown): value is ScenarioType {
+  return typeof value === "string" && (VALID_SCENARIOS as readonly string[]).includes(value);
+}
+
+function isValidAction(value: unknown): value is ConsoleAction {
+  return typeof value === "string" && (VALID_ACTIONS as readonly string[]).includes(value);
+}
+
 function deriveScenarioFromItem(item?: QueueItemPayload | null): ScenarioType {
   if (!item) return "multi_site_outage";
 
@@ -217,15 +240,29 @@ function validateQueueItem(item: unknown): item is QueueItemPayload {
   return (
     (value.kind === "alert" || value.kind === "site") &&
     typeof value.id === "number" &&
+    Number.isFinite(value.id) &&
     typeof value.title === "string" &&
+    value.title.trim().length > 0 &&
     typeof value.location === "string" &&
+    value.location.trim().length > 0 &&
     typeof value.threatScore === "number" &&
-    ["low", "medium", "high", "critical"].includes(value.threatLevel) &&
-    ["routine", "priority", "urgent", "immediate"].includes(value.responsePriority)
+    Number.isFinite(value.threatScore) &&
+    (VALID_THREAT_LEVELS as readonly string[]).includes(value.threatLevel) &&
+    (VALID_RESPONSE_PRIORITIES as readonly string[]).includes(value.responsePriority) &&
+    (value.recommendedAction === undefined || typeof value.recommendedAction === "string")
   );
 }
 
-async function buildSimulation(scenarioType: ScenarioType, operator: NonNullable<AuthRequest["sessionUser"]>) {
+function parsePositiveInteger(value: string): number | null {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) return null;
+  return parsed;
+}
+
+async function buildSimulation(
+  scenarioType: ScenarioType,
+  operator: NonNullable<AuthRequest["sessionUser"]>,
+) {
   const meta = SCENARIO_META[scenarioType];
 
   const [allSites, allPersons, recentAlerts, latestMetrics] = await Promise.all([
@@ -245,7 +282,7 @@ async function buildSimulation(scenarioType: ScenarioType, operator: NonNullable
       (s) =>
         meta.siteTypesAffected.includes(s.type) ||
         s.currentRiskLevel === "critical" ||
-        s.currentRiskLevel === "high"
+        s.currentRiskLevel === "high",
     )
     .slice(0, 5);
 
@@ -279,9 +316,9 @@ async function buildSimulation(scenarioType: ScenarioType, operator: NonNullable
         (100 - readinessScore) * 0.55 +
           (meta.baseRisk === "critical" ? 22 : meta.baseRisk === "warning" ? 12 : 5) +
           atRiskPersons.length * 4 +
-          criticalFacilities.length * 6
-      )
-    )
+          criticalFacilities.length * 6,
+      ),
+    ),
   );
 
   const autoEscalation = buildAutoEscalation({
@@ -378,7 +415,7 @@ router.get("/command-center/history", async (_req, res) => {
         affectedPersons: r.affectedPersonsCount,
         estimatedPopulationAtRisk: r.estimatedPopulationAtRisk,
         simulatedAt: r.simulatedAt.toISOString(),
-      }))
+      })),
     );
   } catch (err) {
     console.error(err);
@@ -388,7 +425,12 @@ router.get("/command-center/history", async (_req, res) => {
 
 router.get("/command-center/history/:id", async (req, res) => {
   try {
-    const id = Number(req.params.id);
+    const id = parsePositiveInteger(req.params.id);
+
+    if (!id) {
+      return res.status(400).json({ error: "Invalid simulation id" });
+    }
+
     const rows = await db.select().from(simulationHistoryTable).where(eq(simulationHistoryTable.id, id)).limit(1);
     const row = rows[0];
 
@@ -436,7 +478,7 @@ router.get("/command-center/escalations", async (_req, res) => {
         actorName: row.actorName,
         actorRole: row.actorRole,
         createdAt: row.createdAt.toISOString(),
-      }))
+      })),
     );
   } catch (err) {
     console.error(err);
@@ -446,17 +488,29 @@ router.get("/command-center/escalations", async (_req, res) => {
 
 router.post("/command-center/simulate", async (req: AuthRequest, res) => {
   try {
-    const { scenarioType, item } = req.body as { scenarioType?: string; item?: QueueItemPayload };
+    const { scenarioType, item } = req.body as SimulateBody;
     const operator = req.sessionUser;
 
     if (!operator) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const resolvedScenarioType =
-      scenarioType && (VALID_SCENARIOS as readonly string[]).includes(scenarioType)
-        ? (scenarioType as ScenarioType)
-        : deriveScenarioFromItem(item);
+    if (scenarioType !== undefined && !isValidScenarioType(scenarioType)) {
+      return res.status(400).json({
+        error: "Invalid scenario type",
+        valid: VALID_SCENARIOS,
+      });
+    }
+
+    if (item !== undefined && !validateQueueItem(item)) {
+      return res.status(400).json({
+        error: "Invalid queue item payload",
+      });
+    }
+
+    const resolvedScenarioType = isValidScenarioType(scenarioType)
+      ? scenarioType
+      : deriveScenarioFromItem(validateQueueItem(item) ? item : undefined);
 
     const result = await buildSimulation(resolvedScenarioType, operator);
 
@@ -520,7 +574,7 @@ router.post("/command-center/simulate", async (req: AuthRequest, res) => {
         deploymentMode: result.autoEscalation.deploymentMode,
         operatingProtocol: result.autoEscalation.operatingProtocol,
         connectedClients: getLiveClientCount(),
-      }
+      },
     );
 
     broadcastLiveEvent("map-update", livePayload);
@@ -534,30 +588,34 @@ router.post("/command-center/simulate", async (req: AuthRequest, res) => {
 
 router.post("/command-center/orchestrate", async (req: AuthRequest, res) => {
   try {
-    const { action, item, scenarioType } = req.body as {
-      action?: ConsoleAction;
-      item?: QueueItemPayload;
-      scenarioType?: string;
-    };
-
+    const { action, item, scenarioType } = req.body as OrchestrateBody;
     const operator = req.sessionUser;
 
     if (!operator) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    if (!action || !["recommend", "escalate", "dispatch"].includes(action)) {
-      return res.status(400).json({ error: "Invalid action" });
+    if (!isValidAction(action)) {
+      return res.status(400).json({
+        error: "Invalid action",
+        valid: VALID_ACTIONS,
+      });
     }
 
     if (!validateQueueItem(item)) {
       return res.status(400).json({ error: "Invalid queue item payload" });
     }
 
-    const resolvedScenarioType =
-      scenarioType && (VALID_SCENARIOS as readonly string[]).includes(scenarioType)
-        ? (scenarioType as ScenarioType)
-        : deriveScenarioFromItem(item);
+    if (scenarioType !== undefined && !isValidScenarioType(scenarioType)) {
+      return res.status(400).json({
+        error: "Invalid scenario type",
+        valid: VALID_SCENARIOS,
+      });
+    }
+
+    const resolvedScenarioType = isValidScenarioType(scenarioType)
+      ? scenarioType
+      : deriveScenarioFromItem(item);
 
     const simulation = await buildSimulation(resolvedScenarioType, operator);
 
@@ -568,7 +626,9 @@ router.post("/command-center/orchestrate", async (req: AuthRequest, res) => {
           `AI recommendation issued for ${item.title}.`
         : action === "escalate"
           ? `Escalation confirmed → ${simulation.autoEscalation.escalationLevel} / ${simulation.autoEscalation.deploymentMode}`
-          : `Dispatch initiated → ${simulation.autoEscalation.recommendedActions?.[0] || `Response units assigned to ${item.title}.`}`;
+          : `Dispatch initiated → ${
+              simulation.autoEscalation.recommendedActions?.[0] || `Response units assigned to ${item.title}.`
+            }`;
 
     await db.insert(auditLogTable).values({
       actor: operator.email,
@@ -620,7 +680,7 @@ router.post("/command-center/orchestrate", async (req: AuthRequest, res) => {
         escalationLevel: simulation.autoEscalation.escalationLevel,
         deploymentMode: simulation.autoEscalation.deploymentMode,
         connectedClients: getLiveClientCount(),
-      }
+      },
     );
 
     broadcastLiveEvent("map-update", livePayload);
