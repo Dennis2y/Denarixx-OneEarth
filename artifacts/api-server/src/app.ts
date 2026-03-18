@@ -2,6 +2,7 @@ import express, { type Express } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import router from "./routes/index.js";
+import liveRouter from "./routes/live.js";
 import { env } from "./env.js";
 import { createRateLimiter } from "./middlewares/rate-limit.js";
 
@@ -53,6 +54,9 @@ app.get("/api/__runtime", (_req, res) => {
     allowedOrigins,
   });
 });
+
+/* mount live stream explicitly before the main authenticated api router */
+app.use("/api", liveRouter);
 
 app.use("/api", router);
 
