@@ -169,50 +169,36 @@ export default function DashboardPage() {
   try {
     setConsoleBusy(true);
     setConsoleMode(action);
-
     setConsoleResponse(`AI processing "${action}" command...`);
 
     const scenario: CommandScenarioType = "multi_site_outage";
 
+    const res = await apiFetch("/api/command-center/simulate", {
+      method: "POST",
+      body: JSON.stringify({ scenarioType: scenario }),
+    });
+
     if (action === "recommend") {
-      const res = await apiFetch("/api/command-center/simulate", {
-        method: "POST",
-        body: JSON.stringify({ scenarioType: scenario }),
-      });
-
       setConsoleResponse(
-        `AI Recommendation: ${res?.scenarioLabel || "Deploy multi-node stabilization teams immediately."}`
+        `AI Recommendation: ${res?.autoEscalation?.operatorDirective || res?.scenarioLabel || "Deploy stabilization teams."}`
       );
-    }
-
-    if (action === "escalate") {
-      const res = await apiFetch("/api/command-center/escalations", {
-        method: "POST",
-        body: JSON.stringify({
-          scenarioType: scenario,
-          priority: "high",
-        }),
-      });
-
+    } else if (action === "escalate") {
       setConsoleResponse(
-        `Escalation triggered → ${res?.status || "Regional command notified"}`
+        `Escalation confirmed → ${res?.autoEscalation?.escalationLevel || "regional-command"} / ${res?.autoEscalation?.deploymentMode || "immediate-deployment"}`
       );
-    }
-
-    if (action === "dispatch") {
+    } else if (action === "dispatch") {
       setConsoleResponse(
-        "Dispatch initiated → Field response units deployed across affected regions."
+        `Dispatch initiated → ${res?.autoEscalation?.recommendedActions?.[0] || "Field response units deployed across affected regions."}`
       );
     }
 
     await loadDashboard(true);
-  } catch (err) {
-    setConsoleResponse("AI command failed. Retrying or check backend.");
+  } catch {
+    setConsoleResponse("AI command failed. Check command-center backend route.");
   } finally {
     setConsoleBusy(false);
   }
 };
-
   const loadDashboard = async (silent = false) => {
     try {
       if (silent) setRefreshing(true);
@@ -529,7 +515,7 @@ export default function DashboardPage() {
               <Button
                 onClick={() => runConsoleAction("recommend")}
                 disabled={consoleBusy}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="w-full min-w-0 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 Recommend
               </Button>
@@ -537,7 +523,7 @@ export default function DashboardPage() {
               <Button
                 onClick={() => runConsoleAction("escalate")}
                 disabled={consoleBusy}
-                className="bg-amber-600 hover:bg-amber-700"
+                className="w-full min-w-0 bg-amber-600 hover:bg-amber-700 text-white"
               >
                 Escalate
               </Button>
@@ -545,7 +531,7 @@ export default function DashboardPage() {
               <Button
                 onClick={() => runConsoleAction("dispatch")}
                 disabled={consoleBusy}
-                className="bg-green-600 hover:bg-green-700"
+                className="w-full min-w-0 bg-green-600 hover:bg-green-700 text-white"
               >
                 Dispatch
               </Button>
