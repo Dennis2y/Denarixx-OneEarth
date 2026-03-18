@@ -22,6 +22,7 @@ import CommandTimelinePanel, {
   type HistoryRow,
   type EscalationFeedRow,
 } from "@/components/dashboard/CommandTimelinePanel";
+import SimulationDetailPanel from "@/components/dashboard/SimulationDetailPanel";
 
 type ThreatLevel = "low" | "medium" | "high" | "critical";
 type ResponsePriority = "routine" | "priority" | "urgent" | "immediate";
@@ -135,6 +136,10 @@ type ConsoleActionResult = {
   threatScore?: number;
 };
 
+type SimulationHistoryDetailResponse = {
+  result?: any;
+};
+
 function threatClass(level: ThreatLevel) {
   if (level === "critical") return "bg-red-500/15 text-red-400 border-red-500/30";
   if (level === "high") return "bg-amber-500/15 text-amber-400 border-amber-500/30";
@@ -206,6 +211,10 @@ export default function DashboardPage() {
   const [history, setHistory] = useState<DashboardHistoryRow[]>([]);
   const [escalations, setEscalations] = useState<DashboardEscalationRow[]>([]);
   const [timelineLoading, setTimelineLoading] = useState(false);
+  const [selectedHistoryId, setSelectedHistoryId] = useState<number | null>(null);
+  const [selectedSimulationDetail, setSelectedSimulationDetail] = useState<any | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
 
   const [selectedQueueItem, setSelectedQueueItem] = useState<QueueItem | null>(null);
   const [consolePreview, setConsolePreview] = useState<ConsolePreview | null>(null);
@@ -256,6 +265,23 @@ export default function DashboardPage() {
       if (!silent) setEscalations([]);
     } finally {
       if (!silent) setTimelineLoading(false);
+    }
+  };
+
+  const loadSimulationDetail = async (historyId: number) => {
+    try {
+      setDetailLoading(true);
+      setDetailError(null);
+      setSelectedHistoryId(historyId);
+
+      const json = (await apiFetch(`/api/command-center/history/${historyId}`)) as SimulationHistoryDetailResponse;
+      setSelectedSimulationDetail(json?.result ?? null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to load simulation detail";
+      setDetailError(message);
+      setSelectedSimulationDetail(null);
+    } finally {
+      setDetailLoading(false);
     }
   };
 
@@ -400,6 +426,12 @@ export default function DashboardPage() {
       setSelectedQueueItem(stats.urgentQueue[0]);
     }
   }, [stats, selectedQueueItem]);
+
+  useEffect(() => {
+    if (!selectedHistoryId && history.length > 0) {
+      void loadSimulationDetail(history[0].id);
+    }
+  }, [history, selectedHistoryId]);
 
   useEffect(() => {
     if (!selectedQueueItem) {

@@ -44,6 +44,8 @@ type Props = {
   history: HistoryRow[];
   escalations: EscalationFeedRow[];
   loading?: boolean;
+  selectedHistoryId?: number | null;
+  onHistorySelect?: (item: HistoryRow) => void;
 };
 
 function severityClass(value: string) {
@@ -83,6 +85,8 @@ export default function CommandTimelinePanel({
   history,
   escalations,
   loading = false,
+  selectedHistoryId = null,
+  onHistorySelect,
 }: Props) {
   return (
     <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
@@ -103,42 +107,64 @@ export default function CommandTimelinePanel({
           ) : history.length === 0 ? (
             <div className="text-sm text-muted-foreground">No command history available.</div>
           ) : (
-            history.slice(0, 5).map((item) => (
-              <div key={item.id} className="rounded-2xl border border-border/60 bg-background/40 p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
-                    <div className="text-lg font-semibold text-white">
-                      {item.scenarioLabel || item.scenarioType}
-                    </div>
-                    <div className="mt-1 text-sm text-slate-400">
-                      {item.operatorName || item.operatorEmail || "System"} · {formatDate(item.simulatedAt)}
+            history.slice(0, 5).map((item) => {
+              const selected = selectedHistoryId === item.id;
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onHistorySelect?.(item)}
+                  className={cn(
+                    "block w-full rounded-2xl border bg-background/40 p-4 text-left transition-all",
+                    selected
+                      ? "border-cyan-400/40 shadow-[0_0_0_1px_rgba(34,211,238,0.22)]"
+                      : "border-border/60 hover:border-cyan-400/20",
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="text-lg font-semibold text-white">
+                          {item.scenarioLabel || item.scenarioType}
+                        </div>
+                        {selected ? (
+                          <Badge className="border-cyan-400/20 bg-cyan-400/10 text-cyan-200">
+                            Selected
+                          </Badge>
+                        ) : null}
+                      </div>
+
+                      <div className="mt-1 text-sm text-slate-400">
+                        {item.operatorName || item.operatorEmail || "System"} · {formatDate(item.simulatedAt)}
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Badge className={cn("border", severityClass(item.riskSeverity))}>
+                          {item.riskSeverity}
+                        </Badge>
+                        <Badge variant="outline">
+                          Readiness {item.readinessScore}
+                        </Badge>
+                        <Badge variant="outline">
+                          Sites {item.affectedSites}
+                        </Badge>
+                        <Badge variant="outline">
+                          Persons {item.affectedPersons}
+                        </Badge>
+                      </div>
                     </div>
 
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <Badge className={cn("border", severityClass(item.riskSeverity))}>
-                        {item.riskSeverity}
-                      </Badge>
-                      <Badge variant="outline">
-                        Readiness {item.readinessScore}
-                      </Badge>
-                      <Badge variant="outline">
-                        Sites {item.affectedSites}
-                      </Badge>
-                      <Badge variant="outline">
-                        Persons {item.affectedPersons}
-                      </Badge>
+                    <div className="min-w-[104px] rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center">
+                      <div className="text-[11px] uppercase text-muted-foreground">Population</div>
+                      <div className="text-xl font-bold text-primary">
+                        {item.estimatedPopulationAtRisk}
+                      </div>
                     </div>
                   </div>
-
-                  <div className="min-w-[104px] rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center">
-                    <div className="text-[11px] uppercase text-muted-foreground">Population</div>
-                    <div className="text-xl font-bold text-primary">
-                      {item.estimatedPopulationAtRisk}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
+                </button>
+              );
+            })
           )}
         </div>
       </Card>
