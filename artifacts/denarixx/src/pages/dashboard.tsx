@@ -83,6 +83,14 @@ type AutoResponseStatusCard = {
 
 type ConsoleAction = "recommend" | "escalate" | "dispatch";
 
+type CommandScenarioType =
+  | "flood_event"
+  | "severe_storm"
+  | "wildfire_risk"
+  | "clinic_power_outage"
+  | "multi_site_outage"
+  | "child_emergency_sos";
+
 type DashboardStats = {
   totalSites: number;
   activeSites: number;
@@ -155,6 +163,7 @@ export default function DashboardPage() {
   const [consoleCommand, setConsoleCommand] = useState("Analyze live threat posture and propose next action");
   const [consoleResponse, setConsoleResponse] = useState("AI console ready. Awaiting command action.");
   const [consoleMode, setConsoleMode] = useState<ConsoleAction>("recommend");
+  const [consoleBusy, setConsoleBusy] = useState(false);
 
   const loadDashboard = async (silent = false) => {
     try {
