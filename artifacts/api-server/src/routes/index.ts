@@ -13,13 +13,11 @@ import commandCenterRouter from "./command-center.js";
 import auditRouter from "./audit.js";
 import reportsRouter from "./reports.js";
 import mapRouter from "./map.js";
-import liveRouter from "./live.js";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(authRouter);
-router.use(liveRouter);
 
 router.use(requireAuth);
 

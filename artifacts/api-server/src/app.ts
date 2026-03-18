@@ -55,9 +55,7 @@ app.get("/api/__runtime", (_req, res) => {
   });
 });
 
-/* mount live stream explicitly before the main authenticated api router */
 app.use("/api", liveRouter);
-
 app.use("/api", router);
 
 export default app;
