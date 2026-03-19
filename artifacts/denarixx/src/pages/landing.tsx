@@ -14,23 +14,7 @@ type LangEntry = { code: string; label: string; nativeName: string; dir: 'ltr' |
 
 const ALL_LANGUAGES: LangEntry[] = [
   { code: 'en', label: 'EN', nativeName: 'English', dir: 'ltr' },
-  { code: 'fr', label: 'FR', nativeName: 'Français', dir: 'ltr' },
   { code: 'de', label: 'DE', nativeName: 'Deutsch', dir: 'ltr' },
-  { code: 'es', label: 'ES', nativeName: 'Español', dir: 'ltr' },
-  { code: 'pt', label: 'PT', nativeName: 'Português', dir: 'ltr' },
-  { code: 'it', label: 'IT', nativeName: 'Italiano', dir: 'ltr' },
-  { code: 'nl', label: 'NL', nativeName: 'Nederlands', dir: 'ltr' },
-  { code: 'pl', label: 'PL', nativeName: 'Polski', dir: 'ltr' },
-  { code: 'ru', label: 'RU', nativeName: 'Русский', dir: 'ltr' },
-  { code: 'tr', label: 'TR', nativeName: 'Türkçe', dir: 'ltr' },
-  { code: 'sw', label: 'SW', nativeName: 'Kiswahili', dir: 'ltr' },
-  { code: 'ar', label: 'AR', nativeName: 'العربية', dir: 'rtl' },
-  { code: 'zh', label: 'ZH', nativeName: '中文', dir: 'ltr' },
-  { code: 'ja', label: 'JA', nativeName: '日本語', dir: 'ltr' },
-  { code: 'ko', label: 'KO', nativeName: '한국어', dir: 'ltr' },
-  { code: 'hi', label: 'HI', nativeName: 'हिन्दी', dir: 'ltr' },
-  { code: 'fa', label: 'FA', nativeName: 'فارسی', dir: 'rtl' },
-  { code: 'he', label: 'HE', nativeName: 'עברית', dir: 'rtl' },
 ];
 
 function LandingLanguageSwitcher({ label }: { label?: string }) {
