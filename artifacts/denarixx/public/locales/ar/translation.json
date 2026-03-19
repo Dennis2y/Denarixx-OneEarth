@@ -487,9 +487,9 @@
     "footerText": "© 2026 Denarixx OneEarth · المستوى السري 5 · جميع الأنظمة مراقبة.",
     "selectLanguage": "اختر اللغة"
   },
-  "system.live": "Live",
-  "system.loading": "Loading...",
-  "system.noData": "No data available.",
+  "system.live": "مباشر",
+  "system.loading": "جارٍ التحميل...",
+  "system.noData": "لا توجد بيانات متاحة.",
   "dashboard.liveCommandStrip": "Live Command Strip",
   "dashboard.globalOperations": "Global Operations",
   "dashboard.liveNodeStatus": "Live Node Status",

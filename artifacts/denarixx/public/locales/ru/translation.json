@@ -487,9 +487,9 @@
     "footerText": "© 2026 Denarixx OneEarth · Гриф секретности 5 · Все системы под наблюдением.",
     "selectLanguage": "Выбрать язык"
   },
-  "system.live": "Live",
-  "system.loading": "Loading...",
-  "system.noData": "No data available.",
+  "system.live": "В эфире",
+  "system.loading": "Загрузка...",
+  "system.noData": "Данные недоступны.",
   "dashboard.liveCommandStrip": "Live Command Strip",
   "dashboard.globalOperations": "Global Operations",
   "dashboard.liveNodeStatus": "Live Node Status",

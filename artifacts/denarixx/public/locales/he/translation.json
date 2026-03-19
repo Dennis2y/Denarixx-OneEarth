@@ -487,9 +487,9 @@
     "footerText": "© 2026 Denarixx OneEarth · רמת סיווג 5 · כל המערכות מנוטרות.",
     "selectLanguage": "בחר שפה"
   },
-  "system.live": "Live",
-  "system.loading": "Loading...",
-  "system.noData": "No data available.",
+  "system.live": "בשידור חי",
+  "system.loading": "טוען...",
+  "system.noData": "אין נתונים זמינים.",
   "dashboard.liveCommandStrip": "Live Command Strip",
   "dashboard.globalOperations": "Global Operations",
   "dashboard.liveNodeStatus": "Live Node Status",

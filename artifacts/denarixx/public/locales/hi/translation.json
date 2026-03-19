@@ -487,9 +487,9 @@
     "footerText": "© 2026 Denarixx OneEarth · वर्गीकृत स्तर 5 · सभी सिस्टम निगरानी में।",
     "selectLanguage": "भाषा चुनें"
   },
-  "system.live": "Live",
-  "system.loading": "Loading...",
-  "system.noData": "No data available.",
+  "system.live": "लाइव",
+  "system.loading": "लोड हो रहा है...",
+  "system.noData": "कोई डेटा उपलब्ध नहीं है।",
   "dashboard.liveCommandStrip": "Live Command Strip",
   "dashboard.globalOperations": "Global Operations",
   "dashboard.liveNodeStatus": "Live Node Status",

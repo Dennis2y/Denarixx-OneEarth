@@ -487,9 +487,9 @@
     "footerText": "© 2026 Denarixx OneEarth · Gizlilik Düzeyi 5 · Tüm sistemler izleniyor.",
     "selectLanguage": "Dil seçin"
   },
-  "system.live": "Live",
-  "system.loading": "Loading...",
-  "system.noData": "No data available.",
+  "system.live": "Canlı",
+  "system.loading": "Yükleniyor...",
+  "system.noData": "Veri yok.",
   "dashboard.liveCommandStrip": "Live Command Strip",
   "dashboard.globalOperations": "Global Operations",
   "dashboard.liveNodeStatus": "Live Node Status",

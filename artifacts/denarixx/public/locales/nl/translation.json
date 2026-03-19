@@ -488,8 +488,8 @@
     "selectLanguage": "Taal selecteren"
   },
   "system.live": "Live",
-  "system.loading": "Loading...",
-  "system.noData": "No data available.",
+  "system.loading": "Laden...",
+  "system.noData": "Geen gegevens beschikbaar.",
   "dashboard.liveCommandStrip": "Live Command Strip",
   "dashboard.globalOperations": "Global Operations",
   "dashboard.liveNodeStatus": "Live Node Status",

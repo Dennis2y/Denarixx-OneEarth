@@ -487,9 +487,9 @@
     "footerText": "© 2026 Denarixx OneEarth · 保密级别5 · 所有系统受监控。",
     "selectLanguage": "选择语言"
   },
-  "system.live": "Live",
-  "system.loading": "Loading...",
-  "system.noData": "No data available.",
+  "system.live": "实时",
+  "system.loading": "加载中...",
+  "system.noData": "没有可用数据。",
   "dashboard.liveCommandStrip": "Live Command Strip",
   "dashboard.globalOperations": "Global Operations",
   "dashboard.liveNodeStatus": "Live Node Status",

@@ -487,9 +487,9 @@
     "footerText": "© 2026 Denarixx OneEarth · 기밀 레벨 5 · 모든 시스템 모니터링 중.",
     "selectLanguage": "언어 선택"
   },
-  "system.live": "Live",
-  "system.loading": "Loading...",
-  "system.noData": "No data available.",
+  "system.live": "실시간",
+  "system.loading": "불러오는 중...",
+  "system.noData": "사용 가능한 데이터가 없습니다.",
   "dashboard.liveCommandStrip": "Live Command Strip",
   "dashboard.globalOperations": "Global Operations",
   "dashboard.liveNodeStatus": "Live Node Status",

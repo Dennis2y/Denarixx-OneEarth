@@ -487,9 +487,9 @@
     "footerText": "© 2026 Denarixx OneEarth · Livello classificato 5 · Tutti i sistemi monitorati.",
     "selectLanguage": "Seleziona lingua"
   },
-  "system.live": "Live",
-  "system.loading": "Loading...",
-  "system.noData": "No data available.",
+  "system.live": "In diretta",
+  "system.loading": "Caricamento...",
+  "system.noData": "Nessun dato disponibile.",
   "dashboard.liveCommandStrip": "Live Command Strip",
   "dashboard.globalOperations": "Global Operations",
   "dashboard.liveNodeStatus": "Live Node Status",

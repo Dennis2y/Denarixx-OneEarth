@@ -487,9 +487,9 @@
     "footerText": "© 2026 Denarixx OneEarth · Kiwango cha siri 5 · Mifumo yote inafuatiliwa.",
     "selectLanguage": "Chagua lugha"
   },
-  "system.live": "Live",
-  "system.loading": "Loading...",
-  "system.noData": "No data available.",
+  "system.live": "Moja kwa moja",
+  "system.loading": "Inapakia...",
+  "system.noData": "Hakuna data.",
   "dashboard.liveCommandStrip": "Live Command Strip",
   "dashboard.globalOperations": "Global Operations",
   "dashboard.liveNodeStatus": "Live Node Status",
