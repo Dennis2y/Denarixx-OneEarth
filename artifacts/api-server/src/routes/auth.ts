@@ -106,6 +106,11 @@ export async function resolveSessionUserFromCookie(token: string | undefined): P
   return getSessionUserByToken(token);
 }
 
+export async function resolveSessionUserFromToken(token: string | undefined): Promise<SessionUser | null> {
+  if (!token) return null;
+  return getSessionUserByToken(token);
+}
+
 router.post("/auth/login", async (req, res) => {
   const { email, password } = req.body as { email?: string; password?: string };
 
@@ -170,17 +175,24 @@ router.post("/auth/login", async (req, res) => {
   });
 
   return res.json({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    organization: user.organization,
-    clearanceLevel: user.clearanceLevel,
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      organization: user.organization,
+      clearanceLevel: user.clearanceLevel,
+    },
   });
 });
 
 router.get("/auth/me", async (req, res) => {
-  const token = (req.cookies as Record<string, string>)?.den_session;
+  const authHeader = req.headers.authorization;
+  const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : undefined;
+  const cookieToken = (req.cookies as Record<string, string>)?.den_session;
+  const token = bearerToken || cookieToken;
+
   if (!token) return res.status(401).json({ error: "No session" });
 
   await cleanupExpiredSessions();
@@ -192,7 +204,10 @@ router.get("/auth/me", async (req, res) => {
 });
 
 router.post("/auth/logout", async (req, res) => {
-  const token = (req.cookies as Record<string, string>)?.den_session;
+  const authHeader = req.headers.authorization;
+  const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : undefined;
+  const cookieToken = (req.cookies as Record<string, string>)?.den_session;
+  const token = bearerToken || cookieToken;
 
   await cleanupExpiredSessions();
 

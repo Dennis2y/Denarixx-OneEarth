@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, setAuthToken } from '@/lib/api';
 
 export type UserRole = 'admin' | 'operator' | 'government' | 'community';
 
@@ -60,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch {
         if (!mounted) return;
         setUser(null);
+        setAuthToken(null);
         localStorage.removeItem(AUTH_STORAGE_KEY);
       } finally {
         if (mounted) setIsLoading(false);
@@ -79,10 +80,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: email.trim(),
           password: password.trim(),
         }),
-      }) as AuthUser;
+      }) as { token: string; user: AuthUser };
 
-      setUser(data);
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
+      setAuthToken(data.token);
+      setUser(data.user);
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data.user));
 
       return { success: true };
     } catch (err: any) {
@@ -98,6 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {}
 
     setUser(null);
+    setAuthToken(null);
     localStorage.removeItem(AUTH_STORAGE_KEY);
   }, []);
 

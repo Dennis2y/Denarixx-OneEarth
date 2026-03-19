@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { resolveSessionUserFromCookie } from "../routes/auth.js";
+import { resolveSessionUserFromCookie, resolveSessionUserFromToken } from "../routes/auth.js";
 
 export interface AuthRequest extends Request {
   sessionUser?: {
@@ -13,13 +13,17 @@ export interface AuthRequest extends Request {
 }
 
 export async function requireAuth(req: AuthRequest, res: Response, next: NextFunction) {
-  const token = (req.cookies as Record<string, string>)?.den_session;
+  const authHeader = req.headers.authorization;
+  const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : undefined;
+  const cookieToken = (req.cookies as Record<string, string>)?.den_session;
 
-  if (!token) {
+  if (!bearerToken && !cookieToken) {
     return res.status(401).json({ error: "Unauthorized — no session" });
   }
 
-  const user = await resolveSessionUserFromCookie(token);
+  const user = bearerToken
+    ? await resolveSessionUserFromToken(bearerToken)
+    : await resolveSessionUserFromCookie(cookieToken);
 
   if (!user) {
     return res.status(401).json({ error: "Unauthorized — session expired" });
