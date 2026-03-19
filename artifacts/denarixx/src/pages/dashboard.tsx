@@ -517,7 +517,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 min-w-0">
             {liveFeed.slice(0, 3).map((item) => (
               <div
                 key={item.id}
@@ -534,7 +534,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="rounded-[28px] overflow-hidden border border-red-500/20 bg-[radial-gradient(circle_at_top,rgba(127,29,29,0.35),rgba(9,9,11,0.95)_60%)] shadow-[0_0_60px_rgba(127,29,29,0.18)]">
-        <div className="flex items-center justify-between border-b border-red-500/15 px-6 py-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-red-500/15 px-4 sm:px-6 py-4 min-w-0">
           <div className="flex flex-wrap items-center gap-3 min-w-0">
             <span className="h-2.5 w-2.5 rounded-full bg-red-400 shadow-[0_0_12px_rgba(248,113,113,0.9)]" />
             <div className="text-[11px] uppercase tracking-[0.35em] text-red-200/80">
@@ -553,12 +553,12 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid gap-4 px-6 py-5 lg:grid-cols-[1.4fr_1fr]">
+        <div className="grid gap-4 px-4 sm:px-6 py-5 lg:grid-cols-[1.4fr_1fr] min-w-0">
           <div>
             <div className="flex flex-wrap items-center gap-3 min-w-0">
               <TriangleAlert className="h-6 w-6 text-red-400" />
               <div>
-                <div className="text-3xl font-semibold tracking-wide text-red-300">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-semibold tracking-wide text-red-300 break-words">
                   THREAT CONDITION ELEVATED
                 </div>
                 <div className="mt-1 text-sm text-slate-400">
@@ -568,7 +568,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-5 gap-4 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 text-center min-w-0">
             <div>
               <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">{t("dashboard.activeNodes")}</div>
               <div className="mt-1 text-3xl font-semibold text-amber-300">{overview.totalNodes}</div>
@@ -598,7 +598,7 @@ export default function DashboardPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.12),transparent_55%)]" />
           <div className="relative">
             <Activity className="mb-5 h-5 w-5 text-amber-300" />
-            <div className="text-5xl font-semibold text-white">{overview.totalNodes}</div>
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white break-words">{overview.totalNodes}</div>
             <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">{t("dashboard.activeSites")}</div>
           </div>
         </Card>
@@ -607,7 +607,7 @@ export default function DashboardPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(239,68,68,0.12),transparent_55%)]" />
           <div className="relative">
             <Siren className="mb-5 h-5 w-5 text-red-300" />
-            <div className="text-5xl font-semibold text-white">{overview.criticalAlerts}</div>
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white break-words">{overview.criticalAlerts}</div>
             <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">{t("dashboard.criticalAlertsLabel")}</div>
           </div>
         </Card>
@@ -616,7 +616,7 @@ export default function DashboardPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.12),transparent_55%)]" />
           <div className="relative">
             <Users className="mb-5 h-5 w-5 text-sky-300" />
-            <div className="text-5xl font-semibold text-white">{overview.protectedPeople}</div>
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white break-words">{overview.protectedPeople}</div>
             <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">{t("dashboard.protectedLives")}</div>
           </div>
         </Card>
@@ -625,7 +625,7 @@ export default function DashboardPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(168,85,247,0.12),transparent_55%)]" />
           <div className="relative">
             <Globe className="mb-5 h-5 w-5 text-violet-300" />
-            <div className="text-5xl font-semibold text-white">{overview.riskZones}</div>
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white break-words">{overview.riskZones}</div>
             <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">{t("dashboard.riskZones")}</div>
           </div>
         </Card>
@@ -634,7 +634,7 @@ export default function DashboardPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_55%)]" />
           <div className="relative">
             <Zap className="mb-5 h-5 w-5 text-emerald-300" />
-            <div className="text-5xl font-semibold text-white">{overview.energyAvailability}%</div>
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white break-words">{overview.energyAvailability}%</div>
             <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">{t("dashboard.energyAvail")}</div>
           </div>
         </Card>
@@ -922,7 +922,7 @@ export default function DashboardPage() {
                         <div className="text-sm text-muted-foreground">
                           {site.location}, {site.country}
                         </div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2 min-w-0">
                           <Badge className={cn("border", threatClass(site.threatLevel))}>{trThreatLevel(t, site.threatLevel)}</Badge>
                           <Badge className={cn("border", priorityClass(site.responsePriority))}>{trPriority(t, site.responsePriority)}</Badge>
                           <Badge variant="outline">{trSiteType(t, site.type)}</Badge>
@@ -986,7 +986,7 @@ export default function DashboardPage() {
                           ) : null}
                         </div>
                         <div className="text-sm text-muted-foreground">{item.location}</div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2 min-w-0">
                           <Badge variant="outline">{trSiteType(t, item.kind)}</Badge>
                           <Badge className={cn("border", threatClass(item.threatLevel))}>{trThreatLevel(t, item.threatLevel)}</Badge>
                           <Badge className={cn("border", priorityClass(item.responsePriority))}>{trPriority(t, item.responsePriority)}</Badge>
