@@ -312,7 +312,7 @@ export default function DashboardPage() {
 
       setConsolePreview(res);
       setConsoleResponse(
-        `Preview complete → ${res?.autoEscalation?.operatorDirective || item.recommendedAction || "Operator review ready."}`,
+        `${t("dashboard.previewComplete")} → ${res?.autoEscalation?.operatorDirective || item.recommendedAction || t("dashboard.operatorReviewReady")}`,
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : "Preview failed";
@@ -449,7 +449,7 @@ export default function DashboardPage() {
 
     if (!selectedQueueItem) {
       setConsoleResponse(
-        `AI console synced. Tracking ${stats.activeAlerts} active alerts, ${stats.criticalThreatSites} critical sites, and ${stats.escalationHotspots?.length ?? 0} escalation hotspots.`,
+        `${t("dashboard.consoleSyncedTracking", { activeAlerts: stats.activeAlerts, criticalSites: stats.criticalThreatSites, hotspots: stats.escalationHotspots?.length ?? 0 })}`,
       );
     }
   }, [stats, consoleBusy, selectedQueueItem]);
@@ -569,23 +569,23 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-5 gap-4 text-center">
             <div>
-              <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">Active Nodes</div>
+              <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">{t("dashboard.activeNodes")}</div>
               <div className="mt-1 text-3xl font-semibold text-amber-300">{overview.totalNodes}</div>
             </div>
             <div>
-              <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">Critical Alerts</div>
+              <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">{t("dashboard.criticalAlertsLabel")}</div>
               <div className="mt-1 text-3xl font-semibold text-red-400">{overview.criticalAlerts}</div>
             </div>
             <div>
-              <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">Protected Entities</div>
+              <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">{t("dashboard.protectedEntities")}</div>
               <div className="mt-1 text-3xl font-semibold text-emerald-400">{overview.protectedPeople}</div>
             </div>
             <div>
-              <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">Energy Grid</div>
+              <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">{t("dashboard.energyGrid")}</div>
               <div className="mt-1 text-3xl font-semibold text-sky-400">{overview.energyAvailability}%</div>
             </div>
             <div>
-              <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">Risk Zones</div>
+              <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">{t("dashboard.riskZones")}</div>
               <div className="mt-1 text-3xl font-semibold text-violet-400">{overview.riskZones}</div>
             </div>
           </div>
@@ -598,7 +598,7 @@ export default function DashboardPage() {
           <div className="relative">
             <Activity className="mb-5 h-5 w-5 text-amber-300" />
             <div className="text-5xl font-semibold text-white">{overview.totalNodes}</div>
-            <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">Active Sites</div>
+            <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">{t("dashboard.activeSites")}</div>
           </div>
         </Card>
 
@@ -607,7 +607,7 @@ export default function DashboardPage() {
           <div className="relative">
             <Siren className="mb-5 h-5 w-5 text-red-300" />
             <div className="text-5xl font-semibold text-white">{overview.criticalAlerts}</div>
-            <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">Critical Alerts</div>
+            <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">{t("dashboard.criticalAlertsLabel")}</div>
           </div>
         </Card>
 
@@ -616,7 +616,7 @@ export default function DashboardPage() {
           <div className="relative">
             <Users className="mb-5 h-5 w-5 text-sky-300" />
             <div className="text-5xl font-semibold text-white">{overview.protectedPeople}</div>
-            <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">Protected Lives</div>
+            <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">{t("dashboard.protectedLives")}</div>
           </div>
         </Card>
 
@@ -625,7 +625,7 @@ export default function DashboardPage() {
           <div className="relative">
             <Globe className="mb-5 h-5 w-5 text-violet-300" />
             <div className="text-5xl font-semibold text-white">{overview.riskZones}</div>
-            <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">Risk Zones</div>
+            <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">{t("dashboard.riskZones")}</div>
           </div>
         </Card>
 
@@ -634,7 +634,7 @@ export default function DashboardPage() {
           <div className="relative">
             <Zap className="mb-5 h-5 w-5 text-emerald-300" />
             <div className="text-5xl font-semibold text-white">{overview.energyAvailability}%</div>
-            <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">Energy Avail.</div>
+            <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">{t("dashboard.energyAvail")}</div>
           </div>
         </Card>
       </div>
@@ -686,7 +686,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2 text-right">
-                <div className="text-[10px] uppercase tracking-[0.28em] text-slate-500">Selected Target</div>
+                <div className="text-[10px] uppercase tracking-[0.28em] text-slate-500">{t("dashboard.selectedTarget")}</div>
                 <div className="mt-1 text-sm font-medium text-white">
                   {selectedQueueItem?.title ?? "No target selected"}
                 </div>
@@ -705,21 +705,21 @@ export default function DashboardPage() {
 
                 <div className="mt-3 grid gap-3 sm:grid-cols-3">
                   <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                    <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">Threat</div>
+                    <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">{t("dashboard.threat")}</div>
                     <div className="mt-1 text-sm font-semibold text-white">
                       {consolePreview?.threatScore ?? selectedQueueItem?.threatScore ?? "—"}
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                    <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">Escalation</div>
+                    <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">{t("dashboard.escalation")}</div>
                     <div className="mt-1 text-sm font-semibold text-white">
                       {consolePreview?.autoEscalation?.escalationLevel ?? "—"}
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                    <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">Deployment</div>
+                    <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">{t("dashboard.deployment")}</div>
                     <div className="mt-1 text-sm font-semibold text-white">
                       {consolePreview?.autoEscalation?.deploymentMode ?? "—"}
                     </div>
@@ -864,7 +864,7 @@ export default function DashboardPage() {
 
                     <div className="text-right">
                       <div className="text-4xl font-semibold text-amber-300">{alert.threatScore}</div>
-                      <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">Threat</div>
+                      <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">{t("dashboard.threat")}</div>
                     </div>
                   </div>
                 </div>
