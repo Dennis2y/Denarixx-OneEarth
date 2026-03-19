@@ -57,7 +57,10 @@ export default function Users() {
         title={t('users.title')}
         description={t('users.description')}
         actions={
-          <Button className="shadow-[0_0_15px_rgba(201,168,76,0.2)]">
+          <Button
+            className="shadow-[0_0_15px_rgba(201,168,76,0.2)]"
+            onClick={() => window.alert('Grant New Clearance form will be wired next.')}
+          >
             <Plus className="w-4 h-4 mr-2" /> {t('users.grantClearance')}
           </Button>
         }

@@ -132,8 +132,14 @@ export default function Login() {
       </div>
       <div className="absolute inset-0 z-10 pointer-events-none opacity-[0.03]"
         style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,1) 2px, rgba(255,255,255,1) 3px)', backgroundSize: '100% 3px' }} />
-      <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-primary/15 rounded-full blur-[120px] z-10 pointer-events-none animate-pulse" style={{ animationDuration: '7s' }} />
-      <div className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] bg-blue-600/10 rounded-full blur-[100px] z-10 pointer-events-none animate-pulse" style={{ animationDuration: '11s' }} />
+      <div
+        className="absolute top-[10%] left-1/2 h-[170px] w-[170px] -translate-x-1/2 rounded-full bg-primary/10 blur-[65px] z-10 pointer-events-none animate-pulse sm:top-1/3 sm:left-1/4 sm:h-[500px] sm:w-[500px] sm:translate-x-0 sm:bg-primary/15 sm:blur-[120px]"
+        style={{ animationDuration: '7s' }}
+      />
+      <div
+        className="absolute bottom-[8%] right-[8%] h-[130px] w-[130px] rounded-full bg-blue-600/8 blur-[55px] z-10 pointer-events-none animate-pulse sm:bottom-1/4 sm:right-1/4 sm:h-[350px] sm:w-[350px] sm:bg-blue-600/10 sm:blur-[100px]"
+        style={{ animationDuration: '11s' }}
+      />
 
       {/* Back to landing */}
       <button
