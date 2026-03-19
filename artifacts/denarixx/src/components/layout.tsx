@@ -229,7 +229,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="flex h-[100dvh] w-full bg-background text-foreground font-sans overflow-hidden selection:bg-primary/30 selection:text-primary-foreground">
+    <div className="flex h-[100dvh] w-screen max-w-full bg-background text-foreground font-sans overflow-hidden selection:bg-primary/30 selection:text-primary-foreground" dir="ltr">
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/80 z-40 backdrop-blur-sm md:hidden"
@@ -248,9 +248,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         {sidebarContent}
       </aside>
 
-      <div className="flex flex-1 flex-col h-[100dvh] overflow-hidden min-w-0 w-0">
+      <div className="flex flex-1 flex-col h-[100dvh] overflow-hidden min-w-0 w-full max-w-full">
         <SystemRibbon user={user} />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto custom-scrollbar p-3 sm:p-4 lg:p-8 min-w-0">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto custom-scrollbar p-3 sm:p-4 lg:p-8 min-w-0 w-full max-w-full">
           {children}
         </main>
       </div>

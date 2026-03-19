@@ -49,6 +49,9 @@ function ForceSystemEnglish() {
     }
     document.documentElement.setAttribute("lang", "en");
     document.documentElement.setAttribute("dir", "ltr");
+    document.body.setAttribute("dir", "ltr");
+    document.body.style.overflowX = "hidden";
+    document.body.style.margin = "0";
   }, [location]);
 
   return null;
