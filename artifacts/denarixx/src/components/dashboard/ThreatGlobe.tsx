@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Globe from "react-globe.gl";
 import { motion } from "framer-motion";
 
@@ -203,6 +204,7 @@ export default function ThreatGlobe({
   escalations = [],
   liveFlashToken,
 }: Props) {
+  const { t } = useTranslation();
   const globeRef = useRef<any>(null);
   const [countries, setCountries] = useState<CountryFeature[]>([]);
   const [flashCountryKeys, setFlashCountryKeys] = useState<string[]>([]);
@@ -455,7 +457,7 @@ export default function ThreatGlobe({
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <div className="text-sm font-semibold text-white">Live World Threat Globe</div>
+              <div className="text-sm font-semibold text-white">{t("globe.liveWorldThreatGlobe")}</div>
               <motion.div
                 className="rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary"
                 animate={{ opacity: [0.74, 1, 0.74] }}

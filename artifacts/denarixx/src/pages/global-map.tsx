@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
 import "leaflet/dist/leaflet.css";
 import {
@@ -367,7 +368,7 @@ export default function GlobalMap() {
   };
 
   if (isLoading) {
-    return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Loading global command map...</div>;
+    return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">{t("map.loadingGlobalCommandMap")}</div>;
   }
 
   return (
@@ -441,23 +442,23 @@ export default function GlobalMap() {
 
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
               <div className="rounded-2xl border border-border/60 bg-background/40 p-3">
-                <div className="text-xs text-muted-foreground">Sites</div>
+                <div className="text-xs text-muted-foreground">{t("map.sites")}</div>
                 <div className="text-2xl font-bold">{data?.summary.sites ?? 0}</div>
               </div>
               <div className="rounded-2xl border border-border/60 bg-background/40 p-3">
-                <div className="text-xs text-muted-foreground">Active Alerts</div>
+                <div className="text-xs text-muted-foreground">{t("map.activeAlerts")}</div>
                 <div className="text-2xl font-bold">{data?.summary.activeAlerts ?? 0}</div>
               </div>
               <div className="rounded-2xl border border-border/60 bg-background/40 p-3">
-                <div className="text-xs text-muted-foreground">Avg Threat</div>
+                <div className="text-xs text-muted-foreground">{t("map.avgThreat")}</div>
                 <div className="text-2xl font-bold text-primary">{data?.summary.averageThreatScore ?? 0}</div>
               </div>
               <div className="rounded-2xl border border-border/60 bg-background/40 p-3">
-                <div className="text-xs text-muted-foreground">Critical Threat Sites</div>
+                <div className="text-xs text-muted-foreground">{t("map.criticalThreatSites")}</div>
                 <div className="text-2xl font-bold text-red-400">{data?.summary.criticalThreatSites ?? 0}</div>
               </div>
               <div className="rounded-2xl border border-border/60 bg-background/40 p-3">
-                <div className="text-xs text-muted-foreground">Protected Persons</div>
+                <div className="text-xs text-muted-foreground">{t("map.protectedPersons")}</div>
                 <div className="text-2xl font-bold">{data?.summary.protectedPersons ?? 0}</div>
               </div>
             </div>
@@ -634,8 +635,8 @@ export default function GlobalMap() {
           <Card className="border border-border/60 bg-card/70 backdrop-blur">
             <div className="p-4 border-b border-border/50 flex items-center justify-between">
               <div>
-                <div className="text-sm font-semibold">Selected Site Intelligence</div>
-                <div className="text-xs text-muted-foreground">AI-scored threat panel</div>
+                <div className="text-sm font-semibold">{t("map.selectedSiteIntelligence")}</div>
+                <div className="text-xs text-muted-foreground">{t("map.aiScoredThreatPanel")}</div>
               </div>
               {selectedSite && (
                 <Badge className={cn("border", getThreatBadgeClass(selectedSite.threatLevel))}>
@@ -646,7 +647,7 @@ export default function GlobalMap() {
 
             <div className="p-4 space-y-4">
               {!selectedSite ? (
-                <div className="text-sm text-muted-foreground">No site selected.</div>
+                <div className="text-sm text-muted-foreground">{t("map.noSiteSelected")}</div>
               ) : (
                 <>
                   <div>
@@ -656,19 +657,19 @@ export default function GlobalMap() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="rounded-xl border border-border/60 bg-background/40 p-3">
-                      <div className="text-xs text-muted-foreground">Threat Score</div>
+                      <div className="text-xs text-muted-foreground">{t("command.threatScore")}</div>
                       <div className="text-2xl font-bold text-primary">{selectedSite.threatScore}</div>
                     </div>
                     <div className="rounded-xl border border-border/60 bg-background/40 p-3">
-                      <div className="text-xs text-muted-foreground">Priority</div>
+                      <div className="text-xs text-muted-foreground">{t("map.priority")}</div>
                       <div className="text-lg font-bold">{selectedSite.responsePriority}</div>
                     </div>
                     <div className="rounded-xl border border-border/60 bg-background/40 p-3">
-                      <div className="text-xs text-muted-foreground">Linked Alert Score</div>
+                      <div className="text-xs text-muted-foreground">{t("map.linkedAlertScore")}</div>
                       <div className="text-2xl font-bold">{selectedSite.linkedAlertThreatScore}</div>
                     </div>
                     <div className="rounded-xl border border-border/60 bg-background/40 p-3">
-                      <div className="text-xs text-muted-foreground">At-Risk Persons</div>
+                      <div className="text-xs text-muted-foreground">{t("command.atRiskPersons")}</div>
                       <div className="text-2xl font-bold">{selectedSite.atRiskPersonsCount}</div>
                     </div>
                   </div>
@@ -695,19 +696,19 @@ export default function GlobalMap() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="rounded-xl border border-border/60 bg-background/40 p-3">
-                      <div className="text-xs text-muted-foreground">Population</div>
+                      <div className="text-xs text-muted-foreground">{t("map.population")}</div>
                       <div className="font-semibold">{selectedSite.population.toLocaleString()}</div>
                     </div>
                     <div className="rounded-xl border border-border/60 bg-background/40 p-3">
-                      <div className="text-xs text-muted-foreground">Power Availability</div>
+                      <div className="text-xs text-muted-foreground">{t("map.powerAvailability")}</div>
                       <div className="font-semibold">{selectedSite.powerAvailability}%</div>
                     </div>
                     <div className="rounded-xl border border-border/60 bg-background/40 p-3">
-                      <div className="text-xs text-muted-foreground">Protected Persons</div>
+                      <div className="text-xs text-muted-foreground">{t("map.protectedPersons")}</div>
                       <div className="font-semibold">{selectedSite.protectedPersonsCount}</div>
                     </div>
                     <div className="rounded-xl border border-border/60 bg-background/40 p-3">
-                      <div className="text-xs text-muted-foreground">Critical Alerts</div>
+                      <div className="text-xs text-muted-foreground">{t("map.criticalAlerts")}</div>
                       <div className="font-semibold">{selectedSite.criticalAlertsCount}</div>
                     </div>
                   </div>
@@ -737,8 +738,8 @@ export default function GlobalMap() {
 
           <Card className="border border-border/60 bg-card/70 backdrop-blur">
             <div className="p-4 border-b border-border/50">
-              <div className="text-sm font-semibold">Live Command Summary</div>
-              <div className="text-xs text-muted-foreground">Module status at a glance</div>
+              <div className="text-sm font-semibold">{t("map.liveCommandSummary")}</div>
+              <div className="text-xs text-muted-foreground">{t("map.moduleStatusAtGlance")}</div>
             </div>
 
             <div className="p-4 space-y-3 text-sm">
@@ -778,42 +779,42 @@ export default function GlobalMap() {
 
           <Card className="border border-border/60 bg-card/70 backdrop-blur">
             <div className="p-4 border-b border-border/50">
-              <div className="text-sm font-semibold">Threat Legend</div>
-              <div className="text-xs text-muted-foreground">AI scoring guidance for command interpretation</div>
+              <div className="text-sm font-semibold">{t("map.threatLegend")}</div>
+              <div className="text-xs text-muted-foreground">{t("map.aiScoringGuidance")}</div>
             </div>
 
             <div className="p-4 space-y-3 text-sm">
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-green-500" />
-                <span className="text-muted-foreground">Low threat — routine monitoring</span>
+                <span className="text-muted-foreground">{t("map.lowThreat")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-blue-400" />
-                <span className="text-muted-foreground">Medium threat — prepare mitigation assets</span>
+                <span className="text-muted-foreground">{t("map.mediumThreat")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-amber-500" />
-                <span className="text-muted-foreground">High threat — urgent intervention recommended</span>
+                <span className="text-muted-foreground">{t("map.highThreat")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-red-500" />
-                <span className="text-muted-foreground">Critical threat — immediate escalation required</span>
+                <span className="text-muted-foreground">{t("map.criticalThreat")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Siren className="w-4 h-4 text-primary" />
-                <span className="text-muted-foreground">Marker size scales with AI threat score and live danger halo intensity</span>
+                <span className="text-muted-foreground">{t("map.markerSize")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_16px_rgba(239,68,68,0.95)]" />
-                <span className="text-muted-foreground">Bright red hotspot cores mark immediate live danger locations</span>
+                <span className="text-muted-foreground">{t("map.hotspotCores")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Activity className="w-4 h-4 text-primary" />
-                <span className="text-muted-foreground">Rings indicate expanding live incident influence</span>
+                <span className="text-muted-foreground">{t("map.rings")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <TriangleAlert className="w-4 h-4 text-orange-400" />
-                <span className="text-muted-foreground">Risk overlays visualize broader planetary threat areas</span>
+                <span className="text-muted-foreground">{t("map.overlays")}</span>
               </div>
             </div>
           </Card>

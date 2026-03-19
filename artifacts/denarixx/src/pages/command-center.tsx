@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Shield,
   Siren,
@@ -189,6 +190,7 @@ function formatDate(value: string) {
 }
 
 export default function CommandCenterPage() {
+  const { t } = useTranslation();
   const [selectedScenario, setSelectedScenario] = useState<ScenarioType>("flood_event");
   const [running, setRunning] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -398,7 +400,7 @@ export default function CommandCenterPage() {
       <Card className="border border-border/60 bg-card/70 p-4">
         <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
           <div>
-            <div className="text-sm font-semibold">Live Auto-Escalation Stream</div>
+            <div className="text-sm font-semibold">{t("command.liveAutoEscalationStream")}</div>
             <div className="text-sm text-muted-foreground">{liveEvent}</div>
           </div>
 
@@ -421,7 +423,7 @@ export default function CommandCenterPage() {
       <Card className="border border-border/60 bg-card/70 p-4">
         <div className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-center">
           <div className="space-y-2">
-            <div className="text-sm font-semibold">Scenario Simulation</div>
+            <div className="text-sm font-semibold">{t("command.scenarioSimulation")}</div>
             <div className="text-sm text-muted-foreground">
               Select an incident scenario to generate AI-based escalation and deployment advice.
             </div>
@@ -451,7 +453,7 @@ export default function CommandCenterPage() {
       <Card className="border border-primary/20 bg-primary/5 p-4">
         <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
           <div>
-            <div className="mb-1 text-[11px] uppercase tracking-[0.25em] text-primary">Live Escalation Feed</div>
+            <div className="mb-1 text-[11px] uppercase tracking-[0.25em] text-primary">{t("command.liveEscalationFeed")}</div>
             <div className="text-sm text-white">{liveEscalationStatus}</div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -467,38 +469,38 @@ export default function CommandCenterPage() {
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card className="border border-border/60 bg-card/70 p-4">
-          <div className="text-xs text-muted-foreground">Threat Score</div>
+          <div className="text-xs text-muted-foreground">{t("command.threatScore")}</div>
           <div className="text-2xl font-bold text-primary">{overview.threatScore}</div>
         </Card>
         <Card className="border border-border/60 bg-card/70 p-4">
-          <div className="text-xs text-muted-foreground">Readiness Score</div>
+          <div className="text-xs text-muted-foreground">{t("command.readinessScore")}</div>
           <div className="text-2xl font-bold">{overview.readinessScore}</div>
         </Card>
         <Card className="border border-border/60 bg-card/70 p-4">
-          <div className="text-xs text-muted-foreground">Affected Sites</div>
+          <div className="text-xs text-muted-foreground">{t("command.affectedSites")}</div>
           <div className="text-2xl font-bold">{overview.affectedSites}</div>
         </Card>
         <Card className="border border-border/60 bg-card/70 p-4">
-          <div className="text-xs text-muted-foreground">Population at Risk</div>
+          <div className="text-xs text-muted-foreground">{t("command.populationAtRisk")}</div>
           <div className="text-2xl font-bold">{overview.population.toLocaleString()}</div>
         </Card>
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card className="border border-red-500/20 bg-red-500/5 p-4">
-          <div className="text-xs text-muted-foreground">Escalation Events</div>
+          <div className="text-xs text-muted-foreground">{t("command.escalationEvents")}</div>
           <div className="text-2xl font-bold text-white">{escalationOverview.totalEvents}</div>
         </Card>
         <Card className="border border-red-500/30 bg-red-500/10 p-4">
-          <div className="text-xs text-muted-foreground">Global Command</div>
+          <div className="text-xs text-muted-foreground">{t("command.globalCommand")}</div>
           <div className="text-2xl font-bold text-red-400">{escalationOverview.globalCommand}</div>
         </Card>
         <Card className="border border-amber-500/30 bg-amber-500/10 p-4">
-          <div className="text-xs text-muted-foreground">Immediate Deployments</div>
+          <div className="text-xs text-muted-foreground">{t("command.immediateDeployments")}</div>
           <div className="text-2xl font-bold text-amber-300">{escalationOverview.immediateDeployments}</div>
         </Card>
         <Card className="border border-primary/30 bg-primary/10 p-4">
-          <div className="text-xs text-muted-foreground">Avg Escalation Threat</div>
+          <div className="text-xs text-muted-foreground">{t("command.avgEscalationThreat")}</div>
           <div className="text-2xl font-bold text-primary">{escalationOverview.averageThreat}</div>
         </Card>
       </div>
@@ -507,12 +509,12 @@ export default function CommandCenterPage() {
         <Card className="border border-border/60 bg-card/70">
           <div className="flex items-center gap-2 border-b border-border/50 p-4">
             <Shield className="h-4 w-4 text-primary" />
-            <div className="text-sm font-semibold">Auto-Escalation Decision</div>
+            <div className="text-sm font-semibold">{t("command.autoEscalationDecision")}</div>
           </div>
 
           <div className="space-y-4 p-4">
             {!result ? (
-              <div className="text-sm text-muted-foreground">Run or select a simulation to view escalation output.</div>
+              <div className="text-sm text-muted-foreground">{t("command.runOrSelectSimulation")}</div>
             ) : (
               <>
                 <div className="flex flex-wrap gap-2">
@@ -536,7 +538,7 @@ export default function CommandCenterPage() {
                   <Card className="border border-border/60 bg-background/40 p-4">
                     <div className="mb-3 flex items-center gap-2">
                       <Users className="h-4 w-4 text-primary" />
-                      <div className="text-sm font-semibold">Recommended Teams</div>
+                      <div className="text-sm font-semibold">{t("command.recommendedTeams")}</div>
                     </div>
                     <div className="space-y-2">
                       {result.autoEscalation.recommendedTeams.map((team) => (
@@ -548,7 +550,7 @@ export default function CommandCenterPage() {
                   <Card className="border border-border/60 bg-background/40 p-4">
                     <div className="mb-3 flex items-center gap-2">
                       <Activity className="h-4 w-4 text-primary" />
-                      <div className="text-sm font-semibold">Escalation Actions</div>
+                      <div className="text-sm font-semibold">{t("command.escalationActions")}</div>
                     </div>
                     <div className="space-y-2">
                       {result.autoEscalation.recommendedActions.map((action) => (
@@ -565,12 +567,12 @@ export default function CommandCenterPage() {
         <Card className="border border-border/60 bg-card/70">
           <div className="flex items-center gap-2 border-b border-border/50 p-4">
             <Radio className="h-4 w-4 text-primary" />
-            <div className="text-sm font-semibold">Scenario Snapshot</div>
+            <div className="text-sm font-semibold">{t("command.scenarioSnapshot")}</div>
           </div>
 
           <div className="space-y-4 p-4">
             {!result ? (
-              <div className="text-sm text-muted-foreground">No simulation selected.</div>
+              <div className="text-sm text-muted-foreground">{t("command.noSimulationSelected")}</div>
             ) : (
               <>
                 <div className="text-lg font-semibold">{result.scenarioLabel}</div>
@@ -578,19 +580,19 @@ export default function CommandCenterPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <Card className="border border-border/60 bg-background/40 p-3">
-                    <div className="text-[11px] uppercase text-muted-foreground">At-Risk Persons</div>
+                    <div className="text-[11px] uppercase text-muted-foreground">{t("command.atRiskPersons")}</div>
                     <div className="text-xl font-bold">{result.atRiskPersonsCount}</div>
                   </Card>
                   <Card className="border border-border/60 bg-background/40 p-3">
-                    <div className="text-[11px] uppercase text-muted-foreground">Critical Facilities</div>
+                    <div className="text-[11px] uppercase text-muted-foreground">{t("command.criticalFacilities")}</div>
                     <div className="text-xl font-bold">{result.criticalFacilitiesCount}</div>
                   </Card>
                   <Card className="border border-border/60 bg-background/40 p-3">
-                    <div className="text-[11px] uppercase text-muted-foreground">Battery Avg</div>
+                    <div className="text-[11px] uppercase text-muted-foreground">{t("command.batteryAvg")}</div>
                     <div className="text-xl font-bold">{result.energyStatus.avgBatteryLevel}%</div>
                   </Card>
                   <Card className="border border-border/60 bg-background/40 p-3">
-                    <div className="text-[11px] uppercase text-muted-foreground">Backup Hours</div>
+                    <div className="text-[11px] uppercase text-muted-foreground">{t("command.backupHours")}</div>
                     <div className="text-xl font-bold">{result.energyStatus.backupHoursEstimate}</div>
                   </Card>
                 </div>
@@ -617,12 +619,12 @@ export default function CommandCenterPage() {
         <Card className="border border-border/60 bg-card/70">
           <div className="flex items-center gap-2 border-b border-border/50 p-4">
             <TriangleAlert className="h-4 w-4 text-primary" />
-            <div className="text-sm font-semibold">Escalation Timeline</div>
+            <div className="text-sm font-semibold">{t("timeline.escalationTimeline")}</div>
           </div>
 
           <div className="space-y-3 p-4">
             {!result ? (
-              <div className="text-sm text-muted-foreground">Run or select a simulation to view timeline events.</div>
+              <div className="text-sm text-muted-foreground">{t("command.runOrSelectTimeline")}</div>
             ) : (
               result.escalationTimeline.map((step, idx) => (
                 <div key={`${step.time}-${idx}`} className="rounded-xl border border-border/60 bg-background/40 p-4">
@@ -641,7 +643,7 @@ export default function CommandCenterPage() {
           <div className="flex items-center justify-between border-b border-border/50 p-4">
             <div className="flex items-center gap-2">
               <Globe className="h-4 w-4 text-primary" />
-              <div className="text-sm font-semibold">Simulation History</div>
+              <div className="text-sm font-semibold">{t("command.simulationHistory")}</div>
             </div>
             <Badge className="border border-white/10 bg-white/5 text-slate-300">
               {history.length} entries
@@ -650,7 +652,7 @@ export default function CommandCenterPage() {
 
           <div className="space-y-3 p-4">
             {history.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No simulation history yet.</div>
+              <div className="text-sm text-muted-foreground">{t("command.noSimulationHistory")}</div>
             ) : (
               history.map((item) => {
                 const selected = selectedHistoryId === item.id;
@@ -676,7 +678,7 @@ export default function CommandCenterPage() {
                           </Badge>
                           <Badge variant="outline">READINESS {item.readinessScore}</Badge>
                           {selected ? (
-                            <Badge className="border-cyan-400/20 bg-cyan-400/10 text-cyan-200">Selected</Badge>
+                            <Badge className="border-cyan-400/20 bg-cyan-400/10 text-cyan-200">{t("command.selected")}</Badge>
                           ) : null}
                         </div>
 
@@ -692,7 +694,7 @@ export default function CommandCenterPage() {
                       </div>
 
                       <div className="min-w-[120px] rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center">
-                        <div className="text-[11px] uppercase text-muted-foreground">Scenario ID</div>
+                        <div className="text-[11px] uppercase text-muted-foreground">{t("command.scenarioId")}</div>
                         <div className="text-sm font-semibold text-primary">{item.scenarioId}</div>
                       </div>
                     </div>
@@ -708,14 +710,14 @@ export default function CommandCenterPage() {
         <div className="flex items-center justify-between gap-2 border-b border-border/50 p-4">
           <div className="flex items-center gap-2">
             <Siren className="h-4 w-4 text-primary" />
-            <div className="text-sm font-semibold">Escalation Event Feed</div>
+            <div className="text-sm font-semibold">{t("command.escalationEventFeed")}</div>
           </div>
           <div className="text-xs text-muted-foreground">{liveEscalationStatus}</div>
         </div>
 
         <div className="space-y-3 p-4">
           {!escalations.length ? (
-            <div className="text-sm text-muted-foreground">No escalation events yet.</div>
+            <div className="text-sm text-muted-foreground">{t("command.noEscalationEvents")}</div>
           ) : (
             escalations.map((item) => (
               <div
@@ -773,7 +775,7 @@ export default function CommandCenterPage() {
       <Card className="border border-border/60 bg-card/70">
         <div className="flex items-center gap-2 border-b border-border/50 p-4">
           <Radio className="h-4 w-4 text-primary" />
-          <div className="text-sm font-semibold">Selected Simulation Detail</div>
+          <div className="text-sm font-semibold">{t("command.selectedSimulationDetail")}</div>
         </div>
 
         <div className="p-4">
@@ -783,11 +785,11 @@ export default function CommandCenterPage() {
               Loading simulation detail...
             </div>
           ) : !result ? (
-            <div className="text-sm text-muted-foreground">Select a history row or run a new simulation.</div>
+            <div className="text-sm text-muted-foreground">{t("command.selectHistoryOrRun")}</div>
           ) : (
             <div className="grid gap-4 lg:grid-cols-2">
               <div className="rounded-2xl border border-border/60 bg-background/40 p-4">
-                <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-slate-500">Affected Sites</div>
+                <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-slate-500">{t("command.affectedSites")}</div>
                 <div className="space-y-2">
                   {result.affectedSites.slice(0, 5).map((site) => (
                     <div key={site.id} className="rounded-xl border border-border/60 bg-card/50 p-3">

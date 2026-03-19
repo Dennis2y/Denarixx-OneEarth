@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Shield,
   Bell,
@@ -196,6 +197,7 @@ function buildFallbackPreview(
 }
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -509,7 +511,7 @@ export default function DashboardPage() {
           <div className="flex items-start gap-3">
             <span className="mt-1 h-2.5 w-2.5 rounded-full bg-amber-300 shadow-[0_0_14px_rgba(252,211,77,0.95)]" />
             <div>
-              <div className="text-[11px] uppercase tracking-[0.35em] text-amber-200/80">Live Command Strip</div>
+              <div className="text-[11px] uppercase tracking-[0.35em] text-amber-200/80">{t("dashboard.liveCommandStrip")}</div>
               <div className="mt-1 text-sm text-white">{liveAlertStrip}</div>
             </div>
           </div>
@@ -640,17 +642,17 @@ export default function DashboardPage() {
       <div className="grid gap-6 xl:grid-cols-[1.9fr_0.9fr]">
         <Card className="overflow-hidden border border-border/60 bg-card/70">
           <div className="border-b border-border/50 px-6 py-4">
-            <div className="text-4xl font-semibold text-white">Global Operations</div>
-            <div className="mt-1 text-xl uppercase tracking-[0.25em] text-amber-300">Live Node Status</div>
+            <div className="text-4xl font-semibold text-white">{t("dashboard.globalOperations")}</div>
+            <div className="mt-1 text-xl uppercase tracking-[0.25em] text-amber-300">{t("dashboard.liveNodeStatus")}</div>
           </div>
 
           <div className="p-5">
             {loading ? (
-              <div className="text-sm text-muted-foreground">Loading real globe intelligence...</div>
+              <div className="text-sm text-muted-foreground">{t("dashboard.loadingGlobe")}</div>
             ) : !stats || (stats.globeSites ?? stats.topThreatSites).length === 0 ? (
-              <div className="text-sm text-muted-foreground">No globe threat data available.</div>
+              <div className="text-sm text-muted-foreground">{t("dashboard.noGlobe")}</div>
             ) : (
-              <Suspense fallback={<div className="text-sm text-muted-foreground">Loading live threat globe...</div>}>
+              <Suspense fallback={<div className="text-sm text-muted-foreground">{t("dashboard.loadingLiveGlobe")}</div>}>
                 <ThreatGlobe
                   sites={stats.globeSites ?? stats.topThreatSites}
                   escalations={stats.escalationHotspots ?? []}
@@ -677,7 +679,7 @@ export default function DashboardPage() {
                     {consoleBusy ? "Processing" : "Operational"}
                   </Badge>
                 </div>
-                <div className="text-sm font-semibold text-white">Command Layer</div>
+                <div className="text-sm font-semibold text-white">{t("dashboard.commandLayer")}</div>
                 <div className="mt-1 text-xs text-muted-foreground">
                   Recommend · Escalate · Dispatch against a selected live queue target
                 </div>
@@ -829,14 +831,14 @@ export default function DashboardPage() {
             <div className="text-[11px] uppercase tracking-[0.35em] text-amber-300/80">
               Active Threat Feed
             </div>
-            <Badge className="border border-red-500/20 bg-red-500/10 text-red-300">Live</Badge>
+            <Badge className="border border-red-500/20 bg-red-500/10 text-red-300">{t("system.live")}</Badge>
           </div>
 
           <div className="space-y-4 p-5">
             {loading ? (
-              <div className="text-sm text-muted-foreground">Loading threat feed...</div>
+              <div className="text-sm text-muted-foreground">{t("dashboard.loadingThreatFeed")}</div>
             ) : !stats || stats.recentAlerts.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No recent alerts available.</div>
+              <div className="text-sm text-muted-foreground">{t("dashboard.noRecentAlerts")}</div>
             ) : (
               stats.recentAlerts.slice(0, 6).map((alert) => (
                 <div key={alert.id} className="rounded-2xl border border-border/60 bg-background/40 p-4">
@@ -876,14 +878,14 @@ export default function DashboardPage() {
         <Card className="border border-border/60 bg-card/70">
           <div className="flex items-center gap-2 border-b border-border/50 px-6 py-4">
             <Shield className="h-4 w-4 text-primary" />
-            <div className="text-sm font-semibold">Top Threat Sites</div>
+            <div className="text-sm font-semibold">{t("dashboard.topThreatSites")}</div>
           </div>
 
           <div className="space-y-4 p-5">
             {loading ? (
-              <div className="text-sm text-muted-foreground">Loading threat sites...</div>
+              <div className="text-sm text-muted-foreground">{t("dashboard.loadingThreatSites")}</div>
             ) : !stats || stats.topThreatSites.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No site data available.</div>
+              <div className="text-sm text-muted-foreground">{t("dashboard.noSiteData")}</div>
             ) : (
               stats.topThreatSites.slice(0, 4).map((site) => {
                 const selected =
@@ -932,7 +934,7 @@ export default function DashboardPage() {
                       </div>
 
                       <div className="min-w-[92px] rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center">
-                        <div className="text-[11px] uppercase text-muted-foreground">Score</div>
+                        <div className="text-[11px] uppercase text-muted-foreground">{t("dashboard.score")}</div>
                         <div className="text-2xl font-bold text-primary">{site.threatScore}</div>
                       </div>
                     </div>
@@ -946,14 +948,14 @@ export default function DashboardPage() {
         <Card className="border border-border/60 bg-card/70">
           <div className="flex items-center gap-2 border-b border-border/50 px-6 py-4">
             <Bell className="h-4 w-4 text-primary" />
-            <div className="text-sm font-semibold">Urgent Response Queue</div>
+            <div className="text-sm font-semibold">{t("dashboard.urgentResponseQueue")}</div>
           </div>
 
           <div className="space-y-4 p-5">
             {loading ? (
-              <div className="text-sm text-muted-foreground">Loading command queue...</div>
+              <div className="text-sm text-muted-foreground">{t("dashboard.loadingCommandQueue")}</div>
             ) : !stats || stats.urgentQueue.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No urgent items in queue.</div>
+              <div className="text-sm text-muted-foreground">{t("dashboard.noUrgentQueue")}</div>
             ) : (
               stats.urgentQueue.slice(0, 4).map((item) => {
                 const selected =
@@ -992,7 +994,7 @@ export default function DashboardPage() {
                       </div>
 
                       <div className="min-w-[92px] rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center">
-                        <div className="text-[11px] uppercase text-muted-foreground">Score</div>
+                        <div className="text-[11px] uppercase text-muted-foreground">{t("dashboard.score")}</div>
                         <div className="text-2xl font-bold text-primary">{item.threatScore}</div>
                       </div>
                     </div>
@@ -1013,7 +1015,7 @@ export default function DashboardPage() {
       <Card className="border border-border/60 bg-card/70">
         <div className="flex items-center gap-2 border-b border-border/50 px-6 py-4">
           <Radio className="h-4 w-4 text-primary" />
-          <div className="text-sm font-semibold">Live Event Feed</div>
+          <div className="text-sm font-semibold">{t("dashboard.liveEventFeed")}</div>
         </div>
 
         <div className="grid gap-3 p-5 md:grid-cols-2 xl:grid-cols-4">

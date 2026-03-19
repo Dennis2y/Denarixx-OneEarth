@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Activity, Shield, Users, Zap, Radio, TriangleAlert, Clock3 } from "lucide-react";
 import { Card, Badge, Button, cn } from "@/components/ui-core";
 
@@ -136,14 +137,14 @@ export default function SimulationDetailPanel({
             <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
               <div className="space-y-5">
                 <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                  <div className="text-sm font-semibold text-white">Operator Directive</div>
+                  <div className="text-sm font-semibold text-white">{t("simulation.operatorDirective")}</div>
                   <div className="mt-3 text-sm leading-6 text-slate-300">
                     {detail.autoEscalation?.operatorDirective || "No directive available."}
                   </div>
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                  <div className="text-sm font-semibold text-white">Recommended Actions</div>
+                  <div className="text-sm font-semibold text-white">{t("simulation.recommendedActions")}</div>
                   <div className="mt-3 space-y-2">
                     {(detail.recommendedActions || []).slice(0, 6).map((action: string, index: number) => (
                       <div key={`${action}-${index}`} className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-slate-300">
@@ -154,7 +155,7 @@ export default function SimulationDetailPanel({
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                  <div className="text-sm font-semibold text-white">Affected Sites</div>
+                  <div className="text-sm font-semibold text-white">{t("simulation.affectedSites")}</div>
                   <div className="mt-3 space-y-2">
                     {(detail.affectedSites || []).slice(0, 5).map((site: any) => (
                       <div key={site.id} className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">

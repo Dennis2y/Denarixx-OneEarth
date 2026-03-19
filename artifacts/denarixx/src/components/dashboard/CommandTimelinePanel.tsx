@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Activity, Clock3, Radio, Shield } from "lucide-react";
 import { Card, Badge, cn } from "@/components/ui-core";
 
@@ -94,7 +95,7 @@ export default function CommandTimelinePanel({
         <div className="flex items-center justify-between border-b border-border/50 px-6 py-4">
           <div className="flex items-center gap-2">
             <Activity className="h-4 w-4 text-primary" />
-            <div className="text-sm font-semibold text-white">Command History</div>
+            <div className="text-sm font-semibold text-white">{t("timeline.commandHistory")}</div>
           </div>
           <Badge className="border border-white/10 bg-white/5 text-slate-300">
             {history.length} entries
@@ -103,9 +104,9 @@ export default function CommandTimelinePanel({
 
         <div className="space-y-4 p-5">
           {loading ? (
-            <div className="text-sm text-muted-foreground">Loading command history...</div>
+            <div className="text-sm text-muted-foreground">{t("timeline.loadingCommandHistory")}</div>
           ) : history.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No command history available.</div>
+            <div className="text-sm text-muted-foreground">{t("timeline.noCommandHistory")}</div>
           ) : (
             history.slice(0, 5).map((item) => {
               const selected = selectedHistoryId === item.id;
@@ -150,7 +151,7 @@ export default function CommandTimelinePanel({
                     </div>
 
                     <div className="min-w-[104px] rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center">
-                      <div className="text-[11px] uppercase text-muted-foreground">Population</div>
+                      <div className="text-[11px] uppercase text-muted-foreground">{t("timeline.population")}</div>
                       <div className="text-xl font-bold text-primary">
                         {item.estimatedPopulationAtRisk}
                       </div>
@@ -167,7 +168,7 @@ export default function CommandTimelinePanel({
         <div className="flex items-center justify-between border-b border-border/50 px-6 py-4">
           <div className="flex items-center gap-2">
             <Radio className="h-4 w-4 text-primary" />
-            <div className="text-sm font-semibold text-white">Escalation Timeline</div>
+            <div className="text-sm font-semibold text-white">{t("timeline.escalationTimeline")}</div>
           </div>
           <Badge className="border border-white/10 bg-white/5 text-slate-300">
             {escalations.length} events
@@ -176,9 +177,9 @@ export default function CommandTimelinePanel({
 
         <div className="space-y-4 p-5">
           {loading ? (
-            <div className="text-sm text-muted-foreground">Loading escalation timeline...</div>
+            <div className="text-sm text-muted-foreground">{t("timeline.loadingEscalationTimeline")}</div>
           ) : escalations.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No escalation timeline available.</div>
+            <div className="text-sm text-muted-foreground">{t("timeline.noEscalationTimeline")}</div>
           ) : (
             escalations.slice(0, 5).map((item) => (
               <div key={item.id} className="rounded-2xl border border-border/60 bg-background/40 p-4">
