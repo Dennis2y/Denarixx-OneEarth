@@ -255,12 +255,15 @@
 
   /* ── Alert ticker marquee ── */
   @keyframes marquee {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-  .animate-marquee {
-    animation: marquee 55s linear infinite;
-  }
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+.animate-marquee {
+  display: inline-flex;
+  min-width: max-content;
+  will-change: transform;
+  animation: marquee 22s linear infinite;
+}
 
   /* ── System scanline overlay ── */
   .scanlines::after {
@@ -338,12 +341,12 @@ main {
 }
 
 @keyframes mobile-live-marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
 }
-
 .mobile-live-marquee {
-  display: inline-block;
+  display: inline-flex;
   min-width: max-content;
+  will-change: transform;
   animation: mobile-live-marquee 18s linear infinite;
 }

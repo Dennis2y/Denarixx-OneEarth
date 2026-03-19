@@ -315,8 +315,9 @@ function MobileProtectedShell({ children }: { children: React.ReactNode }) {
                 LIVE
               </div>
               <div className="flex-1 overflow-hidden">
-                <div className="mobile-live-marquee whitespace-nowrap px-4 py-2 text-xs text-slate-300">
-                  {ticker}
+                <div className="mobile-live-marquee px-4 py-2 text-xs text-slate-300">
+                  <span className="whitespace-nowrap pr-8">{ticker}</span>
+                  <span className="whitespace-nowrap pr-8" aria-hidden="true">{ticker}</span>
                 </div>
               </div>
             </div>

@@ -79,8 +79,9 @@ function SystemRibbon({ user }: { user: any }) {
         </div>
         {ticker ? (
           <div className="flex-1 overflow-hidden relative">
-            <div className="animate-marquee whitespace-nowrap text-[9px] font-mono text-muted-foreground/60 inline-block px-4">
-              {ticker}
+            <div className="animate-marquee text-[9px] font-mono text-muted-foreground/60">
+              <span className="whitespace-nowrap px-4">{ticker}</span>
+              <span className="whitespace-nowrap px-4" aria-hidden="true">{ticker}</span>
             </div>
           </div>
         ) : (
