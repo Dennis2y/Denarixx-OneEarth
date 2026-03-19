@@ -96,14 +96,33 @@ type LabelPoint = {
   color: string;
 };
 
-const CONTINENT_LABELS: CountryLabelPoint[] = [
-  { lat: 7, lng: 21, text: "Africa", size: 1.8, color: "rgba(255,255,255,0.58)" },
-  { lat: 54, lng: 15, text: "Europe", size: 1.35, color: "rgba(255,255,255,0.52)" },
-  { lat: 34, lng: 95, text: "Asia", size: 1.75, color: "rgba(255,255,255,0.58)" },
-  { lat: 45, lng: -102, text: "North America", size: 1.2, color: "rgba(255,255,255,0.46)" },
-  { lat: -18, lng: -60, text: "South America", size: 1.15, color: "rgba(255,255,255,0.46)" },
-  { lat: -24, lng: 134, text: "Oceania", size: 1.05, color: "rgba(255,255,255,0.44)" },
-];
+const MAJOR_COUNTRY_LABELS = new Set([
+  "United States of America",
+  "Canada",
+  "Mexico",
+  "Brazil",
+  "Argentina",
+  "United Kingdom",
+  "France",
+  "Germany",
+  "Spain",
+  "Italy",
+  "Ukraine",
+  "Turkey",
+  "Egypt",
+  "Nigeria",
+  "Ethiopia",
+  "Kenya",
+  "South Africa",
+  "Saudi Arabia",
+  "India",
+  "Pakistan",
+  "China",
+  "Japan",
+  "South Korea",
+  "Indonesia",
+  "Australia",
+]);
 
 type Props = {
   sites: ThreatSite[];
@@ -209,6 +228,9 @@ export default function ThreatGlobe({
   const [countries, setCountries] = useState<CountryFeature[]>([]);
   const [flashCountryKeys, setFlashCountryKeys] = useState<string[]>([]);
   const [focusToken, setFocusToken] = useState("");
+  const [viewportWidth, setViewportWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1440
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -227,20 +249,40 @@ export default function ThreatGlobe({
   }, []);
 
   useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  useEffect(() => {
     const globe = globeRef.current;
     if (!globe) return;
+
+    const mobile = viewportWidth < 640;
+    const altitude = viewportWidth < 420 ? 2.22 : viewportWidth < 640 ? 2.12 : 2.0;
 
     const controls = globe.controls?.();
     if (controls) {
       controls.autoRotate = true;
-      controls.autoRotateSpeed = 0.18;
+      controls.autoRotateSpeed = mobile ? 0.12 : 0.18;
       controls.enablePan = false;
-      controls.minDistance = 170;
-      controls.maxDistance = 290;
+      controls.minDistance = mobile ? 145 : 170;
+      controls.maxDistance = mobile ? 245 : 290;
+      controls.enableZoom = true;
     }
 
-    globe.pointOfView({ lat: 10, lng: 15, altitude: 2.0 }, 0);
-  }, [countries.length]);
+    globe.pointOfView({ lat: 10, lng: 15, altitude }, 0);
+  }, [countries.length, viewportWidth]);
+
+  const isMobile = viewportWidth < 640;
+
+  const globeSize = useMemo(() => {
+    if (viewportWidth < 420) return { width: 250, height: 250, altitude: 2.22, wrap: 250 };
+    if (viewportWidth < 640) return { width: 285, height: 285, altitude: 2.12, wrap: 285 };
+    if (viewportWidth < 1024) return { width: 340, height: 300, altitude: 2.0, wrap: 340 };
+    return { width: 400, height: 305, altitude: 2.0, wrap: 400 };
+  }, [viewportWidth]);
 
   const globePoints = useMemo<GlobePoint[]>(
     () =>
@@ -411,7 +453,59 @@ export default function ThreatGlobe({
       .filter(Boolean) as CountryLabelPoint[];
   }, [countries, hotCountries]);
 
-  const continentLabelPoints = useMemo(() => CONTINENT_LABELS, []);
+  const majorCountryLabelPoints = useMemo(() => {
+    return countries
+      .map((feature) => {
+        const rawName =
+          feature?.properties?.name ||
+          feature?.properties?.NAME ||
+          feature?.properties?.admin ||
+          "";
+
+        const name = String(rawName).trim();
+        if (!name || !MAJOR_COUNTRY_LABELS.has(name)) return null;
+
+        const center = featureCenter(feature);
+        if (!center) return null;
+
+        return {
+          lat: center.lat,
+          lng: center.lng,
+          text: name,
+          size: isMobile ? 0.42 : 0.5,
+          color: "rgba(255,255,255,0.48)",
+        };
+      })
+      .filter(Boolean) as CountryLabelPoint[];
+  }, [countries, isMobile]);
+
+  const allCountryLabelPoints = useMemo(() => {
+    if (isMobile) return majorCountryLabelPoints;
+
+    return countries
+      .map((feature) => {
+        const rawName =
+          feature?.properties?.name ||
+          feature?.properties?.NAME ||
+          feature?.properties?.admin ||
+          "";
+
+        const name = String(rawName).trim();
+        if (!name) return null;
+
+        const center = featureCenter(feature);
+        if (!center) return null;
+
+        return {
+          lat: center.lat,
+          lng: center.lng,
+          text: name,
+          size: 0.32,
+          color: "rgba(255,255,255,0.24)",
+        };
+      })
+      .filter(Boolean) as CountryLabelPoint[];
+  }, [countries, isMobile, majorCountryLabelPoints]);
 
   useEffect(() => {
     if (!liveFlashToken || !matchedCountryKeys.size) return;
@@ -443,11 +537,11 @@ export default function ThreatGlobe({
     globe.pointOfView({ lat: target.lat, lng: target.lng, altitude: 1.35 }, 1200);
 
     const timeout = window.setTimeout(() => {
-      globe.pointOfView({ lat: 10, lng: 15, altitude: 2.0 }, 1800);
+      globe.pointOfView({ lat: 10, lng: 15, altitude: globeSize.altitude }, 1800);
     }, 2600);
 
     return () => window.clearTimeout(timeout);
-  }, [focusToken, escalationPoints, globePoints]);
+  }, [focusToken, escalationPoints, globePoints, globeSize]);
 
   return (
     <>
@@ -476,7 +570,10 @@ export default function ThreatGlobe({
           </div>
         </div>
 
-        <div className="relative mx-auto h-[240px] w-full max-w-[400px] animate-[denarixxFloat_10s_ease-in-out_infinite] sm:h-[280px] lg:h-[305px]">
+        <div
+          className="relative mx-auto w-full animate-[denarixxFloat_10s_ease-in-out_infinite]"
+          style={{ height: `${globeSize.height}px`, maxWidth: `${globeSize.wrap}px` }}
+        >
           <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.08),rgba(14,165,233,0.03),transparent_62%)] blur-2xl" />
           <div className="absolute inset-[10%] rounded-full border border-cyan-400/8 shadow-[0_0_56px_rgba(56,189,248,0.06)]" />
           <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
@@ -497,8 +594,8 @@ export default function ThreatGlobe({
 
           <Globe
             ref={globeRef}
-            width={400}
-            height={305}
+            width={globeSize.width}
+            height={globeSize.height}
             backgroundColor="rgba(0,0,0,0)"
             globeImageUrl="https://unpkg.com/three-globe/example/img/earth-night.jpg"
                         atmosphereColor="#2563eb"
@@ -534,7 +631,7 @@ export default function ThreatGlobe({
               globe.pointOfView({ lat: center.lat, lng: center.lng, altitude: 1.2 }, 1000);
 
               window.setTimeout(() => {
-                globe.pointOfView({ lat: 10, lng: 15, altitude: 2.0 }, 1800);
+                globe.pointOfView({ lat: 10, lng: 15, altitude: globeSize.altitude }, 1800);
               }, 2500);
             }}
             pointsData={[...globePoints, ...escalationPoints]}
@@ -551,7 +648,7 @@ export default function ThreatGlobe({
               globe.pointOfView({ lat: d.lat, lng: d.lng, altitude: 1.15 }, 900);
 
               window.setTimeout(() => {
-                globe.pointOfView({ lat: 10, lng: 15, altitude: 2.0 }, 1800);
+                globe.pointOfView({ lat: 10, lng: 15, altitude: globeSize.altitude }, 1800);
               }, 2400);
             }}
             pointLabel={(d: GlobePoint | EscalationPoint) => `
@@ -600,10 +697,10 @@ export default function ThreatGlobe({
             labelLng="lng"
             labelText="text"
             labelColor="color"
-            labelSize={() => 1.12}
-            labelDotRadius={() => 0.2}
+            labelSize={() => (isMobile ? 0.78 : 1.12)}
+            labelDotRadius={() => (isMobile ? 0.12 : 0.2)}
             labelResolution={1}
-            htmlElementsData={[...countryLabelPoints, ...continentLabelPoints]}
+            htmlElementsData={isMobile ? [...countryLabelPoints, ...majorCountryLabelPoints] : [...countryLabelPoints, ...allCountryLabelPoints]}
             htmlLat="lat"
             htmlLng="lng"
             htmlElement={(d: CountryLabelPoint) => {
