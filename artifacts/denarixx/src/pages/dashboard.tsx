@@ -225,6 +225,7 @@ export default function DashboardPage() {
   const [consoleBusy, setConsoleBusy] = useState(false);
   const [consoleMode, setConsoleMode] = useState<ConsoleAction>("recommend");
   const [consoleError, setConsoleError] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   const loadDashboard = async (silent = false) => {
     try {
@@ -373,6 +374,13 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    const syncMobile = () => setIsMobile(window.innerWidth < 1024);
+    syncMobile();
+    window.addEventListener("resize", syncMobile);
+    return () => window.removeEventListener("resize", syncMobile);
+  }, []);
+
+  useEffect(() => {
     const stream = new EventSource(apiStreamUrl("/api/live/stream"), { withCredentials: true });
 
     stream.addEventListener("connected", () => {
@@ -504,6 +512,116 @@ export default function DashboardPage() {
       },
     ];
   }, [stats]);
+
+  if (isMobile) {
+    return (
+      <div className="space-y-4 w-full max-w-full overflow-x-hidden">
+        <Card className="border border-amber-500/20 bg-[linear-gradient(90deg,rgba(120,53,15,0.22),rgba(7,10,18,0.95),rgba(12,74,110,0.18))] p-4">
+          <div className="text-[11px] uppercase tracking-[0.25em] text-amber-200/80">{t("dashboard.liveCommandStrip")}</div>
+          <div className="mt-2 text-sm text-white break-words">{liveAlertStrip}</div>
+        </Card>
+
+        <Card className="border border-red-500/20 bg-[radial-gradient(circle_at_top,rgba(127,29,29,0.35),rgba(9,9,11,0.95)_60%)] p-4">
+          <div className="flex items-center gap-2">
+            <TriangleAlert className="h-5 w-5 text-red-400" />
+            <div className="text-lg font-semibold text-red-300">THREAT CONDITION ELEVATED</div>
+          </div>
+          <div className="mt-2 text-xs text-slate-400">DNX-ONEEARTH · LIVE COMMAND STATUS · CLASSIFIED</div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <Card className="border border-border/60 bg-card/70 p-3">
+              <div className="text-[11px] uppercase tracking-[0.15em] text-slate-500">{t("dashboard.activeNodes")}</div>
+              <div className="mt-1 text-2xl font-semibold text-amber-300">{overview.totalNodes}</div>
+            </Card>
+            <Card className="border border-border/60 bg-card/70 p-3">
+              <div className="text-[11px] uppercase tracking-[0.15em] text-slate-500">{t("dashboard.criticalAlertsLabel")}</div>
+              <div className="mt-1 text-2xl font-semibold text-red-400">{overview.criticalAlerts}</div>
+            </Card>
+            <Card className="border border-border/60 bg-card/70 p-3">
+              <div className="text-[11px] uppercase tracking-[0.15em] text-slate-500">{t("dashboard.protectedLives")}</div>
+              <div className="mt-1 text-2xl font-semibold text-sky-300">{overview.protectedPeople}</div>
+            </Card>
+            <Card className="border border-border/60 bg-card/70 p-3">
+              <div className="text-[11px] uppercase tracking-[0.15em] text-slate-500">{t("dashboard.energyAvail")}</div>
+              <div className="mt-1 text-2xl font-semibold text-emerald-300">{overview.energyAvailability}%</div>
+            </Card>
+          </div>
+        </Card>
+
+        <Card className="border border-border/60 bg-card/70">
+          <div className="border-b border-border/50 px-4 py-3">
+            <div className="text-lg font-semibold text-white">{t("dashboard.urgentResponseQueue")}</div>
+          </div>
+          <div className="space-y-3 p-4">
+            {loading ? (
+              <div className="text-sm text-muted-foreground">{t("dashboard.loadingCommandQueue")}</div>
+            ) : !stats || stats.urgentQueue.length === 0 ? (
+              <div className="text-sm text-muted-foreground">{t("dashboard.noUrgentQueue")}</div>
+            ) : (
+              stats.urgentQueue.slice(0, 4).map((item) => (
+                <button
+                  key={`${item.kind}-${item.id}`}
+                  type="button"
+                  onClick={() => setSelectedQueueItem(item)}
+                  className="block w-full rounded-2xl border border-border/60 bg-background/40 p-4 text-left"
+                >
+                  <div className="text-base font-semibold text-white break-words">{item.title}</div>
+                  <div className="mt-1 text-sm text-muted-foreground break-words">{item.location}</div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Badge variant="outline">{trSiteType(t, item.kind)}</Badge>
+                    <Badge className={cn("border", threatClass(item.threatLevel))}>{trThreatLevel(t, item.threatLevel)}</Badge>
+                    <Badge className={cn("border", priorityClass(item.responsePriority))}>{trPriority(t, item.responsePriority)}</Badge>
+                  </div>
+                  <div className="mt-3 text-sm text-slate-300 break-words">{trDirective(t, item.recommendedAction)}</div>
+                  <div className="mt-3 text-sm font-semibold text-primary">{t("dashboard.score")}: {item.threatScore}</div>
+                </button>
+              ))
+            )}
+          </div>
+        </Card>
+
+        <Card className="border border-border/60 bg-card/70">
+          <div className="border-b border-border/50 px-4 py-3">
+            <div className="text-lg font-semibold text-white">{t("dashboard.topThreatSites")}</div>
+          </div>
+          <div className="space-y-3 p-4">
+            {loading ? (
+              <div className="text-sm text-muted-foreground">{t("dashboard.loadingThreatSites")}</div>
+            ) : !stats || stats.topThreatSites.length === 0 ? (
+              <div className="text-sm text-muted-foreground">{t("dashboard.noSiteData")}</div>
+            ) : (
+              stats.topThreatSites.slice(0, 4).map((site) => (
+                <div key={site.id} className="rounded-2xl border border-border/60 bg-background/40 p-4">
+                  <div className="text-base font-semibold text-white break-words">{site.name}</div>
+                  <div className="mt-1 text-sm text-muted-foreground break-words">{site.location}, {site.country}</div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Badge className={cn("border", threatClass(site.threatLevel))}>{trThreatLevel(t, site.threatLevel)}</Badge>
+                    <Badge className={cn("border", priorityClass(site.responsePriority))}>{trPriority(t, site.responsePriority)}</Badge>
+                    <Badge variant="outline">{trSiteType(t, site.type)}</Badge>
+                  </div>
+                  <div className="mt-3 text-sm font-semibold text-primary">{t("dashboard.score")}: {site.threatScore}</div>
+                </div>
+              ))
+            )}
+          </div>
+        </Card>
+
+        <Card className="border border-border/60 bg-card/70">
+          <div className="border-b border-border/50 px-4 py-3">
+            <div className="text-lg font-semibold text-white">{t("dashboard.liveEventFeed")}</div>
+          </div>
+          <div className="space-y-3 p-4">
+            {liveFeed.slice(0, 6).map((item) => (
+              <div key={item.id} className={cn("rounded-2xl border p-4 text-sm", feedToneClass(item.tone))}>
+                <div className="font-medium">Live update</div>
+                <div className="mt-2 break-words">{trLiveMessage(t, item.label)}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6 w-full min-w-0 overflow-x-hidden">
