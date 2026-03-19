@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { AppLayout } from "@/components/layout";
-import { LogOut, Home, Cpu, Bell, MapPin, Settings } from "lucide-react";
+import { LogOut, Home, Cpu, Bell, MapPin, Settings as SettingsIcon } from "lucide-react";
 import { LoadingScreen } from "@/components/ui-core";
 import { AuthProvider, useAuth } from "@/context/auth";
 import i18n from "./i18n";
@@ -80,7 +80,7 @@ function MobileProtectedShell({ children }: { children: React.ReactNode }) {
     { href: "/command-center", label: "Command", icon: Cpu },
     { href: "/alerts", label: "Alerts", icon: Bell },
     { href: "/sites", label: "Sites", icon: MapPin },
-    { href: "/settings", label: "Settings", icon: Settings },
+    { href: "/settings", label: "Settings", icon: SettingsIcon },
   ];
 
   return (
