@@ -477,7 +477,7 @@ export default function GlobalMap() {
                   {liveStatus.toUpperCase()}
                 </Badge>
                 <div className="overflow-hidden flex-1">
-                  <div className="animate-marquee inline-block min-w-full text-muted-foreground">
+                  <div className="animate-marquee text-muted-foreground">
                     {tickerText}  ◆  {lastLiveMessage}
                   </div>
                 </div>

@@ -260,8 +260,12 @@
 }
 .animate-marquee {
   display: inline-flex;
+  align-items: center;
   min-width: max-content;
+  width: max-content;
   will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
   animation: marquee 22s linear infinite;
 }
 
@@ -346,7 +350,11 @@ main {
 }
 .mobile-live-marquee {
   display: inline-flex;
+  align-items: center;
   min-width: max-content;
+  width: max-content;
   will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
   animation: mobile-live-marquee 18s linear infinite;
 }
