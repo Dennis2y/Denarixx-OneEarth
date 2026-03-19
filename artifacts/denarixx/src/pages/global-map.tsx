@@ -233,6 +233,7 @@ function getRiskZoneRadius(score: number) {
 }
 
 export default function GlobalMap() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const mapRef = useRef<LeafletMap | null>(null);
 
