@@ -1,8 +1,9 @@
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { AppLayout } from "@/components/layout";
-import { LogOut, Home, Cpu, Bell, MapPin, Settings as SettingsIcon } from "lucide-react";
+import { LogOut, Home, Cpu, Bell, MapPin, Settings as SettingsIcon, Shield, Zap, Activity } from "lucide-react";
 import { LoadingScreen } from "@/components/ui-core";
+import { apiFetch } from "@/lib/api";
 import { AuthProvider, useAuth } from "@/context/auth";
 import i18n from "./i18n";
 
@@ -69,6 +70,45 @@ function ForceSystemEnglish() {
 function MobileProtectedShell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
+  const [stats, setStats] = useState<{
+    activeSites?: number;
+    criticalAlerts?: number;
+    energyAvailability?: number;
+    protectedPeople?: number;
+    protectedPersons?: number;
+    recentAlerts?: Array<{ severity?: string; title?: string; location?: string; module?: string }>;
+  } | null>(null);
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadStats = async () => {
+      try {
+        const data = await apiFetch("/api/dashboard/stats") as {
+          activeSites?: number;
+          criticalAlerts?: number;
+          energyAvailability?: number;
+          protectedPeople?: number;
+          protectedPersons?: number;
+          recentAlerts?: Array<{ severity?: string; title?: string; location?: string; module?: string }>;
+        };
+        if (mounted) setStats(data);
+      } catch {
+        if (mounted) setStats(null);
+      }
+    };
+
+    void loadStats();
+    const si = window.setInterval(() => void loadStats(), 30000);
+    const ti = window.setInterval(() => setTime(new Date()), 1000);
+
+    return () => {
+      mounted = false;
+      window.clearInterval(si);
+      window.clearInterval(ti);
+    };
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -82,6 +122,15 @@ function MobileProtectedShell({ children }: { children: React.ReactNode }) {
     { href: "/sites", label: "Sites", icon: MapPin },
     { href: "/settings", label: "Settings", icon: SettingsIcon },
   ];
+
+  const criticalCount = stats?.criticalAlerts ?? 0;
+  const threatLevel = criticalCount > 5 ? "CRITICAL" : criticalCount > 2 ? "ELEVATED" : criticalCount > 0 ? "GUARDED" : "NOMINAL";
+  const protectedCount = stats?.protectedPeople ?? stats?.protectedPersons ?? 0;
+  const tickerText = (stats?.recentAlerts ?? [])
+    .slice(0, 8)
+    .map((a) => `${String(a.severity ?? "INFO").toUpperCase()} · ${a.title ?? "SYSTEM EVENT"} · ${a.location ?? a.module ?? "GLOBAL"}`)
+    .join("  ◆  ");
+  const ticker = tickerText ? `${tickerText}  ◆  ${tickerText}` : "LIVE COMMAND CHANNEL ACTIVE  ◆  MONITORING GLOBAL THREAT GRID  ◆  LIVE COMMAND CHANNEL ACTIVE";
 
   return (
     <div className="min-h-[100dvh] w-full bg-background text-foreground overflow-x-hidden">
@@ -111,6 +160,58 @@ function MobileProtectedShell({ children }: { children: React.ReactNode }) {
         <div className="border-t border-border/30 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           {user ? `${user.name} · ${user.role} · L${user.clearanceLevel}` : "Mobile Command View"}
         </div>
+
+        <div className="border-t border-border/30 px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className={`h-2 w-2 rounded-full ${threatLevel === "CRITICAL" ? "bg-red-500" : threatLevel === "ELEVATED" ? "bg-amber-500" : threatLevel === "GUARDED" ? "bg-blue-400" : "bg-green-500"} animate-pulse`} />
+              <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-white">{threatLevel}</div>
+            </div>
+            <div className="text-[11px] font-mono text-muted-foreground">{time.toISOString().slice(11, 19)} UTC</div>
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="rounded-xl border border-border/60 bg-card/70 px-3 py-2">
+              <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                <Bell className="h-3.5 w-3.5" /> Critical
+              </div>
+              <div className="mt-1 text-lg font-semibold text-red-400">{criticalCount}</div>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-card/70 px-3 py-2">
+              <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                <Activity className="h-3.5 w-3.5" /> Nodes
+              </div>
+              <div className="mt-1 text-lg font-semibold text-amber-300">{stats?.activeSites ?? "—"}</div>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-card/70 px-3 py-2">
+              <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                <Zap className="h-3.5 w-3.5" /> Energy
+              </div>
+              <div className="mt-1 text-lg font-semibold text-emerald-400">
+                {stats?.energyAvailability != null ? `${Math.round(stats.energyAvailability)}%` : "—"}
+              </div>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-card/70 px-3 py-2">
+              <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                <Shield className="h-3.5 w-3.5" /> Protected
+              </div>
+              <div className="mt-1 text-lg font-semibold text-sky-300">{protectedCount}</div>
+            </div>
+          </div>
+
+          <div className="mt-3 overflow-hidden rounded-xl border border-primary/15 bg-card/60">
+            <div className="flex items-center">
+              <div className="shrink-0 border-r border-primary/15 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                LIVE
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <div className="mobile-live-marquee whitespace-nowrap px-4 py-2 text-xs text-slate-300">
+                  {ticker}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </header>
 
       <main className="w-full max-w-full overflow-x-hidden p-4 pb-24">
@@ -128,9 +229,7 @@ function MobileProtectedShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 onClick={() => setLocation(item.href)}
                 className={`flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-[10px] ${
-                  active
-                    ? "bg-primary/12 text-primary"
-                    : "text-muted-foreground"
+                  active ? "bg-primary/12 text-primary" : "text-muted-foreground"
                 }`}
               >
                 <Icon className="h-4 w-4" />

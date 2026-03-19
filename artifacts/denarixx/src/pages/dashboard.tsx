@@ -542,7 +542,7 @@ export default function DashboardPage() {
 
   if (isMobile) {
     return (
-      <div className="w-full max-w-full space-y-4 overflow-x-hidden">
+      <div className="w-full max-w-full space-y-4 overflow-x-hidden pb-2">
         <Card className="border border-amber-500/20 bg-[linear-gradient(90deg,rgba(120,53,15,0.22),rgba(7,10,18,0.95),rgba(12,74,110,0.18))] p-4 overflow-hidden">
           <div className="text-[11px] uppercase tracking-[0.22em] text-amber-200/80">{t("dashboard.liveCommandStrip")}</div>
           <div className="mt-2 text-sm text-white break-words">{liveAlertStrip}</div>
@@ -738,11 +738,11 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="border border-border/60 bg-card/70">
+        <Card className="border border-border/60 bg-card/70 overflow-hidden">
           <div className="border-b border-border/50 px-4 py-3">
             <div className="text-base font-semibold text-white">Module Status Matrix</div>
           </div>
-          <div className="space-y-3 p-4">
+          <div className="space-y-3 p-4 min-w-0">
             {moduleCards.map((module) => (
               <div
                 key={module.title}
@@ -760,18 +760,18 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="border border-border/60 bg-card/70">
+        <Card className="border border-border/60 bg-card/70 overflow-hidden">
           <div className="border-b border-border/50 px-4 py-3">
             <div className="text-base font-semibold text-white">Active Threat Feed</div>
           </div>
-          <div className="space-y-3 p-4">
+          <div className="space-y-3 p-4 min-w-0">
             {loading ? (
               <div className="text-sm text-muted-foreground">{t("dashboard.loadingThreatFeed")}</div>
             ) : !stats || stats.recentAlerts.length === 0 ? (
               <div className="text-sm text-muted-foreground">{t("dashboard.noRecentAlerts")}</div>
             ) : (
               stats.recentAlerts.slice(0, 6).map((alert) => (
-                <div key={alert.id} className="rounded-2xl border border-border/60 bg-background/40 p-4">
+                <div key={alert.id} className="rounded-2xl border border-border/60 bg-background/40 p-4 min-w-0 overflow-hidden">
                   <div className="text-base font-semibold text-white break-words">{alert.title}</div>
                   <div className="mt-1 text-sm text-slate-500 break-words">
                     {alert.location} · {trStatus(t, alert.status)}
@@ -795,18 +795,18 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="border border-border/60 bg-card/70">
+        <Card className="border border-border/60 bg-card/70 overflow-hidden">
           <div className="border-b border-border/50 px-4 py-3">
             <div className="text-base font-semibold text-white">{t("dashboard.topThreatSites")}</div>
           </div>
-          <div className="space-y-3 p-4">
+          <div className="space-y-3 p-4 min-w-0">
             {loading ? (
               <div className="text-sm text-muted-foreground">{t("dashboard.loadingThreatSites")}</div>
             ) : !stats || stats.topThreatSites.length === 0 ? (
               <div className="text-sm text-muted-foreground">{t("dashboard.noSiteData")}</div>
             ) : (
               stats.topThreatSites.slice(0, 4).map((site) => (
-                <div key={site.id} className="rounded-2xl border border-border/60 bg-background/40 p-4">
+                <div key={site.id} className="rounded-2xl border border-border/60 bg-background/40 p-4 min-w-0 overflow-hidden">
                   <div className="text-base font-semibold text-white break-words">{site.name}</div>
                   <div className="mt-1 text-sm text-muted-foreground break-words">{site.location}, {site.country}</div>
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -821,11 +821,11 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="border border-border/60 bg-card/70">
+        <Card className="border border-border/60 bg-card/70 overflow-hidden">
           <div className="border-b border-border/50 px-4 py-3">
             <div className="text-base font-semibold text-white">{t("dashboard.urgentResponseQueue")}</div>
           </div>
-          <div className="space-y-3 p-4">
+          <div className="space-y-3 p-4 min-w-0">
             {loading ? (
               <div className="text-sm text-muted-foreground">{t("dashboard.loadingCommandQueue")}</div>
             ) : !stats || stats.urgentQueue.length === 0 ? (
@@ -836,7 +836,7 @@ export default function DashboardPage() {
                   key={`${item.kind}-${item.id}`}
                   type="button"
                   onClick={() => setSelectedQueueItem(item)}
-                  className="block w-full rounded-2xl border border-border/60 bg-background/40 p-4 text-left"
+                  className="block w-full rounded-2xl border border-border/60 bg-background/40 p-4 text-left min-w-0 overflow-hidden"
                 >
                   <div className="text-base font-semibold text-white break-words">{item.title}</div>
                   <div className="mt-1 text-sm text-muted-foreground break-words">{item.location}</div>
@@ -859,11 +859,11 @@ export default function DashboardPage() {
           loading={timelineLoading}
         />
 
-        <Card className="border border-border/60 bg-card/70">
+        <Card className="border border-border/60 bg-card/70 overflow-hidden">
           <div className="border-b border-border/50 px-4 py-3">
             <div className="text-base font-semibold text-white">{t("dashboard.liveEventFeed")}</div>
           </div>
-          <div className="space-y-3 p-4">
+          <div className="space-y-3 p-4 min-w-0">
             {liveFeed.slice(0, 8).map((item) => (
               <div key={item.id} className={cn("rounded-2xl border p-4 text-sm", feedToneClass(item.tone))}>
                 <div className="font-medium">Live update</div>
@@ -1198,7 +1198,7 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        <Card className="border border-border/60 bg-card/70">
+        <Card className="border border-border/60 bg-card/70 overflow-hidden">
           <div className="flex items-center justify-between border-b border-border/50 px-6 py-4">
             <div className="text-[11px] uppercase tracking-[0.35em] text-amber-300/80">
               Active Threat Feed
@@ -1213,7 +1213,7 @@ export default function DashboardPage() {
               <div className="text-sm text-muted-foreground">{t("dashboard.noRecentAlerts")}</div>
             ) : (
               stats.recentAlerts.slice(0, 6).map((alert) => (
-                <div key={alert.id} className="rounded-2xl border border-border/60 bg-background/40 p-4">
+                <div key={alert.id} className="rounded-2xl border border-border/60 bg-background/40 p-4 min-w-0 overflow-hidden">
                   <div className="flex flex-col sm:flex-row items-start justify-between gap-4 min-w-0">
                     <div className="min-w-0 flex-1">
                       <div className="text-2xl font-semibold text-white">{alert.title}</div>
@@ -1247,7 +1247,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="border border-border/60 bg-card/70">
+        <Card className="border border-border/60 bg-card/70 overflow-hidden">
           <div className="flex items-center gap-2 border-b border-border/50 px-6 py-4">
             <Shield className="h-4 w-4 text-primary" />
             <div className="text-sm font-semibold">{t("dashboard.topThreatSites")}</div>
@@ -1317,7 +1317,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="border border-border/60 bg-card/70">
+        <Card className="border border-border/60 bg-card/70 overflow-hidden">
           <div className="flex items-center gap-2 border-b border-border/50 px-6 py-4">
             <Bell className="h-4 w-4 text-primary" />
             <div className="text-sm font-semibold">{t("dashboard.urgentResponseQueue")}</div>
@@ -1384,7 +1384,7 @@ export default function DashboardPage() {
         loading={timelineLoading}
       />
 
-      <Card className="border border-border/60 bg-card/70">
+      <Card className="border border-border/60 bg-card/70 overflow-hidden">
         <div className="flex items-center gap-2 border-b border-border/50 px-6 py-4">
           <Radio className="h-4 w-4 text-primary" />
           <div className="text-sm font-semibold">{t("dashboard.liveEventFeed")}</div>
