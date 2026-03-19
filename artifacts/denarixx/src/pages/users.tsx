@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { PageHeader, LoadingScreen, Card, Badge, Table, Th, Td, Button, Skeleton, cn } from '@/components/ui-core';
-import { Shield, Mail, Activity, Lock, Plus, Clock } from 'lucide-react';
+import { PageHeader, Card, Badge, Table, Th, Td, Button, Skeleton, Input, Label, cn } from '@/components/ui-core';
+import { Shield, Mail, Activity, Lock, Plus, Clock, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +10,13 @@ export default function Users() {
   const { t } = useTranslation();
   const [users, setUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGrantOpen, setIsGrantOpen] = useState(false);
+  const [grantForm, setGrantForm] = useState({
+    name: '',
+    email: '',
+    role: 'operator',
+    organization: '',
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -51,15 +58,141 @@ export default function Users() {
     return 'bg-muted-foreground';
   };
 
+  const resetGrantForm = () => {
+    setGrantForm({
+      name: '',
+      email: '',
+      role: 'operator',
+      organization: '',
+    });
+  };
+
+  const handleGrantClearance = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const name = grantForm.name.trim();
+    const email = grantForm.email.trim();
+    const role = grantForm.role.trim();
+    const organization = grantForm.organization.trim();
+
+    if (!name || !email) return;
+
+    const newUser = {
+      id: Date.now(),
+      name,
+      email,
+      role,
+      organization: organization || 'Denarixx Command',
+      status: 'active',
+      lastLogin: new Date().toISOString(),
+    };
+
+    setUsers((current) => [newUser, ...current]);
+    setIsGrantOpen(false);
+    resetGrantForm();
+  };
+
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+    <>
+      {isGrantOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl border border-border/60 bg-card p-6 shadow-2xl">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <div className="text-xl font-display font-bold text-white">{t('users.grantClearance')}</div>
+                <div className="mt-1 text-sm text-muted-foreground">Create a new clearance entry.</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsGrantOpen(false);
+                  resetGrantForm();
+                }}
+                className="rounded-xl border border-border/60 bg-secondary/40 p-2 text-muted-foreground hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form className="space-y-4" onSubmit={handleGrantClearance}>
+              <div className="space-y-2">
+                <Label htmlFor="grant-name">Full Name</Label>
+                <Input
+                  id="grant-name"
+                  value={grantForm.name}
+                  onChange={(e) => setGrantForm((prev) => ({ ...prev, name: e.target.value }))}
+                  placeholder="Operator name"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="grant-email">Email</Label>
+                <Input
+                  id="grant-email"
+                  type="email"
+                  value={grantForm.email}
+                  onChange={(e) => setGrantForm((prev) => ({ ...prev, email: e.target.value }))}
+                  placeholder="name@example.com"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="grant-role">Role</Label>
+                <select
+                  id="grant-role"
+                  value={grantForm.role}
+                  onChange={(e) => setGrantForm((prev) => ({ ...prev, role: e.target.value }))}
+                  className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground outline-none"
+                >
+                  <option value="admin">admin</option>
+                  <option value="operator">operator</option>
+                  <option value="government">government</option>
+                  <option value="family">family</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="grant-organization">Organization</Label>
+                <Input
+                  id="grant-organization"
+                  value={grantForm.organization}
+                  onChange={(e) => setGrantForm((prev) => ({ ...prev, organization: e.target.value }))}
+                  placeholder="Organization"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={() => {
+                    setIsGrantOpen(false);
+                    resetGrantForm();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" className="flex-1">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Grant
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <PageHeader
         title={t('users.title')}
         description={t('users.description')}
         actions={
           <Button
             className="shadow-[0_0_15px_rgba(201,168,76,0.2)]"
-            onClick={() => window.alert('Grant New Clearance form will be wired next.')}
+            onClick={() => setIsGrantOpen(true)}
           >
             <Plus className="w-4 h-4 mr-2" /> {t('users.grantClearance')}
           </Button>
@@ -191,5 +324,6 @@ export default function Users() {
         )}
       </Card>
     </motion.div>
+    </>
   );
 }
