@@ -308,7 +308,9 @@ export default function Login() {
 
           <div className="px-10 pb-6 border-t border-white/10 pt-5 text-center">
             <p className="text-[9px] text-white/25 uppercase tracking-[0.2em] font-mono">{t('login.classified')}</p>
-            <p className="text-[9px] text-primary/35 uppercase tracking-[0.15em] mt-1">{t('login.version')}</p>
+            <p className="mt-1 px-3 text-center text-[8px] sm:text-[9px] text-primary/45 uppercase tracking-[0.06em] sm:tracking-[0.15em] leading-relaxed break-words">
+              {t('login.version')}
+            </p>
           </div>
         </div>
       </div>
