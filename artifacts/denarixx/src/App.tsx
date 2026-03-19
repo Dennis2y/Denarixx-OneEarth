@@ -1,5 +1,6 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { AppLayout } from "@/components/layout";
 import { LoadingScreen } from "@/components/ui-core";
 import { AuthProvider, useAuth } from "@/context/auth";
@@ -18,6 +19,21 @@ const Users = lazy(() => import("@/pages/users"));
 const Settings = lazy(() => import("@/pages/settings"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 const GlobalMap = lazy(() => import("./pages/global-map"));
+
+const RTL_LANGS = new Set(["ar", "fa", "he"]);
+
+function LanguageDocumentSync() {
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    const lang = (i18n.resolvedLanguage || i18n.language || "en").split("-")[0];
+    const dir = RTL_LANGS.has(lang) ? "rtl" : "ltr";
+    document.documentElement.setAttribute("lang", lang);
+    document.documentElement.setAttribute("dir", dir);
+  }, [i18n.language, i18n.resolvedLanguage]);
+
+  return null;
+}
 
 function ProtectedApp() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -66,11 +82,20 @@ function ProtectedApp() {
   );
 }
 
+function AppShell() {
+  return (
+    <>
+      <LanguageDocumentSync />
+      <ProtectedApp />
+    </>
+  );
+}
+
 export default function App() {
   return (
     <AuthProvider>
       <WouterRouter>
-        <ProtectedApp />
+        <AppShell />
       </WouterRouter>
     </AuthProvider>
   );
