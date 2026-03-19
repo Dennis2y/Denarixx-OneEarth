@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { AppLayout } from "@/components/layout";
-import { LogOut, Home, Cpu, Bell, MapPin, Settings as SettingsIcon, Shield, Zap, Activity } from "lucide-react";
+import { LogOut, Home, Cpu, Bell, MapPin, Settings as SettingsIcon, Shield, Zap, Activity, Globe, Users as UsersIcon, X, Menu } from "lucide-react";
 import { LoadingScreen } from "@/components/ui-core";
 import { apiFetch } from "@/lib/api";
 import { AuthProvider, useAuth } from "@/context/auth";
@@ -70,6 +70,7 @@ function ForceSystemEnglish() {
 function MobileProtectedShell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [stats, setStats] = useState<{
     activeSites?: number;
     criticalAlerts?: number;
@@ -110,17 +111,49 @@ function MobileProtectedShell({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  useEffect(() => {
+    setDrawerOpen(false);
+  }, [location]);
+
   const handleLogout = async () => {
     await logout();
     setLocation("/login");
   };
 
-  const navItems = [
+  const quickNavItems = [
     { href: "/dashboard", label: "Home", icon: Home },
     { href: "/command-center", label: "Command", icon: Cpu },
     { href: "/alerts", label: "Alerts", icon: Bell },
     { href: "/sites", label: "Sites", icon: MapPin },
     { href: "/settings", label: "Settings", icon: SettingsIcon },
+  ];
+
+  const groupedNav = [
+    {
+      title: "Core",
+      items: [
+        { href: "/dashboard", label: "Dashboard", icon: Home },
+        { href: "/command-center", label: "Command Center", icon: Cpu },
+        { href: "/global-map", label: "Global Map", icon: Globe },
+      ],
+    },
+    {
+      title: "Modules",
+      items: [
+        { href: "/energy", label: "Energy", icon: Zap },
+        { href: "/lifemesh", label: "LifeMesh", icon: Shield },
+        { href: "/earthshield", label: "EarthShield", icon: Globe },
+      ],
+    },
+    {
+      title: "Management",
+      items: [
+        { href: "/alerts", label: "Alerts", icon: Bell },
+        { href: "/sites", label: "Sites", icon: MapPin },
+        { href: "/users", label: "Users", icon: UsersIcon },
+        { href: "/settings", label: "Settings", icon: SettingsIcon },
+      ],
+    },
   ];
 
   const criticalCount = stats?.criticalAlerts ?? 0;
@@ -134,9 +167,86 @@ function MobileProtectedShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-[100dvh] w-full bg-background text-foreground overflow-x-hidden">
+      {drawerOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+          onClick={() => setDrawerOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`fixed top-0 left-0 z-[60] h-full w-[86%] max-w-[320px] border-r border-border/60 bg-background/98 backdrop-blur-xl transition-transform duration-300 ${
+          drawerOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between border-b border-border/50 px-4 py-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <img
+              src={`${import.meta.env.BASE_URL}denarixx-logo.png`}
+              alt="Denarixx"
+              className="h-8 w-8 shrink-0"
+            />
+            <div className="min-w-0">
+              <div className="text-sm font-bold tracking-[0.18em] text-primary truncate">DENARIXX</div>
+              <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground truncate">OneEarth Command</div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setDrawerOpen(false)}
+            className="rounded-xl border border-border/60 bg-card/70 p-2"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="border-b border-border/30 px-4 py-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          {user ? `${user.name} · ${user.role} · L${user.clearanceLevel}` : "Mobile Command View"}
+        </div>
+
+        <div className="overflow-y-auto h-[calc(100%-132px)] px-3 py-4 space-y-5">
+          {groupedNav.map((group) => (
+            <div key={group.title} className="space-y-2">
+              <div className="px-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                {group.title}
+              </div>
+
+              <div className="space-y-1">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const active = location === item.href;
+
+                  return (
+                    <button
+                      key={item.href}
+                      onClick={() => setLocation(item.href)}
+                      className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left ${
+                        active
+                          ? "bg-primary/12 text-primary border border-primary/20"
+                          : "border border-transparent bg-card/60 text-foreground"
+                      }`}
+                    >
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span className="text-sm font-medium">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </aside>
+
       <header className="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="inline-flex items-center justify-center rounded-xl border border-border/60 bg-card/70 p-2 shrink-0"
+            >
+              <Menu className="h-4 w-4" />
+            </button>
+
             <img
               src={`${import.meta.env.BASE_URL}denarixx-logo.png`}
               alt="Denarixx"
@@ -150,7 +260,7 @@ function MobileProtectedShell({ children }: { children: React.ReactNode }) {
 
           <button
             onClick={handleLogout}
-            className="inline-flex items-center gap-2 rounded-xl border border-border/60 bg-card/70 px-3 py-2 text-sm"
+            className="inline-flex items-center gap-2 rounded-xl border border-border/60 bg-card/70 px-3 py-2 text-sm shrink-0"
           >
             <LogOut className="h-4 w-4" />
             Logout
@@ -220,7 +330,7 @@ function MobileProtectedShell({ children }: { children: React.ReactNode }) {
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-background/95 backdrop-blur">
         <div className="grid grid-cols-5 gap-1 px-2 py-2">
-          {navItems.map((item) => {
+          {quickNavItems.map((item) => {
             const active = location === item.href;
             const Icon = item.icon;
 
