@@ -39,8 +39,8 @@ function SystemRibbon({ user }: { user: any }) {
 
   return (
     <div className="shrink-0 border-b border-border/50 bg-sidebar/70 backdrop-blur-md relative overflow-hidden">
-      <div className="flex items-center justify-between px-3 sm:px-4 h-7">
-        <div className="flex items-center gap-2 sm:gap-3 text-[9px] font-mono font-bold uppercase tracking-widest overflow-hidden">
+      <div className="flex items-center justify-between px-2 sm:px-4 h-7 gap-2 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 text-[9px] font-mono font-bold uppercase tracking-widest overflow-hidden min-w-0 flex-1">
           <div className={cn('flex items-center gap-1.5 shrink-0', threatColor)}>
             <div className={cn('w-1.5 h-1.5 rounded-full animate-pulse', threatDot)} />
             <span className="hidden xs:inline">THREAT:</span> <span>{threatLevel}</span>
@@ -62,7 +62,7 @@ function SystemRibbon({ user }: { user: any }) {
             PROTECTED: <span className="text-blue-400">{stats ? stats.protectedPeople : '—'}</span>
           </span>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 text-[9px] font-mono text-muted-foreground uppercase tracking-widest shrink-0">
+        <div className="hidden sm:flex items-center gap-2 sm:gap-3 text-[9px] font-mono text-muted-foreground uppercase tracking-widest shrink-0">
           <span className="classified-badge hidden sm:inline">CLASSIFIED</span>
           <span className="text-border/40 hidden sm:inline">│</span>
           <span className="text-primary font-bold">L{user?.clearanceLevel ?? '—'}</span>
@@ -73,7 +73,7 @@ function SystemRibbon({ user }: { user: any }) {
         </div>
       </div>
 
-      <div className="flex items-center h-[18px] border-t border-border/20 overflow-hidden">
+      <div className="hidden sm:flex items-center h-[18px] border-t border-border/20 overflow-hidden">
         <div className="shrink-0 px-2 sm:px-3 h-full flex items-center bg-primary/10 border-r border-primary/30">
           <span className="text-[8px] font-bold text-primary uppercase tracking-[0.2em]">LIVE</span>
         </div>
@@ -229,7 +229,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="flex h-[100dvh] bg-background text-foreground font-sans overflow-hidden selection:bg-primary/30 selection:text-primary-foreground">
+    <div className="flex h-[100dvh] w-full bg-background text-foreground font-sans overflow-hidden selection:bg-primary/30 selection:text-primary-foreground">
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/80 z-40 backdrop-blur-sm md:hidden"
@@ -248,9 +248,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         {sidebarContent}
       </aside>
 
-      <div className="flex-1 flex flex-col h-[100dvh] overflow-hidden min-w-0">
+      <div className="flex flex-1 flex-col h-[100dvh] overflow-hidden min-w-0 w-0">
         <SystemRibbon user={user} />
-        <main className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto custom-scrollbar p-3 sm:p-4 lg:p-8 min-w-0">
           {children}
         </main>
       </div>

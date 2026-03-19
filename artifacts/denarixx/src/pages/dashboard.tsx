@@ -506,13 +506,13 @@ export default function DashboardPage() {
   }, [stats]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full min-w-0 overflow-x-hidden">
       <div className="rounded-2xl border border-amber-500/20 bg-[linear-gradient(90deg,rgba(120,53,15,0.22),rgba(7,10,18,0.95),rgba(12,74,110,0.18))] px-4 py-3 shadow-[0_0_40px_rgba(245,158,11,0.08)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-3">
             <span className="mt-1 h-2.5 w-2.5 rounded-full bg-amber-300 shadow-[0_0_14px_rgba(252,211,77,0.95)]" />
             <div>
-              <div className="text-[11px] uppercase tracking-[0.35em] text-amber-200/80">{t("dashboard.liveCommandStrip")}</div>
+              <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.22em] sm:tracking-[0.35em] text-amber-200/80 break-words">{t("dashboard.liveCommandStrip")}</div>
               <div className="mt-1 text-sm text-white">{liveAlertStrip}</div>
             </div>
           </div>
@@ -535,14 +535,14 @@ export default function DashboardPage() {
 
       <div className="rounded-[28px] overflow-hidden border border-red-500/20 bg-[radial-gradient(circle_at_top,rgba(127,29,29,0.35),rgba(9,9,11,0.95)_60%)] shadow-[0_0_60px_rgba(127,29,29,0.18)]">
         <div className="flex items-center justify-between border-b border-red-500/15 px-6 py-4">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 min-w-0">
             <span className="h-2.5 w-2.5 rounded-full bg-red-400 shadow-[0_0_12px_rgba(248,113,113,0.9)]" />
             <div className="text-[11px] uppercase tracking-[0.35em] text-red-200/80">
               Global Threat Assessment Matrix
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 min-w-0">
             <Badge className="border border-red-500/20 bg-red-500/10 text-red-300">
               Threat Elevated
             </Badge>
@@ -555,7 +555,7 @@ export default function DashboardPage() {
 
         <div className="grid gap-4 px-6 py-5 lg:grid-cols-[1.4fr_1fr]">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 min-w-0">
               <TriangleAlert className="h-6 w-6 text-red-400" />
               <div>
                 <div className="text-3xl font-semibold tracking-wide text-red-300">
@@ -593,7 +593,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 xl:grid-cols-5">
         <Card className="relative overflow-hidden border border-amber-500/20 bg-card/80 p-5">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.12),transparent_55%)]" />
           <div className="relative">
@@ -643,8 +643,8 @@ export default function DashboardPage() {
       <div className="grid gap-6 xl:grid-cols-[1.9fr_0.9fr]">
         <Card className="overflow-hidden border border-border/60 bg-card/70">
           <div className="border-b border-border/50 px-6 py-4">
-            <div className="text-4xl font-semibold text-white">{t("dashboard.globalOperations")}</div>
-            <div className="mt-1 text-xl uppercase tracking-[0.25em] text-amber-300">{t("dashboard.liveNodeStatus")}</div>
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-white break-words">{t("dashboard.globalOperations")}</div>
+            <div className="mt-1 text-sm sm:text-lg lg:text-xl uppercase tracking-[0.2em] sm:tracking-[0.25em] text-amber-300 break-words">{t("dashboard.liveNodeStatus")}</div>
           </div>
 
           <div className="p-5">
@@ -670,7 +670,7 @@ export default function DashboardPage() {
           </div>
 
           <Card className="overflow-hidden border border-cyan-500/15 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.08),transparent_35%),linear-gradient(180deg,rgba(10,14,25,0.95),rgba(4,7,15,0.98))] p-5 backdrop-blur-xl">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-4 min-w-0">
               <div>
                 <div className="mb-2 flex items-center gap-2">
                   <Badge className="border-cyan-400/20 bg-cyan-400/10 text-cyan-200">
@@ -843,7 +843,7 @@ export default function DashboardPage() {
             ) : (
               stats.recentAlerts.slice(0, 6).map((alert) => (
                 <div key={alert.id} className="rounded-2xl border border-border/60 bg-background/40 p-4">
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-4 min-w-0">
                     <div className="min-w-0 flex-1">
                       <div className="text-2xl font-semibold text-white">{alert.title}</div>
                       <div className="mt-1 text-sm text-slate-500">
