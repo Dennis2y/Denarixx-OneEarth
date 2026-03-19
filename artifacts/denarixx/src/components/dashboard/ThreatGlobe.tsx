@@ -231,7 +231,7 @@ export default function ThreatGlobe({
     const controls = globe.controls?.();
     if (controls) {
       controls.autoRotate = true;
-      controls.autoRotateSpeed = 0.22;
+      controls.autoRotateSpeed = 0.18;
       controls.enablePan = false;
       controls.minDistance = 170;
       controls.maxDistance = 290;
@@ -499,8 +499,7 @@ export default function ThreatGlobe({
             height={305}
             backgroundColor="rgba(0,0,0,0)"
             globeImageUrl="https://unpkg.com/three-globe/example/img/earth-night.jpg"
-            bumpImageUrl="https://unpkg.com/three-globe/example/img/earth-topology.png"
-            atmosphereColor="#2563eb"
+                        atmosphereColor="#2563eb"
             atmosphereAltitude={0.11}
             polygonsData={countries}
             polygonCapColor={(feat: CountryFeature) => {
@@ -542,7 +541,7 @@ export default function ThreatGlobe({
             pointAltitude="altitude"
             pointRadius="radius"
             pointColor="color"
-            pointResolution={18}
+            pointResolution={10}
             onPointClick={(d: GlobePoint | EscalationPoint) => {
               const globe = globeRef.current;
               if (!globe) return;
@@ -601,7 +600,7 @@ export default function ThreatGlobe({
             labelColor="color"
             labelSize={() => 1.12}
             labelDotRadius={() => 0.2}
-            labelResolution={2}
+            labelResolution={1}
             htmlElementsData={[...countryLabelPoints, ...continentLabelPoints]}
             htmlLat="lat"
             htmlLng="lng"
