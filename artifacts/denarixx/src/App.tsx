@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { AppLayout } from "@/components/layout";
 import { LoadingScreen } from "@/components/ui-core";
 import { AuthProvider, useAuth } from "@/context/auth";
+import i18n from "./i18n";
 
 const Landing = lazy(() => import("@/pages/landing"));
 const Login = lazy(() => import("@/pages/login"));
@@ -31,6 +32,24 @@ function LanguageDocumentSync() {
     document.documentElement.setAttribute("lang", lang);
     document.documentElement.setAttribute("dir", dir);
   }, [i18n.language, i18n.resolvedLanguage]);
+
+  return null;
+}
+
+
+function ForceSystemEnglish() {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    const isProtectedRoute = location !== "/" && location !== "/login";
+    if (!isProtectedRoute) return;
+
+    if (i18n.language !== "en") {
+      void i18n.changeLanguage("en");
+    }
+    document.documentElement.setAttribute("lang", "en");
+    document.documentElement.setAttribute("dir", "ltr");
+  }, [location]);
 
   return null;
 }
@@ -86,6 +105,7 @@ function AppShell() {
   return (
     <>
       <LanguageDocumentSync />
+      <ForceSystemEnglish />
       <ProtectedApp />
     </>
   );

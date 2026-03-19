@@ -3,7 +3,6 @@ import { Link, useLocation } from 'wouter';
 import { Home, Zap, Shield, Globe, Bell, MapPin, Users, Settings, LogOut, Menu, Search, Cpu, X } from 'lucide-react';
 import { cn } from './ui-core';
 import { format } from 'date-fns';
-import { useTranslation } from 'react-i18next';
 import { useAuth, roleLabel } from '@/context/auth';
 import { apiUrl } from "@/lib/api";
 
@@ -124,9 +123,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     document.documentElement.classList.add("dark");
-    const saved = localStorage.getItem('i18nextLng') || navigator.language.split('-')[0];
-    document.documentElement.setAttribute('dir', RTL_LANGS.has(saved) ? 'rtl' : 'ltr');
-    document.documentElement.setAttribute('lang', saved);
     const interval = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
