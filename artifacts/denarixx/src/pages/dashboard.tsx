@@ -197,6 +197,33 @@ function buildFallbackPreview(
   };
 }
 
+
+function LiveCount({ value, suffix = "" }: { value: number; suffix?: string }) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    let frame = 0;
+    const start = display;
+    const end = value;
+    const duration = 24;
+    const diff = end - start;
+
+    if (diff === 0) return;
+
+    const tick = () => {
+      frame += 1;
+      const progress = Math.min(frame / duration, 1);
+      const next = Math.round(start + diff * progress);
+      setDisplay(next);
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+
+    requestAnimationFrame(tick);
+  }, [value]);
+
+  return <>{display}{suffix}</>;
+}
+
 export default function DashboardPage() {
   const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -516,9 +543,25 @@ export default function DashboardPage() {
   if (isMobile) {
     return (
       <div className="w-full max-w-full space-y-4 overflow-x-hidden">
-        <Card className="border border-amber-500/20 bg-[linear-gradient(90deg,rgba(120,53,15,0.22),rgba(7,10,18,0.95),rgba(12,74,110,0.18))] p-4">
+        <Card className="border border-amber-500/20 bg-[linear-gradient(90deg,rgba(120,53,15,0.22),rgba(7,10,18,0.95),rgba(12,74,110,0.18))] p-4 overflow-hidden">
           <div className="text-[11px] uppercase tracking-[0.22em] text-amber-200/80">{t("dashboard.liveCommandStrip")}</div>
           <div className="mt-2 text-sm text-white break-words">{liveAlertStrip}</div>
+
+          <div className="mt-3 rounded-xl border border-amber-500/15 bg-black/20 overflow-hidden">
+            <div className="flex items-center">
+              <div className="shrink-0 px-3 py-2 border-r border-amber-500/20 text-[10px] font-bold uppercase tracking-[0.22em] text-amber-300">
+                LIVE
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <div className="mobile-live-marquee whitespace-nowrap px-4 py-2 text-xs text-slate-300">
+                  {liveFeed.map((item) => trLiveMessage(t, item.label)).join("  ◆  ")}
+                  {"  ◆  "}
+                  {liveFeed.map((item) => trLiveMessage(t, item.label)).join("  ◆  ")}
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="mt-3 grid grid-cols-1 gap-2">
             {liveFeed.slice(0, 3).map((item) => (
               <div key={item.id} className={cn("rounded-xl border px-3 py-2 text-xs", feedToneClass(item.tone))}>
@@ -538,19 +581,19 @@ export default function DashboardPage() {
           <div className="mt-4 grid grid-cols-2 gap-3">
             <Card className="border border-border/60 bg-card/70 p-3">
               <div className="text-[10px] uppercase tracking-[0.14em] text-slate-500">{t("dashboard.activeNodes")}</div>
-              <div className="mt-1 text-2xl font-semibold text-amber-300">{overview.totalNodes}</div>
+              <div className="mt-1 text-2xl font-semibold text-amber-300"><LiveCount value={overview.totalNodes} /></div>
             </Card>
             <Card className="border border-border/60 bg-card/70 p-3">
               <div className="text-[10px] uppercase tracking-[0.14em] text-slate-500">{t("dashboard.criticalAlertsLabel")}</div>
-              <div className="mt-1 text-2xl font-semibold text-red-400">{overview.criticalAlerts}</div>
+              <div className="mt-1 text-2xl font-semibold text-red-400"><LiveCount value={overview.criticalAlerts} /></div>
             </Card>
             <Card className="border border-border/60 bg-card/70 p-3">
               <div className="text-[10px] uppercase tracking-[0.14em] text-slate-500">{t("dashboard.protectedLives")}</div>
-              <div className="mt-1 text-2xl font-semibold text-sky-300">{overview.protectedPeople}</div>
+              <div className="mt-1 text-2xl font-semibold text-sky-300"><LiveCount value={overview.protectedPeople} /></div>
             </Card>
             <Card className="border border-border/60 bg-card/70 p-3">
               <div className="text-[10px] uppercase tracking-[0.14em] text-slate-500">{t("dashboard.energyAvail")}</div>
-              <div className="mt-1 text-2xl font-semibold text-emerald-300">{overview.energyAvailability}%</div>
+              <div className="mt-1 text-2xl font-semibold text-emerald-300"><LiveCount value={overview.energyAvailability} suffix="%" /></div>
             </Card>
           </div>
         </Card>
@@ -899,19 +942,19 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 text-center min-w-0">
             <div>
               <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">{t("dashboard.activeNodes")}</div>
-              <div className="mt-1 text-3xl font-semibold text-amber-300">{overview.totalNodes}</div>
+              <div className="mt-1 text-3xl font-semibold text-amber-300"><LiveCount value={overview.totalNodes} /></div>
             </div>
             <div>
               <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">{t("dashboard.criticalAlertsLabel")}</div>
-              <div className="mt-1 text-3xl font-semibold text-red-400">{overview.criticalAlerts}</div>
+              <div className="mt-1 text-3xl font-semibold text-red-400"><LiveCount value={overview.criticalAlerts} /></div>
             </div>
             <div>
               <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">{t("dashboard.protectedEntities")}</div>
-              <div className="mt-1 text-3xl font-semibold text-emerald-400">{overview.protectedPeople}</div>
+              <div className="mt-1 text-3xl font-semibold text-emerald-400"><LiveCount value={overview.protectedPeople} /></div>
             </div>
             <div>
               <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">{t("dashboard.energyGrid")}</div>
-              <div className="mt-1 text-3xl font-semibold text-sky-400">{overview.energyAvailability}%</div>
+              <div className="mt-1 text-3xl font-semibold text-sky-400"><LiveCount value={overview.energyAvailability} suffix="%" /></div>
             </div>
             <div>
               <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">{t("dashboard.riskZones")}</div>
@@ -926,7 +969,7 @@ export default function DashboardPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.12),transparent_55%)]" />
           <div className="relative">
             <Activity className="mb-5 h-5 w-5 text-amber-300" />
-            <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white break-words">{overview.totalNodes}</div>
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white break-words"><LiveCount value={overview.totalNodes} /></div>
             <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">{t("dashboard.activeSites")}</div>
           </div>
         </Card>
@@ -935,7 +978,7 @@ export default function DashboardPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(239,68,68,0.12),transparent_55%)]" />
           <div className="relative">
             <Siren className="mb-5 h-5 w-5 text-red-300" />
-            <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white break-words">{overview.criticalAlerts}</div>
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white break-words"><LiveCount value={overview.criticalAlerts} /></div>
             <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">{t("dashboard.criticalAlertsLabel")}</div>
           </div>
         </Card>
@@ -944,7 +987,7 @@ export default function DashboardPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.12),transparent_55%)]" />
           <div className="relative">
             <Users className="mb-5 h-5 w-5 text-sky-300" />
-            <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white break-words">{overview.protectedPeople}</div>
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white break-words"><LiveCount value={overview.protectedPeople} /></div>
             <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">{t("dashboard.protectedLives")}</div>
           </div>
         </Card>
@@ -962,7 +1005,7 @@ export default function DashboardPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_55%)]" />
           <div className="relative">
             <Zap className="mb-5 h-5 w-5 text-emerald-300" />
-            <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white break-words">{overview.energyAvailability}%</div>
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white break-words"><LiveCount value={overview.energyAvailability} suffix="%" /></div>
             <div className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-400">{t("dashboard.energyAvail")}</div>
           </div>
         </Card>
