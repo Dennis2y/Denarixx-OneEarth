@@ -567,13 +567,15 @@ export default function DashboardPage() {
             ) : !stats || (stats.globeSites ?? stats.topThreatSites).length === 0 ? (
               <div className="text-sm text-muted-foreground">{t("dashboard.noGlobe")}</div>
             ) : (
-              <Suspense fallback={<div className="text-sm text-muted-foreground">{t("dashboard.loadingLiveGlobe")}</div>}>
-                <ThreatGlobe
-                  sites={stats.globeSites ?? stats.topThreatSites}
-                  escalations={stats.escalationHotspots ?? []}
-                  liveFlashToken={liveFlashToken}
-                />
-              </Suspense>
+              <div className="mobile-globe-wrap h-[280px] sm:h-[320px] overflow-hidden rounded-2xl">
+                <Suspense fallback={<div className="text-sm text-muted-foreground">{t("dashboard.loadingLiveGlobe")}</div>}>
+                  <ThreatGlobe
+                    sites={stats.globeSites ?? stats.topThreatSites}
+                    escalations={stats.escalationHotspots ?? []}
+                    liveFlashToken={liveFlashToken}
+                  />
+                </Suspense>
+              </div>
             )}
           </div>
         </Card>
