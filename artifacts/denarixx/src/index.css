@@ -309,3 +309,13 @@ html, body, #root {
 body {
   position: relative;
 }
+
+
+html, body, #root {
+  scroll-behavior: auto;
+  overscroll-behavior-x: none;
+}
+
+main {
+  overscroll-behavior-x: none;
+}

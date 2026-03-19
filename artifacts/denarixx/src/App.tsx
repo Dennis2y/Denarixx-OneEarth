@@ -33,6 +33,32 @@ function ForceSystemEnglish() {
     document.body.setAttribute("dir", "ltr");
     document.body.style.overflowX = "hidden";
     document.body.style.margin = "0";
+    window.history.scrollRestoration = "manual";
+    window.scrollTo(0, 0);
+    document.documentElement.scrollLeft = 0;
+    document.body.scrollLeft = 0;
+
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollLeft = 0;
+      document.body.scrollLeft = 0;
+
+      const main = document.querySelector("main");
+      if (main instanceof HTMLElement) {
+        main.scrollLeft = 0;
+      }
+    });
+
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollLeft = 0;
+      document.body.scrollLeft = 0;
+
+      const main = document.querySelector("main");
+      if (main instanceof HTMLElement) {
+        main.scrollLeft = 0;
+      }
+    }, 120);
   }, [location]);
 
   return null;
