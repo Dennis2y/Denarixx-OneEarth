@@ -119,16 +119,16 @@ export default function Login() {
       />
       <video
         ref={videoRef}
-        className="absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-[1500ms]"
+        className="absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-[1500ms] brightness-[0.9] sm:brightness-100"
         style={{ opacity: videoLoaded ? 1 : 0 }}
         autoPlay loop muted playsInline
         onLoadedData={() => setVideoLoaded(true)}
         src={`${import.meta.env.BASE_URL}africa-city-night.mp4`}
       />
       <div className="absolute inset-0 z-10 pointer-events-none">
-        <div className="absolute inset-0 bg-black/55" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-black/45" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-transparent to-black/35" />
+        <div className="absolute inset-0 bg-black/38 sm:bg-black/55" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/82 via-black/12 to-black/28 sm:from-black/95 sm:via-black/20 sm:to-black/45" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/22 sm:from-black/65 sm:to-black/35" />
       </div>
       <div className="absolute inset-0 z-10 pointer-events-none opacity-[0.03]"
         style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,1) 2px, rgba(255,255,255,1) 3px)', backgroundSize: '100% 3px' }} />
