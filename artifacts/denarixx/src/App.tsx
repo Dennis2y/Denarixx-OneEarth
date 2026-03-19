@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { AppLayout } from "@/components/layout";
-import { LogOut, Menu } from "lucide-react";
+import { LogOut, Home, Cpu, Bell, MapPin, Settings } from "lucide-react";
 import { LoadingScreen } from "@/components/ui-core";
 import { AuthProvider, useAuth } from "@/context/auth";
 import i18n from "./i18n";
@@ -68,12 +68,20 @@ function ForceSystemEnglish() {
 
 function MobileProtectedShell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
 
   const handleLogout = async () => {
     await logout();
     setLocation("/login");
   };
+
+  const navItems = [
+    { href: "/dashboard", label: "Home", icon: Home },
+    { href: "/command-center", label: "Command", icon: Cpu },
+    { href: "/alerts", label: "Alerts", icon: Bell },
+    { href: "/sites", label: "Sites", icon: MapPin },
+    { href: "/settings", label: "Settings", icon: Settings },
+  ];
 
   return (
     <div className="min-h-[100dvh] w-full bg-background text-foreground overflow-x-hidden">
@@ -105,9 +113,33 @@ function MobileProtectedShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="w-full max-w-full overflow-x-hidden p-4">
+      <main className="w-full max-w-full overflow-x-hidden p-4 pb-24">
         {children}
       </main>
+
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-background/95 backdrop-blur">
+        <div className="grid grid-cols-5 gap-1 px-2 py-2">
+          {navItems.map((item) => {
+            const active = location === item.href;
+            const Icon = item.icon;
+
+            return (
+              <button
+                key={item.href}
+                onClick={() => setLocation(item.href)}
+                className={`flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-[10px] ${
+                  active
+                    ? "bg-primary/12 text-primary"
+                    : "text-muted-foreground"
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }
