@@ -89,6 +89,7 @@ export default function CommandTimelinePanel({
   selectedHistoryId = null,
   onHistorySelect,
 }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
       <Card className="overflow-hidden border border-border/60 bg-card/70">
