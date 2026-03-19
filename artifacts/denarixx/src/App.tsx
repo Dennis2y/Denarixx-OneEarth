@@ -1,6 +1,5 @@
 import React, { Suspense, lazy, useEffect } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
-import { useTranslation } from "react-i18next";
 import { AppLayout } from "@/components/layout";
 import { LoadingScreen } from "@/components/ui-core";
 import { AuthProvider, useAuth } from "@/context/auth";
@@ -21,29 +20,11 @@ const Settings = lazy(() => import("@/pages/settings"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 const GlobalMap = lazy(() => import("./pages/global-map"));
 
-const RTL_LANGS = new Set(["ar", "fa", "he"]);
-
-function LanguageDocumentSync() {
-  const { i18n } = useTranslation();
-
-  useEffect(() => {
-    const lang = (i18n.resolvedLanguage || i18n.language || "en").split("-")[0];
-    const dir = RTL_LANGS.has(lang) ? "rtl" : "ltr";
-    document.documentElement.setAttribute("lang", lang);
-    document.documentElement.setAttribute("dir", dir);
-  }, [i18n.language, i18n.resolvedLanguage]);
-
-  return null;
-}
-
 
 function ForceSystemEnglish() {
   const [location] = useLocation();
 
   useEffect(() => {
-    const isProtectedRoute = location !== "/" && location !== "/login";
-    if (!isProtectedRoute) return;
-
     if (i18n.language !== "en") {
       void i18n.changeLanguage("en");
     }
@@ -107,7 +88,6 @@ function ProtectedApp() {
 function AppShell() {
   return (
     <>
-      <LanguageDocumentSync />
       <ForceSystemEnglish />
       <ProtectedApp />
     </>
