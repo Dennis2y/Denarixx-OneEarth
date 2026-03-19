@@ -315,8 +315,8 @@ export default function Login() {
         </div>
       </div>
 
-      <div className="absolute bottom-4 left-0 right-0 z-20 px-6 sm:bottom-5">
-        <p className="mx-auto max-w-[320px] text-center text-[8px] sm:text-[9px] text-white/20 uppercase tracking-[0.12em] sm:tracking-[0.3em] font-mono leading-relaxed">
+      <div className="absolute bottom-5 left-0 right-0 z-20 hidden px-6 sm:block">
+        <p className="mx-auto max-w-[320px] text-center text-[9px] text-white/20 uppercase tracking-[0.3em] font-mono leading-relaxed">
           Denarixx OneEarth · Global Resilience Infrastructure Platform © 2026
         </p>
       </div>
