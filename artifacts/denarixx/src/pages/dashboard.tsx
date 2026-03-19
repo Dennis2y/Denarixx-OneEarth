@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Card, Badge, Button, cn } from "@/components/ui-core";
 import { apiFetch, apiStreamUrl } from "@/lib/api";
+import { trDirective, trDeploymentMode, trEscalationLevel, trLiveMessage, trModule, trPriority, trScenarioLabel, trSiteType, trStatus, trThreatLevel } from "@/lib/system-display-i18n";
 
 const ThreatGlobe = lazy(() => import("@/components/dashboard/ThreatGlobe"));
 import CommandTimelinePanel, {
@@ -525,7 +526,7 @@ export default function DashboardPage() {
                   feedToneClass(item.tone),
                 )}
               >
-                {item.label}
+                {trLiveMessage(t, item.label)}
               </div>
             ))}
           </div>
@@ -714,20 +715,20 @@ export default function DashboardPage() {
                   <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
                     <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">{t("dashboard.escalation")}</div>
                     <div className="mt-1 text-sm font-semibold text-white">
-                      {consolePreview?.autoEscalation?.escalationLevel ?? "—"}
+                      {consolePreview?.autoEscalation?.escalationLevel ? trEscalationLevel(t, consolePreview.autoEscalation.escalationLevel) : "—"}
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
                     <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">{t("dashboard.deployment")}</div>
                     <div className="mt-1 text-sm font-semibold text-white">
-                      {consolePreview?.autoEscalation?.deploymentMode ?? "—"}
+                      {consolePreview?.autoEscalation?.deploymentMode ? trDeploymentMode(t, consolePreview.autoEscalation.deploymentMode) : "—"}
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-sm text-slate-300 min-h-[68px]">
-                  {consoleResponse}
+                  {trDirective(t, trLiveMessage(t, trScenarioLabel(t, consoleResponse)))}
                 </div>
 
                 {consoleError ? (
@@ -846,20 +847,20 @@ export default function DashboardPage() {
                     <div className="min-w-0 flex-1">
                       <div className="text-2xl font-semibold text-white">{alert.title}</div>
                       <div className="mt-1 text-sm text-slate-500">
-                        {alert.location} · {alert.status}
+                        {alert.location} · {trStatus(t, alert.status)}
                       </div>
 
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         <Badge className={cn("border", threatClass(alert.threatLevel))}>
-                          {alert.threatLevel}
+                          {trThreatLevel(t, alert.threatLevel)}
                         </Badge>
                         <Badge className={cn("border", priorityClass(alert.responsePriority))}>
-                          {alert.responsePriority}
+                          {trPriority(t, alert.responsePriority)}
                         </Badge>
-                        <Badge className={cn("border", moduleTone(alert.module))}>{alert.module}</Badge>
+                        <Badge className={cn("border", moduleTone(alert.module))}>{trModule(t, alert.module)}</Badge>
                       </div>
 
-                      <div className="mt-3 text-sm text-slate-300">{alert.recommendedAction}</div>
+                      <div className="mt-3 text-sm text-slate-300">{trDirective(t, alert.recommendedAction)}</div>
                     </div>
 
                     <div className="text-right">
@@ -922,9 +923,9 @@ export default function DashboardPage() {
                           {site.location}, {site.country}
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <Badge className={cn("border", threatClass(site.threatLevel))}>{site.threatLevel}</Badge>
-                          <Badge className={cn("border", priorityClass(site.responsePriority))}>{site.responsePriority}</Badge>
-                          <Badge variant="outline">{site.type}</Badge>
+                          <Badge className={cn("border", threatClass(site.threatLevel))}>{trThreatLevel(t, site.threatLevel)}</Badge>
+                          <Badge className={cn("border", priorityClass(site.responsePriority))}>{trPriority(t, site.responsePriority)}</Badge>
+                          <Badge variant="outline">{trSiteType(t, site.type)}</Badge>
                           {selected ? (
                             <Badge className="border-cyan-400/20 bg-cyan-400/10 text-cyan-200">
                               Selected
@@ -964,7 +965,7 @@ export default function DashboardPage() {
 
                 return (
                   <button
-                    key={`${item.kind}-${item.id}`}
+                    key={`${trSiteType(t, item.kind)}-${item.id}`}
                     type="button"
                     onClick={() => setSelectedQueueItem(item)}
                     className={cn(
@@ -986,11 +987,11 @@ export default function DashboardPage() {
                         </div>
                         <div className="text-sm text-muted-foreground">{item.location}</div>
                         <div className="flex flex-wrap gap-2">
-                          <Badge variant="outline">{item.kind}</Badge>
-                          <Badge className={cn("border", threatClass(item.threatLevel))}>{item.threatLevel}</Badge>
-                          <Badge className={cn("border", priorityClass(item.responsePriority))}>{item.responsePriority}</Badge>
+                          <Badge variant="outline">{trSiteType(t, item.kind)}</Badge>
+                          <Badge className={cn("border", threatClass(item.threatLevel))}>{trThreatLevel(t, item.threatLevel)}</Badge>
+                          <Badge className={cn("border", priorityClass(item.responsePriority))}>{trPriority(t, item.responsePriority)}</Badge>
                         </div>
-                        <div className="text-sm text-slate-300">{item.recommendedAction}</div>
+                        <div className="text-sm text-slate-300">{trDirective(t, item.recommendedAction)}</div>
                       </div>
 
                       <div className="min-w-[92px] rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-center">
@@ -1034,7 +1035,7 @@ export default function DashboardPage() {
                 )}
                 Live update
               </div>
-              <div className="mt-2 leading-6">{item.label}</div>
+              <div className="mt-2 leading-6">{trLiveMessage(t, item.label)}</div>
             </div>
           ))}
         </div>
