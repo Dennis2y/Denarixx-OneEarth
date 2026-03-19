@@ -515,10 +515,17 @@ export default function DashboardPage() {
 
   if (isMobile) {
     return (
-      <div className="space-y-4 w-full max-w-full overflow-x-hidden">
+      <div className="w-full max-w-full space-y-4 overflow-x-hidden">
         <Card className="border border-amber-500/20 bg-[linear-gradient(90deg,rgba(120,53,15,0.22),rgba(7,10,18,0.95),rgba(12,74,110,0.18))] p-4">
-          <div className="text-[11px] uppercase tracking-[0.25em] text-amber-200/80">{t("dashboard.liveCommandStrip")}</div>
+          <div className="text-[11px] uppercase tracking-[0.22em] text-amber-200/80">{t("dashboard.liveCommandStrip")}</div>
           <div className="mt-2 text-sm text-white break-words">{liveAlertStrip}</div>
+          <div className="mt-3 grid grid-cols-1 gap-2">
+            {liveFeed.slice(0, 3).map((item) => (
+              <div key={item.id} className={cn("rounded-xl border px-3 py-2 text-xs", feedToneClass(item.tone))}>
+                {trLiveMessage(t, item.label)}
+              </div>
+            ))}
+          </div>
         </Card>
 
         <Card className="border border-red-500/20 bg-[radial-gradient(circle_at_top,rgba(127,29,29,0.35),rgba(9,9,11,0.95)_60%)] p-4">
@@ -526,31 +533,252 @@ export default function DashboardPage() {
             <TriangleAlert className="h-5 w-5 text-red-400" />
             <div className="text-lg font-semibold text-red-300">THREAT CONDITION ELEVATED</div>
           </div>
-          <div className="mt-2 text-xs text-slate-400">DNX-ONEEARTH · LIVE COMMAND STATUS · CLASSIFIED</div>
+          <div className="mt-1 text-xs text-slate-400">DNX-ONEEARTH · LIVE COMMAND STATUS · CLASSIFIED</div>
 
           <div className="mt-4 grid grid-cols-2 gap-3">
             <Card className="border border-border/60 bg-card/70 p-3">
-              <div className="text-[11px] uppercase tracking-[0.15em] text-slate-500">{t("dashboard.activeNodes")}</div>
+              <div className="text-[10px] uppercase tracking-[0.14em] text-slate-500">{t("dashboard.activeNodes")}</div>
               <div className="mt-1 text-2xl font-semibold text-amber-300">{overview.totalNodes}</div>
             </Card>
             <Card className="border border-border/60 bg-card/70 p-3">
-              <div className="text-[11px] uppercase tracking-[0.15em] text-slate-500">{t("dashboard.criticalAlertsLabel")}</div>
+              <div className="text-[10px] uppercase tracking-[0.14em] text-slate-500">{t("dashboard.criticalAlertsLabel")}</div>
               <div className="mt-1 text-2xl font-semibold text-red-400">{overview.criticalAlerts}</div>
             </Card>
             <Card className="border border-border/60 bg-card/70 p-3">
-              <div className="text-[11px] uppercase tracking-[0.15em] text-slate-500">{t("dashboard.protectedLives")}</div>
+              <div className="text-[10px] uppercase tracking-[0.14em] text-slate-500">{t("dashboard.protectedLives")}</div>
               <div className="mt-1 text-2xl font-semibold text-sky-300">{overview.protectedPeople}</div>
             </Card>
             <Card className="border border-border/60 bg-card/70 p-3">
-              <div className="text-[11px] uppercase tracking-[0.15em] text-slate-500">{t("dashboard.energyAvail")}</div>
+              <div className="text-[10px] uppercase tracking-[0.14em] text-slate-500">{t("dashboard.energyAvail")}</div>
               <div className="mt-1 text-2xl font-semibold text-emerald-300">{overview.energyAvailability}%</div>
             </Card>
           </div>
         </Card>
 
+        <Card className="overflow-hidden border border-border/60 bg-card/70">
+          <div className="border-b border-border/50 px-4 py-3">
+            <div className="text-lg font-semibold text-white">{t("dashboard.globalOperations")}</div>
+            <div className="mt-1 text-xs uppercase tracking-[0.18em] text-amber-300">{t("dashboard.liveNodeStatus")}</div>
+          </div>
+
+          <div className="p-4">
+            {loading ? (
+              <div className="text-sm text-muted-foreground">{t("dashboard.loadingGlobe")}</div>
+            ) : !stats || (stats.globeSites ?? stats.topThreatSites).length === 0 ? (
+              <div className="text-sm text-muted-foreground">{t("dashboard.noGlobe")}</div>
+            ) : (
+              <Suspense fallback={<div className="text-sm text-muted-foreground">{t("dashboard.loadingLiveGlobe")}</div>}>
+                <ThreatGlobe
+                  sites={stats.globeSites ?? stats.topThreatSites}
+                  escalations={stats.escalationHotspots ?? []}
+                  liveFlashToken={liveFlashToken}
+                />
+              </Suspense>
+            )}
+          </div>
+        </Card>
+
+        <Card className="overflow-hidden border border-cyan-500/15 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.08),transparent_35%),linear-gradient(180deg,rgba(10,14,25,0.95),rgba(4,7,15,0.98))] p-4 backdrop-blur-xl">
+          <div className="flex flex-col gap-3">
+            <div>
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <Badge className="border-cyan-400/20 bg-cyan-400/10 text-cyan-200">
+                  AI Orchestration Console
+                </Badge>
+                <Badge className="border-white/10 bg-white/5 text-slate-300">
+                  {consoleBusy ? "Processing" : "Operational"}
+                </Badge>
+              </div>
+              <div className="text-sm font-semibold text-white">{t("dashboard.commandLayer")}</div>
+              <div className="mt-1 text-xs text-muted-foreground">
+                Recommend · Escalate · Dispatch against a selected live queue target
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2">
+              <div className="text-[10px] uppercase tracking-[0.28em] text-slate-500">{t("dashboard.selectedTarget")}</div>
+              <div className="mt-1 text-sm font-medium text-white break-words">
+                {selectedQueueItem?.title ?? "No target selected"}
+              </div>
+              <div className="text-xs text-slate-400 break-words">
+                {selectedQueueItem?.location ?? "Choose an urgent queue item"}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div className="flex items-center gap-2 text-sm text-white">
+              <Sparkles className="h-4 w-4 text-cyan-300" />
+              AI Preview
+            </div>
+
+            <div className="mt-3 grid grid-cols-1 gap-3">
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">{t("dashboard.threat")}</div>
+                <div className="mt-1 text-sm font-semibold text-white">
+                  {consolePreview?.threatScore ?? selectedQueueItem?.threatScore ?? "—"}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">{t("dashboard.escalation")}</div>
+                <div className="mt-1 text-sm font-semibold text-white">
+                  {consolePreview?.autoEscalation?.escalationLevel ? trEscalationLevel(t, consolePreview.autoEscalation.escalationLevel) : "—"}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">{t("dashboard.deployment")}</div>
+                <div className="mt-1 text-sm font-semibold text-white">
+                  {consolePreview?.autoEscalation?.deploymentMode ? trDeploymentMode(t, consolePreview.autoEscalation.deploymentMode) : "—"}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-sm text-slate-300 min-h-[68px] break-words">
+              {trDirective(t, trLiveMessage(t, trScenarioLabel(t, consoleResponse)))}
+            </div>
+
+            {consoleError ? (
+              <div className="mt-3 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                <TriangleAlert className="h-4 w-4" />
+                {consoleError}
+              </div>
+            ) : null}
+
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <Button
+                onClick={() => void runConsoleAction("recommend")}
+                disabled={consoleBusy || !selectedQueueItem}
+                className={cn(
+                  "w-full min-w-0 rounded-xl bg-blue-600 text-white hover:bg-blue-700",
+                  consoleMode === "recommend" && "ring-1 ring-blue-300/50",
+                )}
+              >
+                {consoleBusy && consoleMode === "recommend" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Recommend"}
+              </Button>
+
+              <Button
+                onClick={() => void runConsoleAction("escalate")}
+                disabled={consoleBusy || !selectedQueueItem}
+                className={cn(
+                  "w-full min-w-0 rounded-xl bg-amber-600 text-white hover:bg-amber-700",
+                  consoleMode === "escalate" && "ring-1 ring-amber-300/50",
+                )}
+              >
+                {consoleBusy && consoleMode === "escalate" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Escalate"}
+              </Button>
+
+              <Button
+                onClick={() => void runConsoleAction("dispatch")}
+                disabled={consoleBusy || !selectedQueueItem}
+                className={cn(
+                  "w-full min-w-0 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700",
+                  consoleMode === "dispatch" && "ring-1 ring-emerald-300/50",
+                )}
+              >
+                {consoleBusy && consoleMode === "dispatch" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Dispatch"}
+              </Button>
+            </div>
+
+            <Button
+              variant="secondary"
+              onClick={() => selectedQueueItem && void runConsolePreview(selectedQueueItem)}
+              disabled={consoleBusy || !selectedQueueItem}
+              className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+            >
+              {consoleBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Activity className="mr-2 h-4 w-4" />}
+              Refresh AI Preview
+            </Button>
+          </div>
+        </Card>
+
         <Card className="border border-border/60 bg-card/70">
           <div className="border-b border-border/50 px-4 py-3">
-            <div className="text-lg font-semibold text-white">{t("dashboard.urgentResponseQueue")}</div>
+            <div className="text-base font-semibold text-white">Module Status Matrix</div>
+          </div>
+          <div className="space-y-3 p-4">
+            {moduleCards.map((module) => (
+              <div
+                key={module.title}
+                className={`overflow-hidden rounded-2xl border border-border/60 bg-card/70 p-4 bg-gradient-to-r ${module.tone}`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-base font-semibold text-white break-words">{module.title}</div>
+                    <div className="mt-1 text-sm text-slate-400 break-words">{module.subtitle}</div>
+                  </div>
+                  <div className={cn("h-3 w-3 rounded-full shadow-[0_0_16px_currentColor]", module.accent)} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="border border-border/60 bg-card/70">
+          <div className="border-b border-border/50 px-4 py-3">
+            <div className="text-base font-semibold text-white">Active Threat Feed</div>
+          </div>
+          <div className="space-y-3 p-4">
+            {loading ? (
+              <div className="text-sm text-muted-foreground">{t("dashboard.loadingThreatFeed")}</div>
+            ) : !stats || stats.recentAlerts.length === 0 ? (
+              <div className="text-sm text-muted-foreground">{t("dashboard.noRecentAlerts")}</div>
+            ) : (
+              stats.recentAlerts.slice(0, 6).map((alert) => (
+                <div key={alert.id} className="rounded-2xl border border-border/60 bg-background/40 p-4">
+                  <div className="text-base font-semibold text-white break-words">{alert.title}</div>
+                  <div className="mt-1 text-sm text-slate-500 break-words">
+                    {alert.location} · {trStatus(t, alert.status)}
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Badge className={cn("border", threatClass(alert.threatLevel))}>
+                      {trThreatLevel(t, alert.threatLevel)}
+                    </Badge>
+                    <Badge className={cn("border", priorityClass(alert.responsePriority))}>
+                      {trPriority(t, alert.responsePriority)}
+                    </Badge>
+                    <Badge className={cn("border", moduleTone(alert.module))}>
+                      {trModule(t, alert.module)}
+                    </Badge>
+                  </div>
+                  <div className="mt-3 text-sm text-slate-300 break-words">{trDirective(t, alert.recommendedAction)}</div>
+                  <div className="mt-3 text-sm font-semibold text-primary">{t("dashboard.score")}: {alert.threatScore}</div>
+                </div>
+              ))
+            )}
+          </div>
+        </Card>
+
+        <Card className="border border-border/60 bg-card/70">
+          <div className="border-b border-border/50 px-4 py-3">
+            <div className="text-base font-semibold text-white">{t("dashboard.topThreatSites")}</div>
+          </div>
+          <div className="space-y-3 p-4">
+            {loading ? (
+              <div className="text-sm text-muted-foreground">{t("dashboard.loadingThreatSites")}</div>
+            ) : !stats || stats.topThreatSites.length === 0 ? (
+              <div className="text-sm text-muted-foreground">{t("dashboard.noSiteData")}</div>
+            ) : (
+              stats.topThreatSites.slice(0, 4).map((site) => (
+                <div key={site.id} className="rounded-2xl border border-border/60 bg-background/40 p-4">
+                  <div className="text-base font-semibold text-white break-words">{site.name}</div>
+                  <div className="mt-1 text-sm text-muted-foreground break-words">{site.location}, {site.country}</div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Badge className={cn("border", threatClass(site.threatLevel))}>{trThreatLevel(t, site.threatLevel)}</Badge>
+                    <Badge className={cn("border", priorityClass(site.responsePriority))}>{trPriority(t, site.responsePriority)}</Badge>
+                    <Badge variant="outline">{trSiteType(t, site.type)}</Badge>
+                  </div>
+                  <div className="mt-3 text-sm font-semibold text-primary">{t("dashboard.score")}: {site.threatScore}</div>
+                </div>
+              ))
+            )}
+          </div>
+        </Card>
+
+        <Card className="border border-border/60 bg-card/70">
+          <div className="border-b border-border/50 px-4 py-3">
+            <div className="text-base font-semibold text-white">{t("dashboard.urgentResponseQueue")}</div>
           </div>
           <div className="space-y-3 p-4">
             {loading ? (
@@ -580,38 +808,18 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="border border-border/60 bg-card/70">
-          <div className="border-b border-border/50 px-4 py-3">
-            <div className="text-lg font-semibold text-white">{t("dashboard.topThreatSites")}</div>
-          </div>
-          <div className="space-y-3 p-4">
-            {loading ? (
-              <div className="text-sm text-muted-foreground">{t("dashboard.loadingThreatSites")}</div>
-            ) : !stats || stats.topThreatSites.length === 0 ? (
-              <div className="text-sm text-muted-foreground">{t("dashboard.noSiteData")}</div>
-            ) : (
-              stats.topThreatSites.slice(0, 4).map((site) => (
-                <div key={site.id} className="rounded-2xl border border-border/60 bg-background/40 p-4">
-                  <div className="text-base font-semibold text-white break-words">{site.name}</div>
-                  <div className="mt-1 text-sm text-muted-foreground break-words">{site.location}, {site.country}</div>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <Badge className={cn("border", threatClass(site.threatLevel))}>{trThreatLevel(t, site.threatLevel)}</Badge>
-                    <Badge className={cn("border", priorityClass(site.responsePriority))}>{trPriority(t, site.responsePriority)}</Badge>
-                    <Badge variant="outline">{trSiteType(t, site.type)}</Badge>
-                  </div>
-                  <div className="mt-3 text-sm font-semibold text-primary">{t("dashboard.score")}: {site.threatScore}</div>
-                </div>
-              ))
-            )}
-          </div>
-        </Card>
+        <CommandTimelinePanel
+          history={history}
+          escalations={escalations}
+          loading={timelineLoading}
+        />
 
         <Card className="border border-border/60 bg-card/70">
           <div className="border-b border-border/50 px-4 py-3">
-            <div className="text-lg font-semibold text-white">{t("dashboard.liveEventFeed")}</div>
+            <div className="text-base font-semibold text-white">{t("dashboard.liveEventFeed")}</div>
           </div>
           <div className="space-y-3 p-4">
-            {liveFeed.slice(0, 6).map((item) => (
+            {liveFeed.slice(0, 8).map((item) => (
               <div key={item.id} className={cn("rounded-2xl border p-4 text-sm", feedToneClass(item.tone))}>
                 <div className="font-medium">Live update</div>
                 <div className="mt-2 break-words">{trLiveMessage(t, item.label)}</div>
