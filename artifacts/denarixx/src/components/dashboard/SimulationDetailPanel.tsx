@@ -38,6 +38,7 @@ export default function SimulationDetailPanel({
   error = null,
   onClose,
 }: Props) {
+  const { t } = useTranslation();
   return (
     <Card className="overflow-hidden border border-cyan-500/15 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.08),transparent_35%),linear-gradient(180deg,rgba(10,14,25,0.95),rgba(4,7,15,0.98))] backdrop-blur-xl">
       <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
