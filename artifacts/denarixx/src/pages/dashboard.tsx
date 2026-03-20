@@ -553,7 +553,7 @@ export default function DashboardPage() {
                 LIVE
               </div>
               <div className="flex-1 overflow-hidden">
-                <div className="mobile-live-marquee whitespace-nowrap px-4 py-2 text-xs text-slate-300">
+                <div className="mobile-live-marquee text-amber-200 font-semibold drop-shadow-[0_0_10px_rgba(251,191,36,0.35)]  whitespace-nowrap px-4 py-2 text-xs sm:text-sm">
                   {liveFeed.map((item) => trLiveMessage(t, item.label)).join("  ◆  ")}
                   {"  ◆  "}
                   {liveFeed.map((item) => trLiveMessage(t, item.label)).join("  ◆  ")}
