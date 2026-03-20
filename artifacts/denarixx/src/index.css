@@ -266,7 +266,7 @@
   will-change: transform;
   backface-visibility: hidden;
   transform: translateZ(0);
-  animation: marquee 22s linear infinite;
+  animation: marquee 28s linear infinite;
 }
 
   /* ── System scanline overlay ── */
@@ -356,5 +356,5 @@ main {
   will-change: transform;
   backface-visibility: hidden;
   transform: translateZ(0);
-  animation: mobile-live-marquee 18s linear infinite;
+  animation: mobile-live-marquee 24s linear infinite;
 }
