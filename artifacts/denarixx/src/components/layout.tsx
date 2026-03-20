@@ -79,7 +79,7 @@ function SystemRibbon({ user }: { user: any }) {
         </div>
         {ticker ? (
           <div className="flex-1 overflow-hidden relative">
-            <div className="animate-marquee text-[9px] font-mono text-muted-foreground/60">
+            <div className="animate-marquee text-[10px] sm:text-[11px] font-semibold font-mono text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.35)]  ">
               <span className="whitespace-nowrap px-4">{ticker}</span>
               <span className="whitespace-nowrap px-4" aria-hidden="true">{ticker}</span>
             </div>
