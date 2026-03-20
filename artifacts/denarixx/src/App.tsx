@@ -267,8 +267,15 @@ function MobileProtectedShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
 
-        <div className="border-t border-border/30 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-          {user ? `${user.name} · ${user.role} · L${user.clearanceLevel}` : "Mobile Command View"}
+        <div className="border-t border-border/30 px-4 py-2">
+          <div className="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.18em]">
+            <div className="min-w-0 truncate text-muted-foreground">
+              {user ? `${user.name} · ${user.role}` : "Mobile Command View"}
+            </div>
+            <div className="shrink-0 font-bold text-primary drop-shadow-[0_0_8px_rgba(251,191,36,0.35)]">
+              L{user?.clearanceLevel ?? "—"}
+            </div>
+          </div>
         </div>
 
         <div className="border-t border-border/30 px-4 py-3">
@@ -277,7 +284,13 @@ function MobileProtectedShell({ children }: { children: React.ReactNode }) {
               <div className={`h-2 w-2 rounded-full ${threatLevel === "CRITICAL" ? "bg-red-500" : threatLevel === "ELEVATED" ? "bg-amber-500" : threatLevel === "GUARDED" ? "bg-blue-400" : "bg-green-500"} animate-pulse`} />
               <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-white">{threatLevel}</div>
             </div>
-            <div className="text-[11px] font-mono text-muted-foreground">{time.toISOString().slice(11, 19)} UTC</div>
+            <div className="text-[11px] font-mono font-bold text-sky-200 drop-shadow-[0_0_10px_rgba(125,211,252,0.35)]">
+              {time.toISOString().slice(11, 19)} UTC
+            </div>
+          </div>
+
+          <div className="mt-2 text-[11px] font-mono font-bold uppercase tracking-[0.18em] text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.35)]">
+            SES-{String(((user?.clearanceLevel ?? 5) * 4829 + 1337)).slice(-4).toUpperCase()}
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-2">
