@@ -62,14 +62,14 @@ function SystemRibbon({ user }: { user: any }) {
             PROTECTED: <span className="text-blue-400">{stats ? stats.protectedPeople : '—'}</span>
           </span>
         </div>
-        <div className="hidden sm:flex items-center gap-2 sm:gap-3 text-[9px] font-mono text-muted-foreground uppercase tracking-widest shrink-0">
+        <div className="hidden sm:flex items-center gap-2 sm:gap-3 text-[10px] font-mono uppercase tracking-widest shrink-0">
           <span className="classified-badge hidden sm:inline">CLASSIFIED</span>
           <span className="text-border/40 hidden sm:inline">│</span>
-          <span className="text-primary font-bold">L{user?.clearanceLevel ?? '—'}</span>
+          <span className="text-primary font-bold drop-shadow-[0_0_8px_rgba(251,191,36,0.35)]">L{user?.clearanceLevel ?? '—'}</span>
           <span className="text-border/40">│</span>
-          <span className="text-muted-foreground/60 hidden md:inline">{sessionId}</span>
+          <span className="hidden md:inline font-bold text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.35)]">{sessionId}</span>
           <span className="text-border/40 hidden md:inline">│</span>
-          <span className="tabular-nums text-muted-foreground">{format(time, 'HH:mm:ss')} UTC</span>
+          <span className="tabular-nums font-bold text-sky-200 drop-shadow-[0_0_10px_rgba(125,211,252,0.35)]">{format(time, 'HH:mm:ss')} UTC</span>
         </div>
       </div>
 
