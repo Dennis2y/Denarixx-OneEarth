@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { AppLayout } from "@/components/layout";
-import { LogOut, Home, Cpu, Bell, MapPin, Settings as SettingsIcon, Shield, Zap, Activity, Globe, Users as UsersIcon, X, Menu, HelpCircle } from "lucide-react";
+import { LogOut, Home, Cpu, Bell, MapPin, Settings as SettingsIcon, Shield, Zap, Activity, Globe, Users as UsersIcon, X, Menu } from "lucide-react";
 import { LoadingScreen } from "@/components/ui-core";
 import { apiFetch } from "@/lib/api";
 import { AuthProvider, useAuth } from "@/context/auth";
@@ -127,7 +127,6 @@ function MobileProtectedShell({ children }: { children: React.ReactNode }) {
     { href: "/alerts", label: "Alerts", icon: Bell },
     { href: "/sites", label: "Sites", icon: MapPin },
     { href: "/settings", label: "Settings", icon: SettingsIcon },
-        { href: "/faqs", label: "FAQs", icon: HelpCircle },
   ];
 
   const groupedNav = [
@@ -154,7 +153,6 @@ function MobileProtectedShell({ children }: { children: React.ReactNode }) {
         { href: "/sites", label: "Sites", icon: MapPin },
         { href: "/users", label: "Users", icon: UsersIcon },
         { href: "/settings", label: "Settings", icon: SettingsIcon },
-        { href: "/faqs", label: "FAQs", icon: HelpCircle },
       ],
     },
   ];
@@ -426,6 +424,7 @@ function ProtectedApp() {
       <Suspense fallback={<LoadingScreen />}>
         <Switch>
           <Route path="/" component={Landing} />
+          <Route path="/faqs" component={FAQs} />
           <Route path="/login" component={Login} />
           <Route component={NotFound} />
         </Switch>
