@@ -412,7 +412,7 @@ function ProtectedApp() {
 
   if (isLoading) return <LoadingScreen />;
 
-  const isPublicRoute = location === "/" || location === "/login";
+  const isPublicRoute = location === "/" || location === "/login" || location === "/faqs";
 
   if (!isAuthenticated && !isPublicRoute) {
     window.location.href = "/login";
