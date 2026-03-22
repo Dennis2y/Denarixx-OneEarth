@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Home, Zap, Shield, Globe, Bell, MapPin, Users, Settings, LogOut, Menu, Search, Cpu, X } from 'lucide-react';
+import { Home, Zap, Shield, Globe, Bell, MapPin, Users, Settings, LogOut, Menu, Search, Cpu, X, HelpCircle } from 'lucide-react';
 import { cn } from './ui-core';
 import { format } from 'date-fns';
 import { useAuth, roleLabel } from '@/context/auth';
@@ -121,6 +121,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     { href: '/sites', label: t('nav.sites'), icon: MapPin, group: t('nav.management') },
     { href: '/users', label: t('nav.users'), icon: Users, group: t('nav.management') },
     { href: '/settings', label: t('nav.settings'), icon: Settings, group: t('nav.management') },
+    { href: '/faqs', label: 'FAQs', icon: HelpCircle, group: t('nav.management') },
   ];
 
   useEffect(() => {

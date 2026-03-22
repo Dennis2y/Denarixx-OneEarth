@@ -19,6 +19,7 @@ const Sites = lazy(() => import("@/pages/sites"));
 const SiteDetail = lazy(() => import("@/pages/site-detail"));
 const Users = lazy(() => import("@/pages/users"));
 const Settings = lazy(() => import("@/pages/settings"));
+const FAQs = lazy(() => import("@/pages/faqs"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 const GlobalMap = lazy(() => import("./pages/global-map"));
 
@@ -126,6 +127,7 @@ function MobileProtectedShell({ children }: { children: React.ReactNode }) {
     { href: "/alerts", label: "Alerts", icon: Bell },
     { href: "/sites", label: "Sites", icon: MapPin },
     { href: "/settings", label: "Settings", icon: SettingsIcon },
+        { href: "/faqs", label: "FAQs", icon: HelpCircle },
   ];
 
   const groupedNav = [
@@ -152,6 +154,7 @@ function MobileProtectedShell({ children }: { children: React.ReactNode }) {
         { href: "/sites", label: "Sites", icon: MapPin },
         { href: "/users", label: "Users", icon: UsersIcon },
         { href: "/settings", label: "Settings", icon: SettingsIcon },
+        { href: "/faqs", label: "FAQs", icon: HelpCircle },
       ],
     },
   ];
