@@ -2,9 +2,29 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { motion, useInView } from 'framer-motion';
 import {
-  Zap, Shield, Globe, ChevronRight, ArrowRight, CheckCircle, MapPin, Users,
-  AlertTriangle, Activity, BarChart3, Cpu, Radio, FileText, Building2,
-  Heart, School, Layers, Play, Menu, X, Lock
+  Zap,
+  Shield,
+  Globe,
+  ChevronRight,
+  ArrowRight,
+  CheckCircle,
+  MapPin,
+  Users,
+  AlertTriangle,
+  Activity,
+  BarChart3,
+  Cpu,
+  Radio,
+  FileText,
+  Building2,
+  Heart,
+  School,
+  Layers,
+  Play,
+  Menu,
+  X,
+  Lock,
+  HelpCircle,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -192,6 +212,13 @@ export default function Landing() {
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-bold text-sm sm:text-base border border-white/20 text-white/80 hover:border-primary/50 hover:text-white backdrop-blur bg-white/5 transition-all hover:bg-white/10">
               {t('landing.heroExplore')} <ArrowRight className="w-4 h-4" />
             </a>
+            <button
+              onClick={() => setLocation('/faqs')}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-bold text-sm sm:text-base border border-primary/25 text-primary hover:border-primary/50 hover:text-white backdrop-blur bg-primary/10 transition-all hover:bg-primary/15"
+            >
+              <HelpCircle className="w-4 h-4" />
+              FAQs
+            </button>
           </motion.div>
 
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
