@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { AppLayout } from "@/components/layout";
-import { LogOut, Home, Cpu, Bell, MapPin, Settings as SettingsIcon, Shield, Zap, Activity, Globe, Users as UsersIcon, X, Menu } from "lucide-react";
+import { LogOut, Home, Cpu, Bell, MapPin, Settings as SettingsIcon, Shield, Zap, Activity, Globe, Users as UsersIcon, X, Menu, HelpCircle } from "lucide-react";
 import { LoadingScreen } from "@/components/ui-core";
 import { apiFetch } from "@/lib/api";
 import { AuthProvider, useAuth } from "@/context/auth";
