@@ -19,22 +19,9 @@ import { Card, Badge, Button, cn } from "@/components/ui-core";
 import { apiFetch, apiStreamUrl } from "@/lib/api";
 import { trDirective, trDeploymentMode, trEscalationLevel, trLiveMessage, trModule, trPriority, trScenarioLabel, trSiteType, trStatus, trThreatLevel } from "@/lib/system-display-i18n";
 
-const ThreatGlobe = lazy(() => import("@/components/dashboard/ThreatGlobe"));
+const AdaptiveThreatMap = lazy(() => import("@/components/dashboard/AdaptiveThreatMap"));
 
 
-function supportsWebGL() {
-  if (typeof window === "undefined") return true;
-
-  try {
-    const canvas = document.createElement("canvas");
-    return !!(
-      canvas.getContext("webgl") ||
-      canvas.getContext("experimental-webgl")
-    );
-  } catch {
-    return false;
-  }
-}
 
 
 import CommandTimelinePanel, {
@@ -42,7 +29,6 @@ import CommandTimelinePanel, {
   type EscalationFeedRow,
 } from "@/components/dashboard/CommandTimelinePanel";
 import SimulationDetailPanel from "@/components/dashboard/SimulationDetailPanel";
-import GlobeErrorBoundary from "@/components/common/GlobeErrorBoundary";
 
 type ThreatLevel = "low" | "medium" | "high" | "critical";
 type ResponsePriority = "routine" | "priority" | "urgent" | "immediate";
@@ -244,7 +230,6 @@ function LiveCount({ value, suffix = "" }: { value: number; suffix?: string }) {
 
 export default function DashboardPage() {
   const { t } = useTranslation();
-  const webglAvailable = supportsWebGL();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -630,29 +615,13 @@ export default function DashboardPage() {
               <div className="text-sm text-muted-foreground">{t("dashboard.noGlobe")}</div>
             ) : (
               <div className="mobile-globe-wrap h-[280px] sm:h-[320px] overflow-hidden rounded-2xl">
-                {webglAvailable ? (
-              <GlobeErrorBoundary>
-<Suspense fallback={<div className="text-sm text-muted-foreground">{t("dashboard.loadingLiveGlobe")}</div>}>
-                <ThreatGlobe
+                <Suspense fallback={<div className="text-sm text-muted-foreground">Loading global visualization…</div>}>
+                  <AdaptiveThreatMap
                   sites={stats.globeSites ?? stats.topThreatSites}
                   escalations={stats.escalationHotspots ?? []}
                   liveFlashToken={liveFlashToken}
                 />
-              </Suspense>
-</GlobeErrorBoundary>
-            ) : (
-              <div className="flex h-full min-h-[280px] items-center justify-center rounded-2xl border border-cyan-500/20 bg-slate-950/70">
-                <div className="max-w-md px-6 text-center">
-                  <div className="text-lg font-semibold text-cyan-300">
-                    Live Threat Globe Unavailable
-                  </div>
-                  <p className="mt-3 text-sm text-slate-400">
-                    Your browser or graphics driver has disabled WebGL.
-                    All monitoring, alerts and analytics continue to operate normally.
-                  </p>
-                </div>
-              </div>
-            )}
+                </Suspense>
               </div>
             )}
           </div>
@@ -1059,15 +1028,13 @@ export default function DashboardPage() {
             ) : !stats || (stats.globeSites ?? stats.topThreatSites).length === 0 ? (
               <div className="text-sm text-muted-foreground">{t("dashboard.noGlobe")}</div>
             ) : (
-              <GlobeErrorBoundary>
-<Suspense fallback={<div className="text-sm text-muted-foreground">{t("dashboard.loadingLiveGlobe")}</div>}>
-                <ThreatGlobe
+              <Suspense fallback={<div className="text-sm text-muted-foreground">Loading global visualization…</div>}>
+                <AdaptiveThreatMap
                   sites={stats.globeSites ?? stats.topThreatSites}
                   escalations={stats.escalationHotspots ?? []}
                   liveFlashToken={liveFlashToken}
                 />
               </Suspense>
-</GlobeErrorBoundary>
             )}
           </div>
         </Card>

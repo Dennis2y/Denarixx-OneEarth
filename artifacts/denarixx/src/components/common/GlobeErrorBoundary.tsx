@@ -2,6 +2,7 @@ import React from "react";
 
 type Props = {
   children: React.ReactNode;
+  fallback?: React.ReactNode;
 };
 
 type State = {
@@ -20,20 +21,24 @@ export default class GlobeErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: unknown) {
-    console.error("ThreatGlobe crashed:", error);
+    console.error("ThreatGlobe crashed; switching to 2D map:", error);
   }
 
   render() {
     if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+
       return (
         <div className="flex h-[420px] items-center justify-center rounded-xl border border-border bg-card p-8 text-center">
           <div>
             <h2 className="text-xl font-semibold">
-              Live Threat Globe Unavailable
+              Live Threat Map Unavailable
             </h2>
 
             <p className="mt-3 text-muted-foreground">
-              WebGL is unavailable on this browser or graphics driver.
+              The visualization could not be loaded.
             </p>
 
             <p className="mt-2 text-sm text-muted-foreground">
