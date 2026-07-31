@@ -20,6 +20,23 @@ import { apiFetch, apiStreamUrl } from "@/lib/api";
 import { trDirective, trDeploymentMode, trEscalationLevel, trLiveMessage, trModule, trPriority, trScenarioLabel, trSiteType, trStatus, trThreatLevel } from "@/lib/system-display-i18n";
 
 const ThreatGlobe = lazy(() => import("@/components/dashboard/ThreatGlobe"));
+
+
+function supportsWebGL() {
+  if (typeof window === "undefined") return true;
+
+  try {
+    const canvas = document.createElement("canvas");
+    return !!(
+      canvas.getContext("webgl") ||
+      canvas.getContext("experimental-webgl")
+    );
+  } catch {
+    return false;
+  }
+}
+
+
 import CommandTimelinePanel, {
   type HistoryRow,
   type EscalationFeedRow,
@@ -226,6 +243,7 @@ function LiveCount({ value, suffix = "" }: { value: number; suffix?: string }) {
 
 export default function DashboardPage() {
   const { t } = useTranslation();
+  const webglAvailable = supportsWebGL();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -611,13 +629,27 @@ export default function DashboardPage() {
               <div className="text-sm text-muted-foreground">{t("dashboard.noGlobe")}</div>
             ) : (
               <div className="mobile-globe-wrap h-[280px] sm:h-[320px] overflow-hidden rounded-2xl">
-                <Suspense fallback={<div className="text-sm text-muted-foreground">{t("dashboard.loadingLiveGlobe")}</div>}>
-                  <ThreatGlobe
-                    sites={stats.globeSites ?? stats.topThreatSites}
-                    escalations={stats.escalationHotspots ?? []}
-                    liveFlashToken={liveFlashToken}
-                  />
-                </Suspense>
+                webglAvailable ? (
+              <Suspense fallback={<div className="text-sm text-muted-foreground">{t("dashboard.loadingLiveGlobe")}</div>}>
+                <ThreatGlobe
+                  sites={stats.globeSites ?? stats.topThreatSites}
+                  escalations={stats.escalationHotspots ?? []}
+                  liveFlashToken={liveFlashToken}
+                />
+              </Suspense>
+            ) : (
+              <div className="flex h-full min-h-[280px] items-center justify-center rounded-2xl border border-cyan-500/20 bg-slate-950/70">
+                <div className="max-w-md px-6 text-center">
+                  <div className="text-lg font-semibold text-cyan-300">
+                    Live Threat Globe Unavailable
+                  </div>
+                  <p className="mt-3 text-sm text-slate-400">
+                    Your browser or graphics driver has disabled WebGL.
+                    All monitoring, alerts and analytics continue to operate normally.
+                  </p>
+                </div>
+              </div>
+            )
               </div>
             )}
           </div>
