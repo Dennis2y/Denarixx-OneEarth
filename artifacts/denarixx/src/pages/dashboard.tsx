@@ -42,6 +42,7 @@ import CommandTimelinePanel, {
   type EscalationFeedRow,
 } from "@/components/dashboard/CommandTimelinePanel";
 import SimulationDetailPanel from "@/components/dashboard/SimulationDetailPanel";
+import GlobeErrorBoundary from "@/components/common/GlobeErrorBoundary";
 
 type ThreatLevel = "low" | "medium" | "high" | "critical";
 type ResponsePriority = "routine" | "priority" | "urgent" | "immediate";
@@ -629,14 +630,16 @@ export default function DashboardPage() {
               <div className="text-sm text-muted-foreground">{t("dashboard.noGlobe")}</div>
             ) : (
               <div className="mobile-globe-wrap h-[280px] sm:h-[320px] overflow-hidden rounded-2xl">
-                webglAvailable ? (
-              <Suspense fallback={<div className="text-sm text-muted-foreground">{t("dashboard.loadingLiveGlobe")}</div>}>
+                {webglAvailable ? (
+              <GlobeErrorBoundary>
+<Suspense fallback={<div className="text-sm text-muted-foreground">{t("dashboard.loadingLiveGlobe")}</div>}>
                 <ThreatGlobe
                   sites={stats.globeSites ?? stats.topThreatSites}
                   escalations={stats.escalationHotspots ?? []}
                   liveFlashToken={liveFlashToken}
                 />
               </Suspense>
+</GlobeErrorBoundary>
             ) : (
               <div className="flex h-full min-h-[280px] items-center justify-center rounded-2xl border border-cyan-500/20 bg-slate-950/70">
                 <div className="max-w-md px-6 text-center">
@@ -649,7 +652,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
               </div>
-            )
+            )}
               </div>
             )}
           </div>
@@ -1056,13 +1059,15 @@ export default function DashboardPage() {
             ) : !stats || (stats.globeSites ?? stats.topThreatSites).length === 0 ? (
               <div className="text-sm text-muted-foreground">{t("dashboard.noGlobe")}</div>
             ) : (
-              <Suspense fallback={<div className="text-sm text-muted-foreground">{t("dashboard.loadingLiveGlobe")}</div>}>
+              <GlobeErrorBoundary>
+<Suspense fallback={<div className="text-sm text-muted-foreground">{t("dashboard.loadingLiveGlobe")}</div>}>
                 <ThreatGlobe
                   sites={stats.globeSites ?? stats.topThreatSites}
                   escalations={stats.escalationHotspots ?? []}
                   liveFlashToken={liveFlashToken}
                 />
               </Suspense>
+</GlobeErrorBoundary>
             )}
           </div>
         </Card>
